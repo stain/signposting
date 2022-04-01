@@ -6,7 +6,7 @@ How to contribute to this project.
 Fork this repository
 --------------------
 
-`Fork this repository before contributing`_. It is a better practice, possibly even enforced, that only Pull Request from forks are accepted - consider a case where there are several main maintainers. In my opinion enforcing forks creates a cleaner representation of the `contributions to the project`_.
+`Fork this repository before contributing`_. 
 
 Clone your fork
 ~~~~~~~~~~~~~~~
@@ -19,8 +19,8 @@ Next, clone your fork to your local machine, keep it `up to date with the upstre
     cd signposting
     git remote add upstream git://github.com/stain/signposting.git
     git fetch upstream
-    git merge upstream/master
-    git pull origin master
+    git merge upstream/main
+    git pull origin main
 
 Install for developers
 ----------------------
@@ -55,11 +55,11 @@ This configuration, together with the use of the ``src`` folder layer, guarantee
 Make a new branch
 -----------------
 
-From the ``master`` branch create a new branch where to develop the new code.
+From the ``main`` branch create a new branch where to develop the new code.
 
 ::
 
-    git checkout master
+    git checkout main
     git checkout -b new_branch
 
 
@@ -136,13 +136,13 @@ Also, you can run individual environments if you wish to test only specific func
 .. _tox.ini: https://github.com/stain/signposting/blob/latest/tox.ini
 .. _Tox: https://tox.readthedocs.io/en/latest/
 .. _tox is installed: https://tox.readthedocs.io/en/latest/install.html
-.. _MANIFEST.in: https://github.com/stain/signposting/blob/master/MANIFEST.in
+.. _MANIFEST.in: https://github.com/stain/signposting/blob/main/MANIFEST.in
 .. _Fork this repository before contributing: https://github.com/stain/signposting/network/members
 .. _up to date with the upstream: https://gist.github.com/CristinaSolana/1885435
 .. _contributions to the project: https://github.com/stain/signposting/network
 .. _Gitflow Workflow: https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow
 .. _Pull Request: https://github.com/stain/signposting/pulls
-.. _PULLREQUEST.rst: https://github.com/stain/signposting/blob/master/docs/PULLREQUEST.rst
+.. _PULLREQUEST.rst: https://github.com/stain/signposting/blob/main/docs/PULLREQUEST.rst
 .. _1: https://git-scm.com/docs/git-merge#Documentation/git-merge.txt---no-ff
 .. _2: https://stackoverflow.com/questions/9069061/what-is-the-difference-between-git-merge-and-git-merge-no-ff
 .. _Installing packages using pip and virtual environments: https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/#creating-a-virtual-environment

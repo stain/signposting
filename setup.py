@@ -63,7 +63,7 @@ setup(
     project_urls={
         'webpage': 'https://github.com/stain/signposting',
         #'Documentation': 'https://signposting.readthedocs.io/en/latest/',
-        'Changelog': 'https://github.com/stain/signposting/blob/master/docs/CHANGELOG.rst',
+        'Changelog': 'https://github.com/stain/signposting/blob/main/docs/CHANGELOG.rst',
         'Issue Tracker': 'https://github.com/stain/signposting/issues',
         'Discussion Forum': 'https://github.com/stain/signposting/discussions',
         },

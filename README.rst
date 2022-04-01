@@ -2,19 +2,19 @@
 Python Package Skeleton Template
 ================================
 
-.. image:: https://github.com/stain/signposting/workflows/Tests/badge.svg?branch=master
+.. image:: https://github.com/stain/signposting/workflows/Tests/badge.svg?branch=main
     :target: https://github.com/stain/signposting/actions?workflow=Tests
     :alt: Test Status
 
-.. image:: https://github.com/stain/signposting/workflows/Package%20Build/badge.svg?branch=master
+.. image:: https://github.com/stain/signposting/workflows/Package%20Build/badge.svg?branch=main
     :target: https://github.com/stain/signposting/actions?workflow=Package%20Build
     :alt: Package Build
 
-.. image:: https://codecov.io/gh/stain/signposting/branch/master/graph/badge.svg
+.. image:: https://codecov.io/gh/stain/signposting/branch/main/graph/badge.svg
     :target: https://codecov.io/gh/stain/signposting
     :alt: Codecov
 
-.. image:: https://img.shields.io/codacy/grade/ae042ac066554bfab398024b0beea6a5/master?label=Codacy
+.. image:: https://img.shields.io/codacy/grade/ae042ac066554bfab398024b0beea6a5/main?label=Codacy
     :target: https://app.codacy.com/manual/stain/signposting/dashboard
     :alt: Codacy
 
@@ -99,7 +99,7 @@ v0.8.1
 .. _ionel: https://github.com/ionelmc
 .. _issue: https://github.com/stain/signposting/issues
 .. _latest branch: https://github.com/stain/signposting/tree/latest
-.. _master branch: https://github.com/stain/signposting/tree/master
+.. _main branch: https://github.com/stain/signposting/tree/main
 .. _pdb-tools: https://github.com/haddocking/pdb-tools
 .. _project's documentation: https://signposting.readthedocs.io/en/latest/index.html
 .. _pytest: https://docs.pytest.org/en/stable/
