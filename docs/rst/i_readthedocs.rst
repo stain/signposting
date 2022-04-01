@@ -39,5 +39,5 @@ The documentation is at ``dist/docs/index.html``. The ``tox`` run also reports o
 .. _Sphinx: http://www.sphinx-doc.org/en/master/
 .. _Sphinx Themes: https://sphinx-themes.org/
 .. _sphinx-py3doc-enhanced-theme: https://github.com/ionelmc/sphinx-py3doc-enhanced-theme
-.. _latest Github tag: https://github.com/joaomcteixeira/python-project-skeleton/tags
+.. _latest Github tag: https://github.com/stain/signposting/tags
 .. _instructions: https://docs.readthedocs.io/en/stable/guides/google-analytics.html

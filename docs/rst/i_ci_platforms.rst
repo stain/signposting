@@ -31,16 +31,16 @@ You may wish to read about `GitHub actions <https://github.com/features/actions>
 Unittesting and integrity
 `````````````````````````
 
-Every time a new Pull Request is issued, the `ci-testing.yml <https://github.com/joaomcteixeira/python-project-skeleton/blob/master/.github/workflows/ci-testing.yml>`_ workflow is triggered. It is responsible to run the unittests, and repository integrity checks (defined at ``tox.ini``), and allow or disallow PR merge in case tests pass or fail.
+Every time a new Pull Request is issued, the `ci-testing.yml <https://github.com/stain/signposting/blob/master/.github/workflows/ci-testing.yml>`_ workflow is triggered. It is responsible to run the unittests, and repository integrity checks (defined at ``tox.ini``), and allow or disallow PR merge in case tests pass or fail.
 
-This template has two example PRs for demonstration: one which `tests pass <https://github.com/joaomcteixeira/python-project-skeleton/pull/10>`_ and another which `tests fail <https://github.com/joaomcteixeira/python-project-skeleton/pull/11>`_.
+This template has two example PRs for demonstration: one which `tests pass <https://github.com/stain/signposting/pull/10>`_ and another which `tests fail <https://github.com/stain/signposting/pull/11>`_.
 
 This workflow also runs when a PR is approved or a new version released.
 
 Version release
 ```````````````
 
-Every time a Pull Request is merged to `master` the `deployment workflow <https://github.com/joaomcteixeira/python-project-skeleton/blob/master/.github/workflows/version-bump-and-package.yml>`_ is triggered. This action bumps the new version number according to the requests in the Pull Request, creates a new GitHub tag for that commit, and publishes in PyPI the new software version.
+Every time a Pull Request is merged to `master` the `deployment workflow <https://github.com/stain/signposting/blob/master/.github/workflows/version-bump-and-package.yml>`_ is triggered. This action bumps the new version number according to the requests in the Pull Request, creates a new GitHub tag for that commit, and publishes in PyPI the new software version.
 
 As discussed in another section, here I follow the rules of `Semantic Versioning 2 <https://semver.org/>`_.
 
@@ -48,7 +48,7 @@ The PR rules to trigger a *major*, *minor*, or *patch* update concern mainly the
 
 This whole workflow can be deactivate if the commit to the ``master`` branch starts with ``[SKIP]``.
 
-In conclusion, every commit to ``master`` without the ``[SKIP]`` tag will be followed by a version upgrade, new tag, new commit to ``master`` and consequent release to PyPI. You have a visual representation of the commit workflow in the `Network plot <https://github.com/joaomcteixeira/python-project-skeleton/network>`_.
+In conclusion, every commit to ``master`` without the ``[SKIP]`` tag will be followed by a version upgrade, new tag, new commit to ``master`` and consequent release to PyPI. You have a visual representation of the commit workflow in the `Network plot <https://github.com/stain/signposting/network>`_.
 
 **How version numbers are managed?**
 
@@ -79,7 +79,7 @@ The :code:`.coveragerc` can be expanded to further restraint coverage analysis, 
 Code Quality
 ~~~~~~~~~~~~
 
-Here, we have both ``Codacy`` and ``Code Climate`` as code quality inspectors. There are also others out there, feel free to suggested different ones in the `Discussion tab <https://github.com/joaomcteixeira/python-project-skeleton/discussions>`_.
+Here, we have both ``Codacy`` and ``Code Climate`` as code quality inspectors. There are also others out there, feel free to suggested different ones in the `Discussion tab <https://github.com/stain/signposting/discussions>`_.
 
 Codacy
 ``````
@@ -98,16 +98,16 @@ Code Climate provides a **technical debt** percentage that can be retrieved nice
 
 
 .. _Travis-CI: https://travis-ci.org
-.. _.travis.yml: https://github.com/joaomcteixeira/python-project-skeleton/blob/latest/.travis.yml
+.. _.travis.yml: https://github.com/stain/signposting/blob/latest/.travis.yml
 .. _tox: https://tox.readthedocs.io/en/latest/
 .. _Appveyor-CI: https://www.appveyor.com/
-.. _tox.ini: https://github.com/joaomcteixeira/python-project-skeleton/blob/latest/tox.ini
-.. _.appveyor.yml: https://github.com/joaomcteixeira/python-project-skeleton/blob/latest/.appveyor.yml
-.. _.codacy.yaml: https://github.com/joaomcteixeira/python-project-skeleton/blob/latest/.codacy.yaml
-.. _.codeclimate.yml: https://github.com/joaomcteixeira/python-project-skeleton/blob/latest/.codeclimate.yml
+.. _tox.ini: https://github.com/stain/signposting/blob/latest/tox.ini
+.. _.appveyor.yml: https://github.com/stain/signposting/blob/latest/.appveyor.yml
+.. _.codacy.yaml: https://github.com/stain/signposting/blob/latest/.codacy.yaml
+.. _.codeclimate.yml: https://github.com/stain/signposting/blob/latest/.codeclimate.yml
 .. _Codacy: https://app.codacy.com/
 .. _Code Climate: https://codeclimate.com/
 .. _coverage: https://pypi.org/project/coverage/
-.. _.coveragerc: https://github.com/joaomcteixeira/python-project-skeleton/blob/latest/.coveragerc
+.. _.coveragerc: https://github.com/stain/signposting/blob/latest/.coveragerc
 .. _bump2version: https://pypi.org/project/bumpversion/
 .. _versioneer: https://github.com/warner/python-versioneer

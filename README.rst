@@ -2,32 +2,32 @@
 Python Package Skeleton Template
 ================================
 
-.. image:: https://github.com/joaomcteixeira/python-project-skeleton/workflows/Tests/badge.svg?branch=master
-    :target: https://github.com/joaomcteixeira/python-project-skeleton/actions?workflow=Tests
+.. image:: https://github.com/stain/signposting/workflows/Tests/badge.svg?branch=master
+    :target: https://github.com/stain/signposting/actions?workflow=Tests
     :alt: Test Status
 
-.. image:: https://github.com/joaomcteixeira/python-project-skeleton/workflows/Package%20Build/badge.svg?branch=master
-    :target: https://github.com/joaomcteixeira/python-project-skeleton/actions?workflow=Package%20Build
+.. image:: https://github.com/stain/signposting/workflows/Package%20Build/badge.svg?branch=master
+    :target: https://github.com/stain/signposting/actions?workflow=Package%20Build
     :alt: Package Build
 
-.. image:: https://codecov.io/gh/joaomcteixeira/python-project-skeleton/branch/master/graph/badge.svg
-    :target: https://codecov.io/gh/joaomcteixeira/python-project-skeleton
+.. image:: https://codecov.io/gh/stain/signposting/branch/master/graph/badge.svg
+    :target: https://codecov.io/gh/stain/signposting
     :alt: Codecov
 
 .. image:: https://img.shields.io/codacy/grade/ae042ac066554bfab398024b0beea6a5/master?label=Codacy
-    :target: https://app.codacy.com/manual/joaomcteixeira/python-project-skeleton/dashboard
+    :target: https://app.codacy.com/manual/stain/signposting/dashboard
     :alt: Codacy
 
 .. image:: https://api.codeclimate.com/v1/badges/d96cc9a1841a819cd4f5/maintainability
-   :target: https://codeclimate.com/github/joaomcteixeira/python-project-skeleton/maintainability
+   :target: https://codeclimate.com/github/stain/signposting/maintainability
    :alt: Maintainability
 
-.. image:: https://img.shields.io/codeclimate/tech-debt/joaomcteixeira/python-project-skeleton
-    :target: https://codeclimate.com/github/joaomcteixeira/python-project-skeleton
+.. image:: https://img.shields.io/codeclimate/tech-debt/stain/signposting
+    :target: https://codeclimate.com/github/stain/signposting
     :alt: Code Climate technical debt
 
-.. image:: https://img.shields.io/readthedocs/python-project-skeleton/latest?label=Read%20the%20Docs
-    :target: https://python-project-skeleton.readthedocs.io/en/latest/index.html
+.. image:: https://img.shields.io/readthedocs/signposting/latest?label=Read%20the%20Docs
+    :target: https://signposting.readthedocs.io/en/latest/index.html
     :alt: Read the Docs
 
 Summary
@@ -67,7 +67,7 @@ Acknowledgments
 
 I want to acknowledge `ionel`_ discussions about *Packaging a python library*. They are a pillar in my understanding and decisions on this matter, and I really recommend reading his `blog post`_ and references herein.
 
-I configured the CI pipeline to my needs by taking bits and pieces from many places. Kudos to `python-nameless`_ and `cookiecutter-pylibrary`_; two primary sources of information for the *python-project-skeleton* repository, especially in the first versions using Travis and Appveyor. When migrating to GitHub Actions, I fed on the workflows `@JoaoRodrigues <https://python-project-skeleton.readthedocs.io/>`_ assembled for `pdb-tools`_; on the `tox-gh-actions`_ package; and on `structlog`_, which was also a repository I used as a reference to build test latest version here.
+I configured the CI pipeline to my needs by taking bits and pieces from many places. Kudos to `python-nameless`_ and `cookiecutter-pylibrary`_; two primary sources of information for the *signposting* repository, especially in the first versions using Travis and Appveyor. When migrating to GitHub Actions, I fed on the workflows `@JoaoRodrigues <https://signposting.readthedocs.io/>`_ assembled for `pdb-tools`_; on the `tox-gh-actions`_ package; and on `structlog`_, which was also a repository I used as a reference to build test latest version here.
 
 I refer to other important sources of information as comments in the specific files. Thanks, everyone, for keeping discussions out there open.
 
@@ -92,16 +92,16 @@ v0.8.1
 .. _bump2version: https://github.com/c4urself/bump2version
 .. _cookiecutter-pylibrary: https://github.com/ionelmc/cookiecutter-pylibrary
 .. _cookiecutter: https://cookiecutter.readthedocs.io/en/latest/index.html
-.. _discussion: https://github.com/joaomcteixeira/python-project-skeleton/discussions
-.. _documentation: https://python-project-skeleton.readthedocs.io/
+.. _discussion: https://github.com/stain/signposting/discussions
+.. _documentation: https://signposting.readthedocs.io/
 .. _even for scientific software: https://github.com/MolSSI/cookiecutter-cms
 .. _hypothesis: https://hypothesis.readthedocs.io/en/latest/
 .. _ionel: https://github.com/ionelmc
-.. _issue: https://github.com/joaomcteixeira/python-project-skeleton/issues
-.. _latest branch: https://github.com/joaomcteixeira/python-project-skeleton/tree/latest
-.. _master branch: https://github.com/joaomcteixeira/python-project-skeleton/tree/master
+.. _issue: https://github.com/stain/signposting/issues
+.. _latest branch: https://github.com/stain/signposting/tree/latest
+.. _master branch: https://github.com/stain/signposting/tree/master
 .. _pdb-tools: https://github.com/haddocking/pdb-tools
-.. _project's documentation: https://python-project-skeleton.readthedocs.io/en/latest/index.html
+.. _project's documentation: https://signposting.readthedocs.io/en/latest/index.html
 .. _pytest: https://docs.pytest.org/en/stable/
 .. _python-nameless: https://github.com/ionelmc/python-nameless
 .. _structlog: https://github.com/hynek/structlog

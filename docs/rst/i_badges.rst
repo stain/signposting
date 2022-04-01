@@ -5,6 +5,6 @@ Badges point to the current status of the different Continuous Integration tools
 
 Each platform provide their own badges, and you can modify and emulate the badge strategy in the ``README.rst`` file. Yet, you can further tune the badges style by creating your own personalized badge with `Shields.io`_.
 
-You have noticed already that there is no badge for PyPI. That is because "python-project-skeleton" is deployed at ``test.pypi.org``. You will find also at Shields.io how to add the PyPI badge.
+You have noticed already that there is no badge for PyPI. That is because "signposting" is deployed at ``test.pypi.org``. You will find also at Shields.io how to add the PyPI badge.
 
 .. _Shields.io: https://shields.io/
