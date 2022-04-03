@@ -38,17 +38,17 @@ exclude_patterns = [
 if os.getenv('SPELLCHECK'):
     extensions += 'sphinxcontrib.spelling',
     spelling_show_suggestions = True
-    spelling_lang = 'en_US'
+    spelling_lang = 'en_GB'
     # https://sphinxcontrib-spelling.readthedocs.io/en/latest/customize.html
     spelling_word_list_filename = ['../spelling_wordlist.txt']
 
 source_suffix = '.rst'
 master_doc = 'index'
 project = 'Python-Project-Skeleton'
-year = '2020'
-author = 'Joao MC Teixeira'
+year = '2022'
+author = 'Stian Soiland-Reyes'
 copyright = '{0}, {1}'.format(year, author)
-version = release = '0.8.1'
+version = release = '0.0.1'
 
 pygments_style = 'trac'
 templates_path = ['.']
