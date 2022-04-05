@@ -15,21 +15,18 @@
 Resolve a URI (possibly a PID) to find FAIR Signposting
 """
 
-from urllib.request import Request, urlopen
-
+import urllib.request
 from . import linkheader
 
 def find_landing_page(url):
-    req = Request(url, method="HEAD")
+    req = urllib.request.Request(url, method="HEAD")
     link_headers = [] # Fall-back: No links
-    with urlopen(req) as res:
-        if (200 <= res.status < 300):
+    with urllib.request.urlopen(req) as res:
+        if (200 <= res.getcode() < 300):
             # 200 OK or some other 2xx code
             link_headers = res.headers.get_all("Link")
-            # TODO: Also check headers during redirection?
     
     # TODO: Also check HTML for <link>
     # TODO: Also check for linkset
     return linkheader.find_signposting(link_headers, res.geturl())
         
-    
