@@ -30,6 +30,6 @@ def find_landing_page(url):
     
     # TODO: Also check HTML for <link>
     # TODO: Also check for linkset
-    return linkheader.find_signposting(link_headers, res.)
+    return linkheader.find_signposting(link_headers, res.geturl())
         
     
