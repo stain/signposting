@@ -24,7 +24,7 @@ SIGNPOSTING=set("author cite-as describedby type license collection".split(" "))
 def _filter_links_by_rel(links, rel=None, rels=None):
     if rels is None:
         rels = set((rel,))
-    return [l for l in links if rels & SIGNPOSTING]
+    return [l for l in links if l.rel & rels]
 
 class Signposting:
     def __init__(self, parsedLinks: ParsedLink)
