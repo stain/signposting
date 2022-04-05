@@ -27,14 +27,15 @@ from urllib.parse import urljoin
 SIGNPOSTING=set("author collection describedby describes item cite-as type license linkset".split(" "))
 
 def _filter_links_by_rel(parsedLinks:ParsedLinks, *rels:str) -> List[Link]:
-    if rels:
-        # Ensure all filters are in SIGNPOSTING and lower case
-        filterRels = set(r.lower() for r in rels if r.lower() in SIGNPOSTING)
+    if rels:        
+        # Ensure all filters are in lower case
+        filterRels = set(r.lower() for r in rels)
+        unknown = filterRels - SIGNPOSTING
+        if unknown:
+            raise ValueError("Unknown FAIR Signposting relations: %s" % unknown)
     else:
         # Fallback - all valid signposting relations
         filterRels = SIGNPOSTING
-    if not (filterRels & SIGNPOSTING):
-        raise ValueError("No FAIR Signposting relations found: %s" % rels)
     return [l for l in parsedLinks.links if l.rel & filterRels]
 
 def _optional_link(parsedLinks:ParsedLinks, rel:str) -> Optional[Link]:

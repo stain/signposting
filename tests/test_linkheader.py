@@ -34,8 +34,8 @@ class TestFilterLinks(unittest.TestCase):
 
     def test_invalid_rel_fails(self):
         with self.assertRaises(ValueError):
-            LH._filter_links_by_rel(self.parsedLinks, "invalid")
-
+            LH._filter_links_by_rel(self.parsedLinks, "cite-as", "invalid")
+    
 class TestOptionalLink(unittest.TestCase):
     parsedLinks = parse_link_header("""
     <http://example.com/alternate>;rel=alternate,
