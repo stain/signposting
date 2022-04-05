@@ -28,9 +28,12 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip setuptools wheel
-        pip install coverage[toml] virtualenv tox tox-gh-actions
+        pip install coverage[toml] virtualenv tox tox-gh-actions mypy
         # if you use tox-conda you can also add
         # tox-conda to the above list of dependencies
+
+    - name: Analyse static typing with mypy
+      run: mypy src tests
 
     - name: Test with tox
       run: tox
