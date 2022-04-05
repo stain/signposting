@@ -35,11 +35,6 @@ jobs:
     - name: Analyse static typing with mypy
       run: mypy src tests
 
-    - name: Test with tox
-      run: tox
-      #env:
-      #  PLATFORM: ${{ matrix.platform }}
-
     # from https://github.com/codecov/codecov-action
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1
