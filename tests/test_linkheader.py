@@ -44,9 +44,9 @@ class TestOptionalLink(unittest.TestCase):
         """)
 
     def test_optional_link(self):    
-        self.assertEqual(LH._optional_link(self.parsedLinks, "license"),
+        self.assertEqual(LH._optional_link(self.parsedLinks, "license").target,
             "http://example.com/license")
-        self.assertEqual(LH._optional_link(self.parsedLinks, "LICENSE"),
+        self.assertEqual(LH._optional_link(self.parsedLinks, "LICENSE").target,
             "http://example.com/license")
         self.assertIsNone(LH._optional_link(self.parsedLinks, "cite-as"))                 
 
