@@ -6,7 +6,7 @@ source =
 [run]
 branch = true
 source =
-    sampleproject
+    signposting
 parallel = true
 
 [report]
