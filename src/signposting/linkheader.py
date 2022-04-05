@@ -20,16 +20,29 @@ import httplink
 from httplink import ParsedLinks, Link, parse_link_header
 from urllib.parse import urljoin
 
-SIGNPOSTING=set("author cite-as describedby type license collect::wqion".split(" "))
+# Only relations listed below will be selected
+# Sources:
+#   https://signposting.org/conventions/
+#   https://signposting.org/FAIR/
+SIGNPOSTING=set("author collection describedby describes item cite-as type license linkset".split(" "))
 
-def _filter_links_by_rel(parsedLinks:ParsedLinks, *rels:str) -> List[Link]:    
-    return [l for l in parsedLinks.links if l.rel & set(rels)]
+def _filter_links_by_rel(parsedLinks:ParsedLinks, *rels:str) -> List[Link]:
+    if rels:
+        # Ensure all filters are in SIGNPOSTING and lower case
+        filterRels = set(r.lower() for r in rels if r.lower() in SIGNPOSTING)
+    else:
+        # Fallback - all valid signposting relations
+        filterRels = SIGNPOSTING
+    if not (filterRels & SIGNPOSTING):
+        raise ValueError("No FAIR Signposting relations found: %s" % rels)
+    return [l for l in parsedLinks.links if l.rel & filterRels]
 
 def _optional_link(parsedLinks:ParsedLinks, rel:str) -> Optional[Link]:
+    if not rel.lower() in SIGNPOSTING:
+        raise ValueError("Unknown FAIR Signposting relation: %s" % rel)
     if rel in parsedLinks:
         return parsedLinks[rel]
     return None
-
 
 
 class Signposting:    
@@ -54,21 +67,22 @@ class Signposting:
         self.license = _optional_link(parsedLinks, "license")
         self.collection = _optional_link(parsedLinks, "collection")
 
-def _absolute_attribute(k:str,v:str, baseurl:str) -> Tuple[str,str]:
+def _absolute_attribute(k:str, v:str, baseurl:str) -> Tuple[str,str]:
     if k.lower() == "href":
         return k, urljoin(baseurl, v)
     return k, v
 
 def find_signposting(headers:List[str], baseurl:str=None) -> Signposting:
-    parsed = parse_link_header(",".join(headers))
-    signposting: List[Link] = []    
-    for l in _filter_links_by_rel(parsed, *SIGNPOSTING):
+    parsed = parse_link_header(", ".join(headers))
+    signposting: List[Link] = []
+    # Ignore non-Signposting relations like "stylesheet"
+    for l in _filter_links_by_rel(parsed):
         if baseurl is not None:
             # Make URLs absolute by modifying Link object in-place
             target = urljoin(baseurl, l.target)
             attributes = [_absolute_attribute(k,v, baseurl) for k,v in l.attributes]            
             link = Link(target, attributes)
         else:
-            link = l
+            link = l # unchanged
         signposting.append(link)
     return Signposting(ParsedLinks(signposting))
