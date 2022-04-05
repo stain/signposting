@@ -22,18 +22,17 @@ from urllib.parse import urljoin
 
 SIGNPOSTING=set("author cite-as describedby type license collect::wqion".split(" "))
 
-def _filter_links_by_rel(parsedLinks:ParsedLinks, *rels: Collection):
-    if not isinstance(rels, Set):
-        rels = set(rels)
-    return [l for l in parsedLinks.links if l.rel & rels]
+def _filter_links_by_rel(parsedLinks:ParsedLinks, *rels:str) -> List[Link]:    
+    return [l for l in parsedLinks.links if l.rel & set(rels)]
 
-def _optional_link(parsedLinks:ParsedLinks, rel:str):
+def _optional_link(parsedLinks:ParsedLinks, rel:str) -> Optional[Link]:
     if rel in parsedLinks:
         return parsedLinks[rel]
     return None
 
-class Signposting:
-    
+
+
+class Signposting:    
     author: List[Link]
     describedBy: List[Link]
     type: List[Link]
@@ -55,14 +54,21 @@ class Signposting:
         self.license = _optional_link(parsedLinks, "license")
         self.collection = _optional_link(parsedLinks, "collection")
 
+def _absolute_attribute(k:str,v:str, baseurl:str) -> Tuple[str,str]:
+    if k.lower() == "href":
+        return k, urljoin(baseurl, v)
+    return k, v
+
 def find_signposting(headers:List[str], baseurl:str=None) -> Signposting:
     parsed = parse_link_header(",".join(headers))
-    signposting = []    
+    signposting: List[Link] = []    
     for l in _filter_links_by_rel(parsed, *SIGNPOSTING):
-        if baseurl:
+        if baseurl is not None:
             # Make URLs absolute by modifying Link object in-place
-            l.target = urllib.parse.urljoin(baseurl, l.target)
-            if href in l:
-                l["href"] = urllib.parse.urljoin(baseurl, l["href"])        
-        signposting.add(l)
-    return Signposting(ParsedLink(signposting))
+            target = urljoin(baseurl, l.target)
+            attributes = [_absolute_attribute(k,v, baseurl) for k,v in l.attributes]            
+            link = Link(target, attributes)
+        else:
+            link = l
+        signposting.append(link)
+    return Signposting(ParsedLinks(signposting))

@@ -23,8 +23,7 @@ class TestFilterLinks(unittest.TestCase):
 
 class TestSignposting(unittest.TestCase):
 
-
-    parsedLinks = parse_link_header("""
+    signposting = parse_link_header("""
     <http://example.com/author1>;rel=author,
     <http://example.com/author2>;rel=author,
     <http://example.com/alternate>;rel=alternate;type="appliation/pdf",
@@ -37,8 +36,12 @@ class TestSignposting(unittest.TestCase):
     <http://example.com/cite-as>;rel=cite-as
         """)
 
-    def test_constructor(self):
-        s = LH.Signposting(self.parsedLinks)
+    noSignposting = parse_link_header("""
+    <http://example.com/alternate>;rel=alternate;type="appliation/pdf"
+        """)
+
+    def test_signposting(self):
+        s = LH.Signposting(self.signposting)
         self.assertEqual(["http://example.com/author1", "http://example.com/author2"], 
             [a.target for a in s.author])
         self.assertEqual(["http://example.com/metadata1"], 
@@ -51,3 +54,14 @@ class TestSignposting(unittest.TestCase):
             [i.target for i in s.item])
         self.assertIsNone(s.collection)
 
+    def test_nosignposting(self):
+        s = LH.Signposting(self.noSignposting)        
+        self.assertEqual([], s.author)
+        self.assertEqual([], s.describedBy)
+        self.assertEqual([], s.type)
+        self.assertEqual([], s.item)
+        self.assertIsNone(s.license)
+        self.assertIsNone(s.citeAs)
+        self.assertIsNone(s.collection)
+
+        
