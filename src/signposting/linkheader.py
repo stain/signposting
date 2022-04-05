@@ -15,37 +15,50 @@
 Parse HTTP headers to find Signposting links
 """
 
-from typing import Dict, List, Set, Tuple
+from typing import Dict, List, Set, Tuple, Optional, Collection, Set
 import httplink
 from httplink import ParsedLinks, Link, parse_link_header
 from urllib.parse import urljoin
 
 SIGNPOSTING=set("author cite-as describedby type license collect::wqion".split(" "))
 
-def _filter_links_by_rel(links, rel=None, rels=None):
-    if (rel is None and rels is None) or (rel and rels):
-        raise TypeError("Either rel or rels argument must be given")    
-    if rels is None:
-        rels = set((rel,))
-    return [l for l in links if l.rel & rels]
+def _filter_links_by_rel(parsedLinks:ParsedLinks, *rels: Collection):
+    if not isinstance(rels, Set):
+        rels = set(rels)
+    return [l for l in parsedLinks.links if l.rel & rels]
+
+def _optional_link(parsedLinks:ParsedLinks, rel:str):
+    if rel in parsedLinks:
+        return parsedLinks[rel]
+    return None
 
 class Signposting:
-    def __init__(self, parsedLinks: ParsedLinks):
+    
+    author: List[Link]
+    describedBy: List[Link]
+    type: List[Link]
+    item: List[Link]
+    linkset: List[Link]
+    citeAs: Optional[Link]
+    license: Optional[Link]
+    collection: Optional[Link]
+
+    def __init__(self, parsedLinks:ParsedLinks):
         # According to FAIR Signposting
         # <https://www.signposting.org/FAIR/> version 20220225
-        self.author = _filter_links_by_rel(parsedLinks.links, "author")
-        self.citeAs = "cite-as" in parsedLinks and parsedLinks["cite-as"]
-        self.describedBy = _filter_links_by_rel(parsedLinks.links, "describedby")
-        self.type = _filter_links_by_rel(parsedLinks.links, "type")
-        self.license = "license" in parsedLinks and parsedLinks["license"]
-        self.item = _filter_links_by_rel(parsedLinks.links, "item")
-        self.collection = "collection" in parsedLinks and parsedLinks["collection"]
-        self.linkset =  _filter_links_by_rel(parsedLinks.links, "linkset")
+        self.author = _filter_links_by_rel(parsedLinks, "author")
+        self.describedBy = _filter_links_by_rel(parsedLinks, "describedby")
+        self.type = _filter_links_by_rel(parsedLinks, "type")
+        self.item = _filter_links_by_rel(parsedLinks, "item")
+        self.linkset =  _filter_links_by_rel(parsedLinks, "linkset")
+        self.citeAs = _optional_link(parsedLinks, "cite-as")
+        self.license = _optional_link(parsedLinks, "license")
+        self.collection = _optional_link(parsedLinks, "collection")
 
-def find_signposting(headers: List[str], baseurl:str=None) -> Signposting:
+def find_signposting(headers:List[str], baseurl:str=None) -> Signposting:
     parsed = parse_link_header(",".join(headers))
     signposting = []    
-    for l in _filter_links_by_rel(parsed, rels=SIGNPOSTING):
+    for l in _filter_links_by_rel(parsed, *SIGNPOSTING):
         if baseurl:
             # Make URLs absolute by modifying Link object in-place
             l.target = urllib.parse.urljoin(baseurl, l.target)
