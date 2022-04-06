@@ -1,5 +1,5 @@
-sampleproject
-=============
+signposting
+===========
 
 .. testsetup::
 

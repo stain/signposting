@@ -56,7 +56,13 @@ class Signposting:
     .. _FAIR: https://signposting.org/FAIR/
     """
 
-    """Resource URL this is the signposting for, e.g. a HTML landing page"""
+    """Resource URL this is the signposting for, e.g. a HTML landing page.
+    
+    Note that individual links may override the `context`_ using the ``Link["anchor"]`` attribute.
+
+    .. _context: https://datatracker.ietf.org/doc/html/rfc8288#section-3.2
+
+    """
     context_url: str
 
     """Author(s) of the resource (and presuambly it items)"""
@@ -96,7 +102,7 @@ class Signposting:
 
     """Optional license of this resource (and presumably its items)"""
     license: Optional[Link]
-    
+
     """Optional collection this resource is part of"""
     collection: Optional[Link]
 
