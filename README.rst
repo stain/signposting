@@ -1,6 +1,6 @@
-================================
-Python Package Skeleton Template
-================================
+===============================
+Signposting link parser library
+===============================
 
 .. image:: https://github.com/stain/signposting/workflows/Tests/badge.svg?branch=main
     :target: https://github.com/stain/signposting/actions?workflow=Tests
@@ -14,24 +14,13 @@ Python Package Skeleton Template
     :target: https://codecov.io/gh/stain/signposting
     :alt: Codecov
 
-.. image:: https://img.shields.io/codacy/grade/ae042ac066554bfab398024b0beea6a5/main?label=Codacy
-    :target: https://app.codacy.com/manual/stain/signposting/dashboard
-    :alt: Codacy
-
-.. image:: https://api.codeclimate.com/v1/badges/d96cc9a1841a819cd4f5/maintainability
-   :target: https://codeclimate.com/github/stain/signposting/maintainability
-   :alt: Maintainability
-
-.. image:: https://img.shields.io/codeclimate/tech-debt/stain/signposting
-    :target: https://codeclimate.com/github/stain/signposting
-    :alt: Code Climate technical debt
-
 .. image:: https://img.shields.io/readthedocs/signposting/latest?label=Read%20the%20Docs
     :target: https://signposting.readthedocs.io/en/latest/index.html
     :alt: Read the Docs
 
 Summary
 =======
+
 
 
 
