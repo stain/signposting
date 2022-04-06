@@ -18,7 +18,11 @@ Resolve a URI (possibly a PID) to find FAIR Signposting
 import urllib.request
 from . import linkheader
 
-def find_landing_page(url):
+def find_signposting_http(url:str) -> linkheader.Signposting:
+    """Find signposting from HTTP headers.
+
+    Return a parsed `Signposting` object of the discovered signposting.
+    """
     req = urllib.request.Request(url, method="HEAD")
     link_headers = [] # Fall-back: No links
     with urllib.request.urlopen(req) as res:

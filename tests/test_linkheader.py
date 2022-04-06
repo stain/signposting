@@ -92,7 +92,7 @@ class TestSignposting(unittest.TestCase):
         """)
 
     def test_signposting(self):
-        s = LH.Signposting(self.signposting)
+        s = LH.Signposting(self.signposting, "http://example.com/")
 
         self.assertEqual([a.target for a in s.author],
             ["http://example.com/author1", "http://example.com/author2"])
@@ -111,7 +111,7 @@ class TestSignposting(unittest.TestCase):
         self.assertIsNone(s.collection)
 
     def test_nosignposting(self):
-        s = LH.Signposting(self.noSignposting)        
+        s = LH.Signposting(self.noSignposting, "http://example.com/")        
         self.assertEqual([], s.author)
         self.assertEqual([], s.describedBy)
         self.assertEqual([], s.type)

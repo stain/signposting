@@ -28,6 +28,13 @@ from urllib.parse import urljoin
 SIGNPOSTING=set("author collection describedby describes item cite-as type license linkset".split(" "))
 
 def _filter_links_by_rel(parsedLinks:ParsedLinks, *rels:str) -> List[Link]:
+    """Filter links to select from a set of relations.
+
+    The relations must be valid Signposting relation listed in `SIGNPOSTING`.
+
+    Return a list of ``Link``s which ``rel`` match the given ``rels``.
+    
+    """
     if rels:        
         # Ensure all filters are in lower case
         filterRels = set(r.lower() for r in rels)
@@ -40,6 +47,15 @@ def _filter_links_by_rel(parsedLinks:ParsedLinks, *rels:str) -> List[Link]:
     return [l for l in parsedLinks.links if l.rel & filterRels]
 
 def _optional_link(parsedLinks:ParsedLinks, rel:str) -> Optional[Link]:
+    """Look up a single link relation.
+
+    The relation must be a valid Signposting relation listed in `SIGNPOSTING`.
+
+    It is undefined which relation is returned if multiple links of the same
+    relation are found.
+
+    Return the ``Link`` or ``None`` if not found.
+    """
     if not rel.lower() in SIGNPOSTING:
         raise ValueError("Unknown FAIR Signposting relation: %s" % rel)
     if rel in parsedLinks:
@@ -63,7 +79,7 @@ class Signposting:
     .. _context: https://datatracker.ietf.org/doc/html/rfc8288#section-3.2
 
     """
-    context_url: str
+    context_url: Optional[str]
 
     """Author(s) of the resource (and presuambly it items)"""
     author: List[Link]
@@ -106,7 +122,10 @@ class Signposting:
     """Optional collection this resource is part of"""
     collection: Optional[Link]
 
-    def __init__(self, parsedLinks:ParsedLinks, context_url:str):
+    def __init__(self, parsedLinks:ParsedLinks, context_url:str=None):
+        """Initialize Signposting object for a given `ParsedLinks` 
+        as discovered from the (optional) `context_url` base URL.
+        """
         # According to FAIR Signposting
         # <https://www.signposting.org/FAIR/> version 20220225
         self.context_url = context_url
@@ -120,7 +139,11 @@ class Signposting:
         self.collection = _optional_link(parsedLinks, "collection")
 
 def _absolute_attribute(k:str, v:str, baseurl:str) -> Tuple[str,str]:
-    """Ensure link attributes 
+    """Ensure link attribute value uses absolute URI, resolving from the baseurl.
+
+    Currently this will mean the `context`_ attribute ``anchor`` will be rewritten.
+
+    .. _context: https://datatracker.ietf.org/doc/html/rfc8288#section-3.2
     """
     if k.lower() == "anchor":
         return k, urljoin(baseurl, v)
