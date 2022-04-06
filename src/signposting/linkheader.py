@@ -24,6 +24,7 @@ from urllib.parse import urljoin
 # Sources:
 #   https://signposting.org/conventions/
 #   https://signposting.org/FAIR/
+"""Valid Signposting link relations"""
 SIGNPOSTING=set("author collection describedby describes item cite-as type license linkset".split(" "))
 
 def _filter_links_by_rel(parsedLinks:ParsedLinks, *rels:str) -> List[Link]:
@@ -46,19 +47,63 @@ def _optional_link(parsedLinks:ParsedLinks, rel:str) -> Optional[Link]:
     return None
 
 
-class Signposting:    
+class Signposting:
+    """Signposting links for a given resource.
+    
+    Links are discovered according to `FAIR`_ `signposting`_ conventions.
+
+    .. _signposting: https://signposting.org/conventions/
+    .. _FAIR: https://signposting.org/FAIR/
+    """
+
+    """Resource URL this is the signposting for, e.g. a HTML landing page"""
+    context_url: str
+
+    """Author(s) of the resource (and presuambly it items)"""
     author: List[Link]
+
+    """Metadata resources about the resource and its items, typically in a Linked Data format. 
+    
+    Resources may require content negotiation, check ``Link["type"]`` attribute
+    (if present) for content type, e.g. ``text/turtle``.
+    """
     describedBy: List[Link]
+
+    """Semantic types of the resource, e.g. from schema.org"""
     type: List[Link]
+
+    """Items contained by this resource, e.g. downloads.
+    
+    The content type of the download may be available as ``Link["type"]``` attribute.
+    """
     item: List[Link]
+
+    """Linkset resuorces with further signposting.
+
+    A `linkset`_ is a JSON or text serialization of Link headers available as a
+    separate resource, and may be used to externalize large collection of links, e.g.
+    thousands of "item" relations.
+
+    Resources may require content negotiation, check ``Link["type"]`` attribute
+    (if present)  for content types ``application/linkset`` or ``application/linkset+json``.
+
+    .. _linkset: https://datatracker.ietf.org/doc/draft-ietf-httpapi-linkset/
+    """
     linkset: List[Link]
+
+    """Persistent Identifier (PID) for this resource, preferred for citation and permalinks"""
     citeAs: Optional[Link]
+
+    """Optional license of this resource (and presumably its items)"""
     license: Optional[Link]
+    
+    """Optional collection this resource is part of"""
     collection: Optional[Link]
 
-    def __init__(self, parsedLinks:ParsedLinks):
+    def __init__(self, parsedLinks:ParsedLinks, context_url:str):
         # According to FAIR Signposting
         # <https://www.signposting.org/FAIR/> version 20220225
+        self.context_url = context_url
         self.author = _filter_links_by_rel(parsedLinks, "author")
         self.describedBy = _filter_links_by_rel(parsedLinks, "describedby")
         self.type = _filter_links_by_rel(parsedLinks, "type")
@@ -69,11 +114,26 @@ class Signposting:
         self.collection = _optional_link(parsedLinks, "collection")
 
 def _absolute_attribute(k:str, v:str, baseurl:str) -> Tuple[str,str]:
-    if k.lower() == "href":
+    """Ensure link attributes 
+    """
+    if k.lower() == "anchor":
         return k, urljoin(baseurl, v)
     return k, v
 
 def find_signposting(headers:List[str], baseurl:str=None) -> Signposting:
+    """Find signposting among HTTP Link headers. 
+
+    Optionally make the links absolute according to the base URL.
+
+    The link headers should be valid according to `RFC8288`_, excluding the "Link:" prefix.
+    
+    Links are discovered according to defined `FAIR`_ `signposting`_ relations.
+
+    .. _signposting: https://signposting.org/conventions/
+    .. _FAIR: https://signposting.org/FAIR/
+    .. _rfc8288: https://doi.org/10.17487/RFC8288
+    
+    """
     parsed = parse_link_header(", ".join(headers))
     signposting: List[Link] = []
     # Ignore non-Signposting relations like "stylesheet"
@@ -86,4 +146,4 @@ def find_signposting(headers:List[str], baseurl:str=None) -> Signposting:
         else:
             link = l # unchanged
         signposting.append(link)
-    return Signposting(ParsedLinks(signposting))
+    return Signposting(ParsedLinks(signposting), baseurl)

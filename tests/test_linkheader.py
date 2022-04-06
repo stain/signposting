@@ -56,21 +56,21 @@ class TestOptionalLink(unittest.TestCase):
 
 
 class TestAbsoluteAttribute(unittest.TestCase):
-    def test_HREF_upper_relative(self):
-        self.assertEqual(("HREF", "http://example.org/nested/example"), 
-            LH._absolute_attribute("HREF", "example", "http://example.org/nested/test"))
-    def test_href_relative(self):
-        self.assertEqual(("href", "http://example.org/nested/example"), 
-            LH._absolute_attribute("href", "example", "http://example.org/nested/test"))
-    def test_href_relative_root(self):
-        self.assertEqual(("href", "http://example.org/example"), 
-            LH._absolute_attribute("href", "/example", "http://example.org/nested/test"))
-    def test_href_absolute(self):            
-        self.assertEqual(("href", "http://example.com/already-absolute"), 
-            LH._absolute_attribute("href", "http://example.com/already-absolute", "http://example.org/nested/test"))
-    def test_not_href(self):            
-        self.assertEqual(("not-href", "/untouched"), 
-            LH._absolute_attribute("not-href", "/untouched", "http://example.org/nested/test"))        
+    def test_ANCHOR_upper_relative(self):
+        self.assertEqual(("ANCHOR", "http://example.org/nested/example"), 
+            LH._absolute_attribute("ANCHOR", "example", "http://example.org/nested/test"))
+    def test_anchor_relative(self):
+        self.assertEqual(("anchor", "http://example.org/nested/example"), 
+            LH._absolute_attribute("anchor", "example", "http://example.org/nested/test"))
+    def test_anchor_relative_root(self):
+        self.assertEqual(("anchor", "http://example.org/example"), 
+            LH._absolute_attribute("anchor", "/example", "http://example.org/nested/test"))
+    def test_anchor_absolute(self):            
+        self.assertEqual(("anchor", "http://example.com/already-absolute"), 
+            LH._absolute_attribute("anchor", "http://example.com/already-absolute", "http://example.org/nested/test"))
+    def test_not_anchor(self):            
+        self.assertEqual(("not-anchor", "/untouched"), 
+            LH._absolute_attribute("not-anchor", "/untouched", "http://example.org/nested/test"))        
 
 class TestSignposting(unittest.TestCase):
 
