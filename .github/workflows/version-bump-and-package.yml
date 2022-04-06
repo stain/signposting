@@ -23,7 +23,9 @@ jobs:
         # https://docs.github.com/en/actions/reference/authentication-in-a-workflow
         # I had some problems, they could be my fault, but yet, I felt using a
         # dedicated token would be better and suffice
-        token: ${{ secrets.AC_GITHUB_TOKEN }}
+        ## token: ${{ secrets.AC_GITHUB_TOKEN }}
+        # ..we'll try anyway!
+        token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Set up Python
       uses: actions/setup-python@v2
