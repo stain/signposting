@@ -15,6 +15,8 @@ class TestResolverA2A(unittest.TestCase):
         self.assertEqual(s.describedBy[0].target, "https://s11.no/2022/a2a-fair-metrics/01-http-describedby-only/index.ttl")
         self.assertFalse("type" in s.describedBy[0])
 
+    ## TODO: test_02 with HTML parsing
+
     def test_03_citeas(self):
         s = find_landing_page("https://w3id.org/a2a-fair-metrics/03-http-citeas-only/")
         self.assertEqual(s.citeAs.target, 
@@ -105,5 +107,28 @@ class TestResolverA2A(unittest.TestCase):
         self.assertEqual(s.linkset[0]["type"], "application/linkset+json")    
         self.assertEqual(s.linkset[1].target, "https://s11.no/2022/a2a-fair-metrics/14-http-describedby-citeas-linkset-json-txt-conneg/linkset")
         self.assertEqual(s.linkset[1]["type"], "application/linkset")
+
+    def test_15_describedby_no_conneg(self):
+        s = find_landing_page("https://w3id.org/a2a-fair-metrics/15-http-describedby-no-conneg/")
+        self.assertEqual(s.describedBy[0].target, "https://s11.no/2022/a2a-fair-metrics/15-http-describedby-no-conneg/metadata.ttl")
+        self.assertEqual(s.describedBy[1].target, "https://s11.no/2022/a2a-fair-metrics/15-http-describedby-no-conneg/metadata.jsonld")
+        self.assertEqual(s.describedBy[0]["type"], "text/turtle")
+        self.assertEqual(s.describedBy[1]["type"], "application/ld+json")
+
+    def test_16_describedby_nconneg(self):
+        s = find_landing_page("https://w3id.org/a2a-fair-metrics/16-http-describedby-conneg/")
+        self.assertEqual(s.describedBy[0].target, "https://s11.no/2022/a2a-fair-metrics/16-http-describedby-conneg/metadata")
+        self.assertEqual(s.describedBy[1].target, "https://s11.no/2022/a2a-fair-metrics/16-http-describedby-conneg/metadata")
+        self.assertEqual(s.describedBy[0]["type"], "text/turtle")
+        self.assertEqual(s.describedBy[1]["type"], "application/ld+json")
+
+    def test_17_multiple_rels(self):
+        s = find_landing_page("https://w3id.org/a2a-fair-metrics/17-http-citeas-multiple-rels/")
+        self.assertEqual(s.citeAs.target, 
+            "https://w3id.org/a2a-fair-metrics/17-http-citeas-multiple-rels/")
+        self.assertEqual(s.citeAs.rel, 
+            # TODO: Do we require the remaining rels to be preserved?
+            set(("canonical", "cite-as", "http://schema.org/identifier")))
+        
 
     # TODO: test 15-23 as well
