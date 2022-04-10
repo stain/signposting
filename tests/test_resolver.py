@@ -7,6 +7,7 @@ from signposting.resolver import find_signposting_http
 import urllib.error
 
 import os
+import warnings
 
 @unittest.skipIf("CI" in os.environ, "Integration tests requires network access")
 class TestResolverA2A(unittest.TestCase):
@@ -195,6 +196,43 @@ class TestResolverA2A(unittest.TestCase):
             "https://s11.no/2022/a2a-fair-metrics/23-http-citeas-describedby-item-license-type-author/test-apple-data.csv")
         self.assertEqual(s.item[0]["type"],                     
             "text/csv")
+
+    def test_24_citeas_no_content(self):
+        # This will give 204 No Content and has no content on GET
+        # but still contain signposting.
+        s = find_signposting_http("https://w3id.org/a2a-fair-metrics/24-citeas-204-no-content/")
+        self.assertEqual(s.citeAs.target, 
+            "https://w3id.org/a2a-fair-metrics/24-citeas-204-no-content/")
+
+    def test_25_citeas_gone(self):
+        # This will throw 410 Gone but still contain thumbstone headers
+        
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            s = find_signposting_http("https://w3id.org/a2a-fair-metrics/25-citeas-author-410-gone/")
+            assert len(w) == 1
+            assert issubclass(w[0].category, UserWarning)
+            assert "410 Gone" in str(w[0].message)
+
+        self.assertEqual(s.citeAs.target, 
+            "https://w3id.org/a2a-fair-metrics/25-citeas-author-410-gone/")
+        self.assertEqual(1, len(s.author))
+        self.assertEqual(s.author[0].target, 
+            "https://orcid.org/0000-0002-1825-0097")
+
+    def test_26_citeas_non_authorative(self):
+        # This will give 26 Non-Authorative and may be rewritten by a proxy
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            s = find_signposting_http("https://w3id.org/a2a-fair-metrics/26-citeas-203-non-authorative/")
+            assert len(w) == 1
+            assert issubclass(w[0].category, UserWarning)
+            assert "203 Non-Authoritative Information" in str(w[0].message)
+        self.assertEqual(s.citeAs.target, 
+            # Deliberately "rewritten" PID
+            "https://example.com/rewritten/w3id.org/a2a-fair-metrics/26-citeas-203-non-authorative/")
+
+    
 
 
 
