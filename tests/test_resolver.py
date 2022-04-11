@@ -200,22 +200,22 @@ class TestResolverA2A(unittest.TestCase):
     def test_24_citeas_no_content(self):
         # This will give 204 No Content and has no content on GET
         # but still contain signposting.
-        s = find_signposting_http("https://w3id.org/a2a-fair-metrics/24-citeas-204-no-content/")
+        s = find_signposting_http("https://w3id.org/a2a-fair-metrics/24-http-citeas-204-no-content/")
         self.assertEqual(s.citeAs.target, 
-            "https://w3id.org/a2a-fair-metrics/24-citeas-204-no-content/")
+            "https://w3id.org/a2a-fair-metrics/24-http-citeas-204-no-content/")
 
     def test_25_citeas_gone(self):
         # This will throw 410 Gone but still contain thumbstone headers
         
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter("always")
-            s = find_signposting_http("https://w3id.org/a2a-fair-metrics/25-citeas-author-410-gone/")
+            s = find_signposting_http("https://w3id.org/a2a-fair-metrics/25-http-citeas-author-410-gone/")
             assert len(w) == 1
             assert issubclass(w[0].category, UserWarning)
             assert "410 Gone" in str(w[0].message)
 
         self.assertEqual(s.citeAs.target, 
-            "https://w3id.org/a2a-fair-metrics/25-citeas-author-410-gone/")
+            "https://w3id.org/a2a-fair-metrics/25-http-citeas-author-410-gone/")
         self.assertEqual(1, len(s.author))
         self.assertEqual(s.author[0].target, 
             "https://orcid.org/0000-0002-1825-0097")
@@ -224,11 +224,29 @@ class TestResolverA2A(unittest.TestCase):
         # This will give 26 Non-Authorative and may be rewritten by a proxy
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter("always")
-            s = find_signposting_http("https://w3id.org/a2a-fair-metrics/26-citeas-203-non-authorative/")
+            s = find_signposting_http("https://w3id.org/a2a-fair-metrics/26-http-citeas-203-non-authorative/")
             assert len(w) == 1
             assert issubclass(w[0].category, UserWarning)
             assert "203 Non-Authoritative Information" in str(w[0].message)
         self.assertEqual(s.citeAs.target, 
             # Deliberately "rewritten" PID
-            "https://example.com/rewritten/w3id.org/a2a-fair-metrics/26-citeas-203-non-authorative/")
+            "https://example.com/rewritten/w3id.org/a2a-fair-metrics/26-http-citeas-203-non-authorative/")
 
+    def test_27_describedby_citeas_linkset(self):
+        s = find_signposting_http("https://w3id.org/a2a-fair-metrics/27-http-linkset-json-only/")
+        self.assertIsNone(s.citeAs)
+        self.assertEqual(0, len(s.describedBy))
+        self.assertEqual(1, len(s.linkset))
+        self.assertEqual(s.linkset[0].target, "https://s11.no/2022/a2a-fair-metrics/27-http-linkset-json-only/linkset.json")
+        self.assertEqual(s.linkset[0]["type"], "application/linkset+json")
+        # TODO: Check content of linkset
+
+    def test_28_describedby_citeas_linkset_txt(self):
+        
+        s = find_signposting_http("https://w3id.org/a2a-fair-metrics/28-http-linkset-txt-only/")
+        self.assertIsNone(s.citeAs)
+        self.assertEqual(0, len(s.describedBy))
+        self.assertEqual(1, len(s.linkset))
+        self.assertEqual(s.linkset[0].target, "https://s11.no/2022/a2a-fair-metrics/28-http-linkset-txt-only/linkset.txt")
+        self.assertEqual(s.linkset[0]["type"], "application/linkset")
+        # TODO: Check content of linkset
