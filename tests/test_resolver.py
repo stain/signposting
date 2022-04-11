@@ -232,9 +232,3 @@ class TestResolverA2A(unittest.TestCase):
             # Deliberately "rewritten" PID
             "https://example.com/rewritten/w3id.org/a2a-fair-metrics/26-citeas-203-non-authorative/")
 
-    
-
-
-
-
-    # TODO: test 15-23 as well

@@ -43,9 +43,9 @@ def find_signposting_http(url:str) -> linkheader.Signposting:
         elif (res.getcode() == 410):
             warnings.warn("410 Gone <%s> - still processing signposting for thumbstone page" % res.geturl())
             # Note: Other 4xx error codes would throw exceptions by _HTTPErrorHandler defaults
-        link_headers = res.headers.get_all("Link")
+        link_headers = res.headers.get_all("Link") or []
 
     # TODO: Also check HTML for <link>
     # TODO: Also check for linkset
     return linkheader.find_signposting(link_headers, res.geturl())
-        
+       

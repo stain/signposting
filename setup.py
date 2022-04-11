@@ -86,10 +86,9 @@ setup(
         #   'setuptools_scm>=3.3.1',
         ],
     entry_points={
-        #'console_scripts': [
-        #    'samplecli1= signposting.cli_int1:main',
-        #    ]
-        #
+        'console_scripts': [
+            'signposting= signposting.cli:main',
+            ]        
         },
     # cmdclass={'build_ext': optional_build_ext},
     # ext_modules=[
