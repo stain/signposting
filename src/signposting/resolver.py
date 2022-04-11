@@ -17,8 +17,11 @@ Resolve a URI (possibly a PID) to find FAIR Signposting
 
 import urllib.request
 import warnings
+from httplink import Link
+
 from . import linkheader
 
+from typing import Dict, List, Set, Tuple, Optional, Collection, Set
 
 class _HTTPErrorHandler(urllib.request.HTTPDefaultErrorHandler):
     """A HTTP error handler that permits 410 Gone"""
@@ -35,7 +38,7 @@ def find_signposting_http(url:str) -> linkheader.Signposting:
     Return a parsed `Signposting` object of the discovered signposting.
     """
     req = urllib.request.Request(url, method="HEAD")
-    link_headers = [] # Fall-back: No links
+    link_headers: List[str] = [] # Fall-back: No links
     with _http_opener.open(req) as res:
         if (res.getcode() == 203):
             warnings.warn("203 Non-Authoritative Information <%s> - Signposting URIs may have been rewritten by proxy" % 
