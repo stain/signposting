@@ -2,6 +2,8 @@
 Changelog
 =========
 
+v0.0.9 (2022-04-11)
+------------------------------------------------------------
 * Documented changelog for old versions
 * Added rudimentary tests for <https://w3id.org/a2a-fair-metrics/27-http-linkset-json-only/> and <https://w3id.org/a2a-fair-metrics/28-http-linkset-txt-only/>
 
