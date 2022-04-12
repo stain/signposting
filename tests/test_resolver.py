@@ -250,3 +250,18 @@ class TestResolverA2A(unittest.TestCase):
         self.assertEqual(s.linkset[0].target, "https://s11.no/2022/a2a-fair-metrics/28-http-linkset-txt-only/linkset.txt")
         self.assertEqual(s.linkset[0]["type"], "application/linkset")
         # TODO: Check content of linkset
+
+    def test_30_complete_joint(self):
+        s = find_signposting_http("https://w3id.org/a2a-fair-metrics/30-http-citeas-describedby-item-license-type-author-joint/")
+        self.assertEqual(s.citeAs.target, 
+            "https://w3id.org/a2a-fair-metrics/30-http-citeas-describedby-item-license-type-author-joint/")
+        self.assertEqual(1, len(s.describedBy))
+        self.assertEqual(s.describedBy[0].target, 
+            "https://s11.no/2022/a2a-fair-metrics/30-http-citeas-describedby-item-license-type-author-joint/index.ttl")
+        self.assertEqual(s.describedBy[0]["type"],                     
+            "text/turtle")
+        self.assertEqual(s.item[0].target, 
+            "https://s11.no/2022/a2a-fair-metrics/30-http-citeas-describedby-item-license-type-author-joint/test-apple-data.csv")
+        self.assertEqual(s.item[0]["type"],                     
+            "text/csv")
+            # TODO: type, license

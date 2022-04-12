@@ -35,10 +35,13 @@ def main(*args:str):
     parser = argparse.ArgumentParser()
     parser.add_argument("url", nargs='+', 
         help="URL(s) to discover signposting for")
-    parsed = parser.parse_args(args)
+    if args:
+        parsed = parser.parse_args(args)
+    else:        
+        parsed = parser.parse_args()
     isFirst = True
     for url in parsed.url:
-        if isFirst:
+        if not isFirst:
             isFirst = False
         else:
             print() ## separator
