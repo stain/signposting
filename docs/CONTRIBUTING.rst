@@ -31,17 +31,17 @@ If you are using :code:`pip` follow the official instructions on `Installing pac
 
 ::
 
-    python3 -m venv pyprojskel
-    source pyprojskel/bin/activate
+    python3 -m venv signpost
+    source signpost/bin/activate
 
-If you are using `Anaconda`_ go for:
+If you are using `Anaconda`_ (recommended) go for:
 
 ::
 
-    conda create --name pyprojskel python=3.7
-    conda activate pyprojskel
+    conda create --name signpost python=3.10
+    conda activate signpost
 
-Where :code:`pyprojskel` is the name you wish to give to the environment dedicated to this project.
+Where :code:`signpost` is the name you wish to give to the environment dedicated to this project.
 
 Either under *pip* or *conda*, install the package in :code:`develop` mode, and also :ref:`tox<Uniformed Tests with tox>`. **Note**, here I assume our project has **no** dependencies.
 
@@ -120,7 +120,13 @@ Before creating a Pull Request from your branch, certify that all the tests pass
 
     tox
 
-These are exactly the same tests that will be performed online in the Github Actions.
+These are the same tests that will be performed online in the Github Actions. 
+In addition, the above will run the integration tests, using a benchmark set of signposted resources (`a2a-fair-matrics`_) available over https. To disable these, try::
+
+::
+    tox -e py310
+
+(replace with ``-e py37`` etc if you are running older Python versions).
 
 Also, you can run individual environments if you wish to test only specific functionalities, for example:
 
@@ -130,9 +136,10 @@ Also, you can run individual environments if you wish to test only specific func
     tox -e build  # packaging
     tox -e docs  # only builds the documentation
     tox -e prreqs  # special requirements before Pull Request
-    tox -e py37
+    tox -e py310
 
 
+.. _a2a-fair-metrics: https://w3id.org/a2a-fair-metrics/
 .. _tox.ini: https://github.com/stain/signposting/blob/latest/tox.ini
 .. _Tox: https://tox.readthedocs.io/en/latest/
 .. _tox is installed: https://tox.readthedocs.io/en/latest/install.html

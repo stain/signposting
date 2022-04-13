@@ -10,4 +10,4 @@ If you are installing from `source code`_::
 
     pip install .
 
-.. source: https://github.com/stain/signposting/
+.. source code: https://github.com/stain/signposting/
