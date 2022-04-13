@@ -1,7 +1,7 @@
 ===============================
 Signposting link parser library
 ===============================
-_Finding signposting in FAIR resources._
+*Finding signposting in FAIR resources*
 
 .. image:: https://github.com/stain/signposting/workflows/Tests/badge.svg?branch=main
     :target: https://github.com/stain/signposting/actions?workflow=Tests
@@ -19,9 +19,9 @@ _Finding signposting in FAIR resources._
     :target: https://signposting.readthedocs.io/en/latest/index.html
     :alt: Read the Docs
 
+
 Summary
 =======
-
 This library helps client to discover links that follow the 
 `signposting`_ conventions, most notably `FAIR Signposting`_.
 
