@@ -35,3 +35,5 @@ __version__ = '0.0.12'
 from .linkheader import Signposting,find_signposting
 from .resolver import find_signposting_http
 from httplink import Link
+
+__all__ = [Signposting,find_signposting,find_signposting_http,Link]
