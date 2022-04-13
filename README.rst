@@ -85,7 +85,7 @@ As usual in any GitHub based project, raise an `issue`_ if you find any bug or r
 Version
 =======
 
-v0.0.14
+v0.0.15
 
 .. _GitHub Actions: https://github.com/features/actions
 .. _PyPI: https://pypi.org
