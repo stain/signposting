@@ -99,10 +99,10 @@ class TestResolverA2A(unittest.TestCase):
             "https://example.org/a2a-fair-metrics/10-http-citeas-not-perma/")
 
     def test_11_iri_wrong_type(self):
-        s = find_signposting_http("https://w3id.org/a2a-fair-metrics/11-http-described-iri-wrong-type/")
+        s = find_signposting_http("https://w3id.org/a2a-fair-metrics/11-http-describedby-iri-wrong-type/")
         self.assertEqual(1, len(s.describedBy))
         self.assertEqual(s.describedBy[0].target, 
-            "https://xn--11-slc.xn--e1a4c/2022/a2a-fair-metrics/11-http-described-iri-wrong-type/index.ttl")
+            "https://xn--11-slc.xn--e1a4c/2022/a2a-fair-metrics/11-http-describedby-iri-wrong-type/index.ttl")
         self.assertEqual(s.describedBy[0]["type"],
             "text/html") # which is wrong, but correct for this test
 
