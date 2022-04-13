@@ -70,6 +70,11 @@ structured metadata files.
 Acknowledgments
 ===============
 
+Contributors:
+
+* Stian Soiland-Reyes <https://orcid.org/0000-0001-9842-9718>
+
+Acknowledgements to Mark Wilkinson, Herbert van de Sompel, Finn Bacall.
 
 
 How to use this repository
