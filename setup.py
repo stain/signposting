@@ -77,8 +77,6 @@ setup(
     install_requires=[
         'beautifulsoup4>=4.10',
         'httplink==0.2.0',
-        'rdflib>=6',
-        'rfc3987>=1.3.8'
         ],
     extras_require={
         # eg:
