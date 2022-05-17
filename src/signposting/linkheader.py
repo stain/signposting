@@ -20,8 +20,12 @@ import httplink
 from httplink import ParsedLinks, Link, parse_link_header
 from urllib.parse import urljoin
 
-from .signpost import SIGNPOSTING
-
+# Only relations listed below will be selected
+# Sources:
+#   https://signposting.org/conventions/
+#   https://signposting.org/FAIR/
+"""Valid Signposting link relations"""
+SIGNPOSTING=set("author collection describedby describes item cite-as type license linkset".split(" "))
 
 def _filter_links_by_rel(parsedLinks:ParsedLinks, *rels:str) -> List[Link]:
     """Filter links to select from a set of relations.
@@ -67,7 +71,6 @@ class Signposting:
     .. _signposting: https://signposting.org/conventions/
     .. _FAIR: https://signposting.org/FAIR/
     """
-    #
 
     """Resource URL this is the signposting for, e.g. a HTML landing page.
     
