@@ -75,7 +75,7 @@ class MediaType(str):
     """Top level type trees as of 2022-05-17 in `IANA`_ registry
 
     .. _IANA: https://www.iana.org/assignments/media-types/media-types.xhtml"""
-    MAIN = "application audio example font image media message model multipart text video".split()
+    MAIN = "application audio example font image message model multipart text video".split()
 
     """Check the type string is valid following `section 4.2`_ of RFC6838.
 
