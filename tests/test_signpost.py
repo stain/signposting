@@ -42,12 +42,10 @@ class TestLinkRel(unittest.TestCase):
         self.assertEqual("rel=cite-as", repr(LinkRel.cite_as))
 
     def testGetItem(self):
-        self.assertEqual(LinkRel.type, LinkRel["type"])
-        self.assertEqual(LinkRel.cite_as, LinkRel["cite-as"])
-        self.assertTrue("cite-as" in LinkRel)
-        self.assertFalse("cite_as" in LinkRel)
-        with self.assertRaises(KeyError):
-            LinkRel["stylesheet"] # Registered relation, but not signposting
+        self.assertEqual(LinkRel.type, LinkRel("type"))
+        self.assertEqual(LinkRel.cite_as, LinkRel("cite-as"))
+        with self.assertRaises(ValueError):
+            LinkRel("stylesheet") # Registered relation, but not signposting
 
 class TestMediaType(unittest.TestCase):
     def testTextPlain(self):
@@ -174,10 +172,9 @@ class TestSignPost(unittest.TestCase):
         s = Signpost(
             LinkRel.cite_as,
             AbsoluteURI("http://example.com/pid/1"), 
-            MediaType("text/plain"),
-            set(AbsoluteURI("http://example.com/profile")),
-            AbsoluteURI("http://example.com/pid/1"),
-            None)
+            MediaType("text/plain"), 
+            {AbsoluteURI("http://example.com/profile")},
+            AbsoluteURI("http://example.com/pid/1"))
         self.assertEqual("cite-as", s.rel.value)
         self.assertEqual("http://example.com/pid/1", str(s.target))
         self.assertEqual("text/plain", str(s.type))

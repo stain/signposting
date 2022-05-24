@@ -17,7 +17,7 @@ Representation of single Signpost link relation
 
 import re
 from typing import Optional,Union,Set
-from enum import Enum
+from enum import Enum,unique
 from rdflib.term import URIRef
 import rfc3987
 import urllib.parse
@@ -118,12 +118,18 @@ class MediaType(str):
         t.sub = sub
         return t
 
+@unique
 class LinkRel(Enum):
     """A link relation as used in Signposting.
 
     Link relations are defined by `RFC8288`_, but 
     only link relations listed in `FAIR`_ and `signposting`_ 
     conventions are included in this enumerator.
+
+    A link relation enum can be looked up from its RFC8288 _value_
+    by calling ``LinkRel("cite-as")`` - note that this particular
+    example has a different Python-compatible spelling in it's
+    enum _name_ (`LinkRel.cite_as`).
 
     .. _signposting: https://signposting.org/conventions/
     .. _FAIR: https://signposting.org/FAIR/
@@ -232,10 +238,7 @@ class Signpost:
         if isinstance(rel, LinkRel):
             self.rel = rel
         else:
-            try:
-                self.rel = LinkRel[rel]
-            except KeyError:
-                raise ValueError("Unknown Signposting link relation {}".format(rel))
+            self.rel = LinkRel(rel) # May throw ValueError
         
         if isinstance(target, AbsoluteURI):
             self.target = target
@@ -248,12 +251,11 @@ class Signpost:
             self.type = MediaType(media_type)
         else:
             self.type = None
-        
         if isinstance(profiles, Set):
             for p in profiles:
                 assert isinstance(p, AbsoluteURI)
             self.profiles = profiles
-        else:            
+        else:
             self.profiles = frozenset(AbsoluteURI(p) for p in profiles.split(" "))
 
         if isinstance(context, AbsoluteURI):
