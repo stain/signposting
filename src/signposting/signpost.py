@@ -100,13 +100,18 @@ class MediaType(str):
         Throws ValueError
         """
         if len(value) > 255:
-            raise ValueError("media type should be no more than 127*2 characters long")
+            # Guard before giving large media type to regex
+            raise ValueError("Media type should be less than 255 characters long")
         match = cls.MAIN_SUB_RE.match(value.lower())
         if not match:
             raise ValueError("Media type invalid according to RFC6838: {}".format(value))
         main,sub = match.groups()
+        if len(main) > 127:
+            raise ValueError("Media main type should be no more than 127 characters long")
+        if len(sub) > 127:
+            raise ValueError("Media sub-type should be no more than 127 characters long")
         if not main in cls.MAIN:
-            warn("Unrecognized main tree of media type: {}".format(value))
+            warn("Unrecognized media type main tree: {}".format(main))
         # Ensure we use the matched string
         t = str.__new__(cls, match.group())
         t.main = main

@@ -6,9 +6,12 @@ import warnings
 from signposting.signpost import Signpost,AbsoluteURI,MediaType,LinkRel
 
 class TestAbsoluteURI(unittest.TestCase):
-    def testAbsoluteEqual(self):
-        # Still a string!
+    def testStr(self):
+        # Still stringable
         self.assertEqual("http://example.com/",
+            str(AbsoluteURI("http://example.com/")))
+    def testEquals(self):
+        self.assertEqual(AbsoluteURI("http://example.com/"),
             AbsoluteURI("http://example.com/"))
     def testNotAbsolute(self):
         with self.assertRaises(ValueError):
@@ -27,81 +30,82 @@ class TestMediaType(unittest.TestCase):
     def testValidMains(self):
         with warnings.catch_warnings(record=True) as w:
             self.assertEqual("application/pdf", 
-                MediaType("application/pdf"))
+                   MediaType("application/pdf"))
             # A particularly long one with mixedCasing
             self.assertEqual("application/vnd.openxmlformats-officedocument.spreadsheetml.pivotCacheDefinition+xml".lower(),
-                MediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.pivotCacheDefinition+xml"))                
+                   MediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.pivotCacheDefinition+xml"))                
             self.assertEqual("audio/mpeg", 
-                MediaType("audio/mpeg"))
+                   MediaType("audio/mpeg"))
             self.assertEqual("example/test", 
-                MediaType("example/test"))
+                   MediaType("example/test"))
             self.assertEqual("font/woff", 
-                MediaType("font/woff"))
+                   MediaType("font/woff"))
             self.assertEqual("image/jpeg", 
-                MediaType("image/jpeg"))
+                   MediaType("image/jpeg"))
             self.assertEqual("message/sip",
-                MediaType("message/sip"))
+                   MediaType("message/sip"))
             self.assertEqual("model/vrml",
-                MediaType("model/vrml"))
+                   MediaType("model/vrml"))
 
             self.assertEqual("multipart/mixed",
-                MediaType("multipart/mixed"))
+                   MediaType("multipart/mixed"))
             self.assertEqual("text/html",
-                MediaType("text/html"))
+                   MediaType("text/html"))
             self.assertEqual("video/mp4",
-                MediaType("video/mp4"))
+                   MediaType("video/mp4"))
             self.assertEqual([], w)
 
     def testOtherTrees(self):
         with warnings.catch_warnings(record=True) as w:
             self.assertEqual("application/ld+json",
-                MediaType("application/ld+json"))
+                   MediaType("application/ld+json"))
             self.assertEqual("example/vnd.example.test",
-                MediaType("example/vnd.example.test"))
+                   MediaType("example/vnd.example.test"))
             self.assertEqual("example/prv.example.test",
-                MediaType("example/prv.example.test"))
+                   MediaType("example/prv.example.test"))
             self.assertEqual("example/x.example.test",
-                MediaType("example/x.example.test"))
+                   MediaType("example/x.example.test"))
             self.assertEqual([], w)
 
     def testUnknownTrees(self):
         with warnings.catch_warnings(record=True) as w:
             self.assertEqual("other/example",
-                MediaType("other/example"))
+                   MediaType("other/example"))
             self.assertEqual(1, len(w))
             self.assertTrue(issubclass(w[0].category, UserWarning))
 
     def testSurprisinglyValid(self):
-        self.assertEqual("example/92-#-z-$-x-&-^-_-+-.",
-            MediaType("example/92-#-z-$-x-&-^-_-+-."))
-        self.assertEqual("92-#-z-$-x-&-^-_-+-./example",
-            MediaType("92-#-z-$-x-&-^-_-+-./example"))
-
-        self.assertEqual("9/2",
-            MediaType("9/2"))
+        with warnings.catch_warnings(record=True) as w:
+            self.assertEqual("example/92-#-z-$-x-&-^-_-+-.",
+                MediaType("example/92-#-z-$-x-&-^-_-+-."))
+            self.assertEqual("92-#-z-$-x-&-^-_-/example", # No +. this time
+                MediaType("92-#-z-$-x-&-^-_-/example"))
+            self.assertEqual("9/2",
+                MediaType("9/2"))
+        self.assertEqual(2, len(w)) # 92... and 9 invalid main types
 
     def testInvalidMain(self):
         with warnings.catch_warnings(record=True) as w:
             with self.assertRaises(ValueError):
-                MediaType(".example/wrong")
+                MediaType(".example/wrong") # first character not a-z0-9
             with self.assertRaises(ValueError):
-                MediaType("fantasy-$text/handwritten")
+                MediaType("fantasy%text/handwritten") # % not permitted
             with self.assertRaises(ValueError):
-                MediaType(" text/plain")
+                MediaType(" text/plain") # Space not permitted
             with self.assertRaises(ValueError):
-                MediaType("*/*") # this is common in HTTP Accept!
+                MediaType("*/*") # * not permitted (but common in HTTP Accept!)
             with self.assertRaises(ValueError):
-                MediaType("image/*") 
+                MediaType("image/*")  # As above, but in sub-type
             with self.assertRaises(ValueError):
-                MediaType("-test/example") 
+                MediaType("-test/example") # First character not a-z0-9
             with self.assertRaises(ValueError):
-                MediaType("example/-test") 
+                MediaType("example/-test") # First character not a-z0-9
+        self.assertEqual([], w) # Should fail before testing main type
 
     def testInvalidLength(self):
         x256 = "x" * 256
         x127 = "x" * 127
         with warnings.catch_warnings(record=True) as w:
-        
             # Maximum on either side
             MediaType("example/"+x127)
             MediaType(x127 + "/example")
@@ -119,7 +123,8 @@ class TestMediaType(unittest.TestCase):
             with self.assertRaises(ValueError):
                 MediaType("example/x" + x127)
             with self.assertRaises(ValueError):
-                MediaType(x127 + "x/example")        
+                MediaType(x127 + "x/example")
+        self.assertEqual(1, len(w)) # x127 main type unrecognized (second time filtered)
 
     def testInvalidType(self):
         with self.assertRaises(ValueError):
