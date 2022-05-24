@@ -260,7 +260,7 @@ class Signpost:
 
         if isinstance(context, AbsoluteURI):
             self.context = context
-        else:
+        elif context:
             self.context = AbsoluteURI(context) # may throw ValueError
 
         self.link = link

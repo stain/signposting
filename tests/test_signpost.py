@@ -176,7 +176,7 @@ class TestSignPost(unittest.TestCase):
             AbsoluteURI("http://example.com/pid/1"), 
             MediaType("text/plain"), 
             {AbsoluteURI("http://example.com/profile")},
-            AbsoluteURI("http://example.com/pid/1"))
+            AbsoluteURI("http://example.com/resource/1"))
         self.assertEqual("cite-as", s.rel.value)
         self.assertEqual("http://example.com/pid/1", str(s.target))
         self.assertEqual("text/plain", str(s.type))
@@ -188,7 +188,7 @@ class TestSignPost(unittest.TestCase):
             "http://example.com/pid/1", 
             "text/plain", 
             "http://example.com/profile",
-            "http://example.com/pid/1")
+            "http://example.com/resource/1")
         self.assertEqual("cite-as", s.rel.value)
         self.assertEqual("http://example.com/pid/1", str(s.target))
         self.assertEqual("text/plain", str(s.type))
