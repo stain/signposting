@@ -183,13 +183,13 @@ class Signpost:
     convention or subtype should be expected in the target's . 
     
     For instance, a ``rel=describedby`` signpost to a JSON-LD document can have
-    ``type=application/ld+json`` and ``profile=http://jsonld#compact``
+    ``type=application/ld+json`` and ``profile=http://www.w3.org/ns/json-ld#compacted``
 
     As there may be multiple profiles, or (more commonly) none, 
     this property is typed as a `Set`.
     """
     # FIXME: Correct JSON-LD profile
-    profile: Set[AbsoluteURI]
+    profiles: Set[AbsoluteURI]
 
     """Resource URL this is the signposting for, e.g. a HTML landing page.    
     """
@@ -206,7 +206,8 @@ class Signpost:
     def __init__(self, 
         rel:Union[LinkRel, str], 
         target:Union[AbsoluteURI, str], 
-        media_type:Union[MediaType, str]=None, 
+        media_type:Union[MediaType, str]=None,
+        profiles:Union[Set[AbsoluteURI], str]=frozenset(),
         context:Union[AbsoluteURI, str]=None, 
         link:Link=None):
         """Construct a Signpost from a link relation.
@@ -247,6 +248,13 @@ class Signpost:
             self.type = MediaType(media_type)
         else:
             self.type = None
+        
+        if isinstance(profiles, Set):
+            for p in profiles:
+                assert isinstance(p, AbsoluteURI)
+            self.profiles = profiles
+        else:            
+            self.profiles = frozenset(AbsoluteURI(p) for p in profiles.split(" "))
 
         if isinstance(context, AbsoluteURI):
             self.context = context

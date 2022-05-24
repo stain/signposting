@@ -20,27 +20,56 @@ class TestAbsoluteURI(unittest.TestCase):
         with self.assertRaises(ValueError):
             AbsoluteURI("http: // not valid")
 
+class TestLinkRel(unittest.TestCase):
+    def testStr(self):
+        self.assertEqual("author",
+                         str(LinkRel.author))
+        self.assertEqual("collection",
+                         str(LinkRel.collection))
+        self.assertEqual("describedby",
+                         str(LinkRel.describedby))
+        self.assertEqual("item",
+                         str(LinkRel.item))
+        self.assertEqual("cite-as",
+                         str(LinkRel.cite_as))
+        self.assertEqual("type",
+                         str(LinkRel.type))
+        self.assertEqual("license",
+                         str(LinkRel.license))
+        self.assertEqual("linkset",
+                         str(LinkRel.linkset))
+    def testRepr(self):
+        self.assertEqual("rel=cite-as", repr(LinkRel.cite_as))
+
+    def testGetItem(self):
+        self.assertEqual(LinkRel.type, LinkRel["type"])
+        self.assertEqual(LinkRel.cite_as, LinkRel["cite-as"])
+        self.assertTrue("cite-as" in LinkRel)
+        self.assertFalse("cite_as" in LinkRel)
+        with self.assertRaises(KeyError):
+            LinkRel["stylesheet"] # Registered relation, but not signposting
+
 class TestMediaType(unittest.TestCase):
     def testTextPlain(self):
-        self.assertEqual("text/plain", 
+        self.assertEqual("text/plain",
             MediaType("text/plain"))
     def testCaseInsensitive(self):
-        self.assertEqual("text/plain", 
+        self.assertEqual("text/plain",
             MediaType("Text/PLAIN"))
     def testValidMains(self):
         with warnings.catch_warnings(record=True) as w:
-            self.assertEqual("application/pdf", 
+            self.assertEqual("application/pdf",
                    MediaType("application/pdf"))
             # A particularly long one with mixedCasing
             self.assertEqual("application/vnd.openxmlformats-officedocument.spreadsheetml.pivotCacheDefinition+xml".lower(),
-                   MediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.pivotCacheDefinition+xml"))                
-            self.assertEqual("audio/mpeg", 
+                   MediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.pivotCacheDefinition+xml"))
+            self.assertEqual("audio/mpeg",
                    MediaType("audio/mpeg"))
-            self.assertEqual("example/test", 
+            self.assertEqual("example/test",
                    MediaType("example/test"))
-            self.assertEqual("font/woff", 
+            self.assertEqual("font/woff",
                    MediaType("font/woff"))
-            self.assertEqual("image/jpeg", 
+            self.assertEqual("image/jpeg",
                    MediaType("image/jpeg"))
             self.assertEqual("message/sip",
                    MediaType("message/sip"))
@@ -139,3 +168,19 @@ class TestMediaType(unittest.TestCase):
             MediaType("application/with space")
         with self.assertRaises(ValueError):
             MediaType("http://example.com")
+
+class TestSignPost(unittest.TestCase):
+    def testConstructorObjects(self):
+        s = Signpost(
+            LinkRel.cite_as,
+            AbsoluteURI("http://example.com/pid/1"), 
+            MediaType("text/plain"),
+            set(AbsoluteURI("http://example.com/profile")),
+            AbsoluteURI("http://example.com/pid/1"),
+            None)
+        self.assertEqual("cite-as", s.rel.value)
+        self.assertEqual("http://example.com/pid/1", str(s.target))
+        self.assertEqual("text/plain", str(s.type))
+        self.assertTrue(AbsoluteURI("http://example.com/profile") in s.profiles)
+        self.assertIsNone(s.link)
+        
