@@ -213,7 +213,7 @@ class Signpost:
         rel:Union[LinkRel, str], 
         target:Union[AbsoluteURI, str], 
         media_type:Union[MediaType, str]=None,
-        profiles:Union[AbstractSet[AbsoluteURI], str]=frozenset(),
+        profiles:Union[AbstractSet[AbsoluteURI], str]=None,
         context:Union[AbsoluteURI, str]=None, 
         link:Link=None):
         """Construct a Signpost from a link relation.
@@ -251,12 +251,15 @@ class Signpost:
             self.type = MediaType(media_type)
         else:
             self.type = None
+        
         if isinstance(profiles, AbstractSet):
             for p in profiles:
                 assert isinstance(p, AbsoluteURI)
             self.profiles = frozenset(profiles)
-        else:
+        elif profiles:
             self.profiles = frozenset(AbsoluteURI(p) for p in profiles.split(" "))
+        else:
+            self.profiles = frozenset()
 
         if isinstance(context, AbsoluteURI):
             self.context = context

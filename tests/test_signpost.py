@@ -175,24 +175,30 @@ class TestSignPost(unittest.TestCase):
             LinkRel.cite_as,
             AbsoluteURI("http://example.com/pid/1"), 
             MediaType("text/plain"), 
-            {AbsoluteURI("http://example.com/profile")},
-            AbsoluteURI("http://example.com/resource/1"))
+            {AbsoluteURI("http://example.org/profileA"),
+             AbsoluteURI("http://example.org/profileB")},
+            AbsoluteURI("http://example.com/resource/1.html"))
         self.assertEqual("cite-as", s.rel.value)
         self.assertEqual("http://example.com/pid/1", str(s.target))
         self.assertEqual("text/plain", str(s.type))
-        self.assertTrue(AbsoluteURI("http://example.com/profile") in s.profiles)
+        self.assertTrue(AbsoluteURI("http://example.org/profileA") in s.profiles)
+        self.assertTrue(AbsoluteURI("http://example.org/profileB") in s.profiles)
+        self.assertEqual("http://example.com/resource/1.html", str(s.context))
         self.assertIsNone(s.link)
+        
     def testConstructorFromStrings(self):
         s = Signpost(
             "cite-as",
             "http://example.com/pid/1", 
             "text/plain", 
-            "http://example.com/profile",
-            "http://example.com/resource/1")
+            "http://example.org/profileA http://example.org/profileB",
+            "http://example.com/resource/1.html")
         self.assertEqual("cite-as", s.rel.value)
         self.assertEqual("http://example.com/pid/1", str(s.target))
         self.assertEqual("text/plain", str(s.type))
-        self.assertTrue(AbsoluteURI("http://example.com/profile") in s.profiles)
+        self.assertTrue(AbsoluteURI("http://example.org/profileA") in s.profiles)
+        self.assertTrue(AbsoluteURI("http://example.org/profileB") in s.profiles)
+        self.assertEqual("http://example.com/resource/1.html", str(s.context))
         self.assertIsNone(s.link)
 
     def testConstructorWithDefaults(self):
@@ -216,3 +222,40 @@ class TestSignPost(unittest.TestCase):
         self.assertIsNone(s.type)
         self.assertEqual(set(), s.profiles)
         self.assertEqual(link, s.link)
+
+    def testConstructorEmptyStrings(self):
+        s = Signpost(            
+            "cite-as",
+            "http://example.com/pid/1",
+            media_type="",
+            profiles="")
+        self.assertIsNone(s.type)
+        self.assertEqual(set(), s.profiles)
+        
+    def testConstructorUnknownRel(self):
+        with self.assertRaises(ValueError):
+            s = Signpost(
+                "stylesheet",
+                "http://example.com/style.css")
+
+    def testConstructorInvalidURI(self):
+        with self.assertRaises(ValueError):
+            s = Signpost(
+                "cite-as",
+                "10.1234/not-a-url")
+
+    def testConstructorInvalidMediaType(self):
+        with self.assertRaises(ValueError):
+            s = Signpost(
+                "item",
+                "http://example.com/download/1.pdf",
+                "pdf" # should be "application/pdf"
+            )
+
+    def testConstructorInvalidProfiles(self):
+        with self.assertRaises(ValueError):
+            s = Signpost(
+                "item",
+                "http://example.com/download/1.pdf",
+                profiles="https:/example.org/first-ok second-not-absolute"
+            )
