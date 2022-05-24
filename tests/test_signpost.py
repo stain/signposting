@@ -3,6 +3,8 @@
 import unittest
 import warnings
 
+from httplink import Link
+
 from signposting.signpost import Signpost,AbsoluteURI,MediaType,LinkRel
 
 class TestAbsoluteURI(unittest.TestCase):
@@ -168,7 +170,7 @@ class TestMediaType(unittest.TestCase):
             MediaType("http://example.com")
 
 class TestSignPost(unittest.TestCase):
-    def testConstructorObjects(self):
+    def testConstructorFromObjects(self):
         s = Signpost(
             LinkRel.cite_as,
             AbsoluteURI("http://example.com/pid/1"), 
@@ -180,4 +182,37 @@ class TestSignPost(unittest.TestCase):
         self.assertEqual("text/plain", str(s.type))
         self.assertTrue(AbsoluteURI("http://example.com/profile") in s.profiles)
         self.assertIsNone(s.link)
-        
+    def testConstructorFromStrings(self):
+        s = Signpost(
+            "cite-as",
+            "http://example.com/pid/1", 
+            "text/plain", 
+            "http://example.com/profile",
+            "http://example.com/pid/1")
+        self.assertEqual("cite-as", s.rel.value)
+        self.assertEqual("http://example.com/pid/1", str(s.target))
+        self.assertEqual("text/plain", str(s.type))
+        self.assertTrue(AbsoluteURI("http://example.com/profile") in s.profiles)
+        self.assertIsNone(s.link)
+
+    def testConstructorWithDefaults(self):
+        s = Signpost(
+            "cite-as",
+            "http://example.com/pid/1")
+        self.assertEqual("cite-as", s.rel.value)
+        self.assertEqual("http://example.com/pid/1", str(s.target))
+        self.assertIsNone(s.type)
+        self.assertEqual(set(), s.profiles)
+        self.assertIsNone(s.link)
+
+    def testConstructorWithLink(self):
+        link = Link("http://example.com/pid/1", [("rel", "cite-as")])
+        s = Signpost(
+            "cite-as",
+            "http://example.com/pid/1",
+            link=link)
+        self.assertEqual("cite-as", s.rel.value)
+        self.assertEqual("http://example.com/pid/1", str(s.target))
+        self.assertIsNone(s.type)
+        self.assertEqual(set(), s.profiles)
+        self.assertEqual(link, s.link)
