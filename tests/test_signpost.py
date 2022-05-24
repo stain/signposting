@@ -28,8 +28,9 @@ class TestMediaType(unittest.TestCase):
         with warnings.catch_warnings(record=True) as w:
             self.assertEqual("application/pdf", 
                 MediaType("application/pdf"))
-            self.assertEqual("https://www.iana.org/assignments/media-types/application/vnd.openxmlformats-officedocument.spreadsheetml.pivotCacheDefinition+xml",
-                MediaType("https://www.iana.org/assignments/media-types/application/vnd.openxmlformats-officedocument.spreadsheetml.pivotCacheDefinition+xml"))
+            # A particularly long one with mixedCasing
+            self.assertEqual("application/vnd.openxmlformats-officedocument.spreadsheetml.pivotCacheDefinition+xml".lower(),
+                MediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.pivotCacheDefinition+xml"))                
             self.assertEqual("audio/mpeg", 
                 MediaType("audio/mpeg"))
             self.assertEqual("example/test", 
@@ -80,43 +81,45 @@ class TestMediaType(unittest.TestCase):
             MediaType("9/2"))
 
     def testInvalidMain(self):
-        with self.assertRaises(ValueError):
-            MediaType(".example/wrong")
-        with self.assertRaises(ValueError):
-            MediaType("fantasy-$text/handwritten")
-        with self.assertRaises(ValueError):
-            MediaType(" text/plain")
-        with self.assertRaises(ValueError):
-            MediaType("*/*") # this is common in HTTP Accept!
-        with self.assertRaises(ValueError):
-            MediaType("image/*") 
-        with self.assertRaises(ValueError):
-            MediaType("-test/example") 
-        with self.assertRaises(ValueError):
-            MediaType("example/-test") 
+        with warnings.catch_warnings(record=True) as w:
+            with self.assertRaises(ValueError):
+                MediaType(".example/wrong")
+            with self.assertRaises(ValueError):
+                MediaType("fantasy-$text/handwritten")
+            with self.assertRaises(ValueError):
+                MediaType(" text/plain")
+            with self.assertRaises(ValueError):
+                MediaType("*/*") # this is common in HTTP Accept!
+            with self.assertRaises(ValueError):
+                MediaType("image/*") 
+            with self.assertRaises(ValueError):
+                MediaType("-test/example") 
+            with self.assertRaises(ValueError):
+                MediaType("example/-test") 
 
     def testInvalidLength(self):
         x256 = "x" * 256
         x127 = "x" * 127
+        with warnings.catch_warnings(record=True) as w:
         
-        # Maximum on either side
-        MediaType("example/"+x127)
-        MediaType(x127 + "/example")
-        # This is the maximum permissable
-        MediaType(x127+"/"+x127)
+            # Maximum on either side
+            MediaType("example/"+x127)
+            MediaType(x127 + "/example")
+            # This is the maximum permissable
+            MediaType(x127+"/"+x127)
 
-        # Total length is over - should ideally
-        # fail before running expensive regex
-        with self.assertRaises(ValueError):
-            MediaType("example/" + x256)
-        with self.assertRaises(ValueError):
-            MediaType(x256 + "/example")
-                    
-        # Just over limit on one side only
-        with self.assertRaises(ValueError):
-            MediaType("example/x" + x127)
-        with self.assertRaises(ValueError):
-            MediaType(x127 + "x/example")        
+            # Total length is over - should ideally
+            # fail before running expensive regex
+            with self.assertRaises(ValueError):
+                MediaType("example/" + x256)
+            with self.assertRaises(ValueError):
+                MediaType(x256 + "/example")
+
+            # Just over limit on one side only
+            with self.assertRaises(ValueError):
+                MediaType("example/x" + x127)
+            with self.assertRaises(ValueError):
+                MediaType(x127 + "x/example")        
 
     def testInvalidType(self):
         with self.assertRaises(ValueError):
@@ -129,3 +132,5 @@ class TestMediaType(unittest.TestCase):
             MediaType("application/with space")
         with self.assertRaises(ValueError):
             MediaType("application/with space")
+        with self.assertRaises(ValueError):
+            MediaType("http://example.com")

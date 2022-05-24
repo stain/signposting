@@ -107,7 +107,8 @@ class MediaType(str):
         main,sub = match.groups()
         if not main in cls.MAIN:
             warn("Unrecognized main tree of media type: {}".format(value))
-        t = str.__new__(cls, main.group())
+        # Ensure we use the matched string
+        t = str.__new__(cls, match.group())
         t.main = main
         t.sub = sub
         return t
@@ -199,9 +200,9 @@ class Signpost:
 
     def __init__(self, 
         rel:Union[LinkRel, str], 
-        target:Union[AbsoluteUri, str], 
+        target:Union[AbsoluteURI, str], 
         media_type:Union[MediaType, str]=None, 
-        context:Union[AbsoluteUri, str]=None, 
+        context:Union[AbsoluteURI, str]=None, 
         link:Link=None):
         """Construct a Signpost from a link relation.
         
@@ -216,7 +217,7 @@ class Signpost:
 
         This constructor will convert plain string values 
         to the corresponding type-checked 
-        classes `LinkRel`, `AbsoluteUri`, `MediaType`,
+        classes `LinkRel`, `AbsoluteURI`, `MediaType`,
         which may throw exception `ValueError` if they are 
         not valid. Alternatively, instances of these types can
         be provided directly.
