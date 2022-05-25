@@ -11,40 +11,45 @@ import sys
 import enum
 from urllib.error import HTTPError, URLError
 
-from . import Signposting,find_signposting,find_signposting_http,Link
+from . import Signposting, find_signposting, find_signposting_http, Link
 
-def _multiline(header:str, lines:Collection[str]):
-    indent = "\n" + (" " * (len(header)+2))
+
+def _multiline(header: str, lines: Collection[str]):
+    indent = "\n" + (" " * (len(header) + 2))
     return "%s: %s" % (header, indent.join(lines))
+
 
 def _target(link: Link):
     return "<%s>" % link.target
 
+
 def _target_and_type(link: Link):
-    return "<%s> %s" % (link.target, 
-                      "type" in link and link["type"] or "")
+    return "<%s> %s" % (link.target,
+                        "type" in link and link["type"] or "")
 
-errors = enum.IntEnum("Error", 
-    "OK BAD_URL HTTP_ERROR LINK_SYNTAX INTERNAL_ERROR",
-    start=0
-)
 
-def main(*args:str):
+errors = enum.IntEnum("Error",
+                      "OK BAD_URL HTTP_ERROR LINK_SYNTAX INTERNAL_ERROR",
+                      start=0
+                      )
+
+
+def main(*args: str):
     """Discover signposting"""
-    
+
     parser = argparse.ArgumentParser()
-    parser.add_argument("url", nargs='+', 
-        help="URL(s) to discover signposting for")
+    parser.add_argument("url", nargs='+',
+                        help="URL(s) to discover signposting for")
     if args:
         parsed = parser.parse_args(args)
-    else:        
+    else:
         parsed = parser.parse_args()
     isFirst = True
     for url in parsed.url:
         if not isFirst:
             isFirst = False
         else:
-            print() ## separator
+            print()  # separator
 
         try:
             signposting = find_signposting_http(url)
@@ -65,7 +70,7 @@ def main(*args:str):
     #        return errors.INTERNAL_ERROR
 
         print("Signposting for", signposting.context_url or url)
-        if (signposting.citeAs):            
+        if (signposting.citeAs):
             print("CiteAs:", _target(signposting.citeAs))
         if (signposting.type):
             print(_multiline("Type", [_target(l) for l in signposting.type]))
@@ -74,11 +79,15 @@ def main(*args:str):
         if (signposting.license):
             print("License:", _target(signposting.license))
         if (signposting.author):
-            print(_multiline("Author", [_target(l) for l in signposting.author]))
+            print(_multiline("Author", [_target(l)
+                  for l in signposting.author]))
         if (signposting.describedBy):
-            print(_multiline("DescribedBy", [_target_and_type(l) for l in signposting.describedBy]))
+            print(_multiline("DescribedBy", [
+                  _target_and_type(l) for l in signposting.describedBy]))
         if (signposting.item):
-            print(_multiline("Item", [_target_and_type(l) for l in signposting.item]))
+            print(_multiline("Item", [_target_and_type(l)
+                  for l in signposting.item]))
         if (signposting.linkset):
-            print(_multiline("Linkset", [_target_and_type(l) for l in signposting.linkset]))
+            print(_multiline("Linkset", [_target_and_type(l)
+                  for l in signposting.linkset]))
     return errors.OK

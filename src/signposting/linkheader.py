@@ -25,17 +25,19 @@ from urllib.parse import urljoin
 #   https://signposting.org/conventions/
 #   https://signposting.org/FAIR/
 """Valid Signposting link relations"""
-SIGNPOSTING=set("author collection describedby describes item cite-as type license linkset".split(" "))
+SIGNPOSTING = set(
+    "author collection describedby describes item cite-as type license linkset".split(" "))
 
-def _filter_links_by_rel(parsedLinks:ParsedLinks, *rels:str) -> List[Link]:
+
+def _filter_links_by_rel(parsedLinks: ParsedLinks, *rels: str) -> List[Link]:
     """Filter links to select from a set of relations.
 
     The relations must be valid Signposting relation listed in `SIGNPOSTING`.
 
     Return a list of ``Link``s which ``rel`` match the given ``rels``.
-    
+
     """
-    if rels:        
+    if rels:
         # Ensure all filters are in lower case
         filterRels = set(r.lower() for r in rels)
         unknown = filterRels - SIGNPOSTING
@@ -46,7 +48,8 @@ def _filter_links_by_rel(parsedLinks:ParsedLinks, *rels:str) -> List[Link]:
         filterRels = SIGNPOSTING
     return [l for l in parsedLinks.links if l.rel & filterRels]
 
-def _optional_link(parsedLinks:ParsedLinks, rel:str) -> Optional[Link]:
+
+def _optional_link(parsedLinks: ParsedLinks, rel: str) -> Optional[Link]:
     """Look up a single link relation.
 
     The relation must be a valid Signposting relation listed in `SIGNPOSTING`.
@@ -65,7 +68,7 @@ def _optional_link(parsedLinks:ParsedLinks, rel:str) -> Optional[Link]:
 
 class Signposting:
     """Signposting links for a given resource.
-    
+
     Links are discovered according to `FAIR`_ `signposting`_ conventions.
 
     .. _signposting: https://signposting.org/conventions/
@@ -122,7 +125,7 @@ class Signposting:
     """Optional collection this resource is part of"""
     collection: Optional[Link]
 
-    def __init__(self, parsedLinks:ParsedLinks, context_url:str=None):
+    def __init__(self, parsedLinks: ParsedLinks, context_url: str = None):
         """Initialize Signposting object for a given `ParsedLinks` 
         as discovered from the (optional) `context_url` base URL.
         """
@@ -133,12 +136,13 @@ class Signposting:
         self.describedBy = _filter_links_by_rel(parsedLinks, "describedby")
         self.type = _filter_links_by_rel(parsedLinks, "type")
         self.item = _filter_links_by_rel(parsedLinks, "item")
-        self.linkset =  _filter_links_by_rel(parsedLinks, "linkset")
+        self.linkset = _filter_links_by_rel(parsedLinks, "linkset")
         self.citeAs = _optional_link(parsedLinks, "cite-as")
         self.license = _optional_link(parsedLinks, "license")
         self.collection = _optional_link(parsedLinks, "collection")
 
-def _absolute_attribute(k:str, v:str, baseurl:str) -> Tuple[str,str]:
+
+def _absolute_attribute(k: str, v: str, baseurl: str) -> Tuple[str, str]:
     """Ensure link attribute value uses absolute URI, resolving from the baseurl.
 
     Currently this will mean the `context`_ attribute ``anchor`` will be rewritten.
@@ -149,19 +153,20 @@ def _absolute_attribute(k:str, v:str, baseurl:str) -> Tuple[str,str]:
         return k, urljoin(baseurl, v)
     return k, v
 
-def find_signposting(headers:List[str], baseurl:str=None) -> Signposting:
+
+def find_signposting(headers: List[str], baseurl: str = None) -> Signposting:
     """Find signposting among HTTP Link headers. 
 
     Optionally make the links absolute according to the base URL.
 
     The link headers should be valid according to `RFC8288`_, excluding the "Link:" prefix.
-    
+
     Links are discovered according to defined `FAIR`_ `signposting`_ relations.
 
     .. _signposting: https://signposting.org/conventions/
     .. _FAIR: https://signposting.org/FAIR/
     .. _rfc8288: https://doi.org/10.17487/RFC8288
-    
+
     """
     parsed = parse_link_header(", ".join(headers))
     signposting: List[Link] = []
@@ -170,9 +175,10 @@ def find_signposting(headers:List[str], baseurl:str=None) -> Signposting:
         if baseurl is not None:
             # Make URLs absolute by modifying Link object in-place
             target = urljoin(baseurl, l.target)
-            attributes = [_absolute_attribute(k,v, baseurl) for k,v in l.attributes]            
+            attributes = [_absolute_attribute(
+                k, v, baseurl) for k, v in l.attributes]
             link = Link(target, attributes)
         else:
-            link = l # unchanged
+            link = l  # unchanged
         signposting.append(link)
     return Signposting(ParsedLinks(signposting), baseurl)
