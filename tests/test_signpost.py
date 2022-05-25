@@ -307,7 +307,7 @@ class TestSignPost(unittest.TestCase):
 class TestSignposting(unittest.TestCase):
     def testConstructorDefault(self):
         s = Signposting("http://example.com/page1")
-        self.assertEqual(AbsoluteURI("http://example.com/page1"), s.context_url)
+        self.assertEqual("http://example.com/page1", s.context_url)
         self.assertIsNone(s.citeAs)
         self.assertIsNone(s.license)
         self.assertIsNone(s.collection)
@@ -319,7 +319,7 @@ class TestSignposting(unittest.TestCase):
 
     def testConstructorEmpty(self):
         s = Signposting("http://example.com/page1", [])
-        self.assertEqual(AbsoluteURI("http://example.com/page1"), s.context_url)
+        self.assertEqual("http://example.com/page1", s.context_url)
         self.assertIsNone(s.citeAs)
         self.assertEqual(set(), s.types)
 
@@ -327,7 +327,7 @@ class TestSignposting(unittest.TestCase):
         s = Signposting("http://example.com/page1",
                         [Signpost(LinkRel.cite_as, "http://example.com/pid/1")]
                         )
-        self.assertEqual(AbsoluteURI("http://example.com/page1"), s.context_url)
+        self.assertEqual("http://example.com/page1", s.context_url)
         self.assertEqual(AbsoluteURI(
             "http://example.com/pid/1"), s.citeAs.target)
 
@@ -357,7 +357,7 @@ class TestSignposting(unittest.TestCase):
             Signpost(LinkRel.type, "http://example.org/type/B")
             ])
 
-        self.assertEqual(AbsoluteURI("http://example.com/page1"), s.context_url)
+        self.assertEqual("http://example.com/page1", s.context_url)
         self.assertEqual(AbsoluteURI(
             "http://example.com/pid/1"), s.citeAs.target)
         self.assertEqual(AbsoluteURI(
@@ -365,24 +365,24 @@ class TestSignposting(unittest.TestCase):
         self.assertEqual(AbsoluteURI(
             "http://example.com/collection/1"), s.collection.target)
         self.assertEqual({
-            AbsoluteURI("http://example.com/item/1.pdf"),
-            AbsoluteURI("http://example.com/item/2.txt")},
+            "http://example.com/item/1.pdf",
+            "http://example.com/item/2.txt"},
             set(i.target for i in s.items))
         self.assertEqual({
-            AbsoluteURI("http://example.com/author/1"),
-            AbsoluteURI("http://example.com/author/2")},
+            "http://example.com/author/1",
+            "http://example.com/author/2"},
             set(i.target for i in s.authors))
         self.assertEqual({
-            AbsoluteURI("http://example.com/metadata/1.ttl"),
-            AbsoluteURI("http://example.com/metadata/2.jsonld")},
+            "http://example.com/metadata/1.ttl",
+            "http://example.com/metadata/2.jsonld"},
             set(i.target for i in s.describedBy))
         self.assertEqual({
-            AbsoluteURI("http://example.com/linkset/1.json"),
-            AbsoluteURI("http://example.com/linkset/2.txt")},
+            "http://example.com/linkset/1.json",
+            "http://example.com/linkset/2.txt"},
             set(i.target for i in s.linksets))
         self.assertEqual({
-            AbsoluteURI("http://example.org/type/A"),
-            AbsoluteURI("http://example.org/type/B")},
+            "http://example.org/type/A",
+            "http://example.org/type/B"},
             set(i.target for i in s.types))
 
     def testConstructorWarnDuplicate(self):
@@ -398,10 +398,10 @@ class TestSignposting(unittest.TestCase):
 
             self.assertEqual(3, len(w))
             # Only first signpost should be kept
-            self.assertEqual(AbsoluteURI(
-                "http://example.com/pid/1"), s.citeAs.target)
-            self.assertEqual(AbsoluteURI(
-                "http://spdx.org/licenses/CC0-1.0"), s.license.target)
-            self.assertEqual(AbsoluteURI(
-                "http://example.com/collection/1"), s.collection.target)
+            self.assertEqual(
+                "http://example.com/pid/1", s.citeAs.target)
+            self.assertEqual(
+                "http://spdx.org/licenses/CC0-1.0", s.license.target)
+            self.assertEqual(
+                "http://example.com/collection/1", s.collection.target)
             
