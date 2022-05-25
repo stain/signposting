@@ -318,23 +318,23 @@ class TestSignposting(unittest.TestCase):
         self.assertEqual({
                         AbsoluteURI("http://example.com/item/1.pdf"), 
                         AbsoluteURI("http://example.com/item/2.txt")}, 
-                    set(i.target for i in s.items ))
+                    set(i.target for i in s.items))
         self.assertEqual({
                         AbsoluteURI("http://example.com/author/1"), 
                         AbsoluteURI("http://example.com/author/2")}, 
-                    set(i.target for i in s.authors ))
+                    set(i.target for i in s.authors))
         self.assertEqual({
                         AbsoluteURI("http://example.com/metadata/1.ttl"), 
                         AbsoluteURI("http://example.com/metadata/2.jsonld")}, 
-                    set(i.target for i in s.describedBy ))
+                    set(i.target for i in s.describedBy))
         self.assertEqual({
                         AbsoluteURI("http://example.com/linkset/1.json"), 
                         AbsoluteURI("http://example.com/linkset/2.txt")}, 
-                    set(i.target for i in s.linksets ))
+                    set(i.target for i in s.linksets))
         self.assertEqual({
                         AbsoluteURI("http://example.org/type/A"), 
                         AbsoluteURI("http://example.org/type/B")}, 
-                    set(i.target for i in s.types ))
+                    set(i.target for i in s.types))
                             
 
 
