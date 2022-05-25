@@ -346,7 +346,10 @@ class Signposting:
         elif context_url:
             self.context_url = AbsoluteURI(context_url)
 
-        # Initialize collections
+        # Initialize attributes with empty defaults
+        self.citeAs = None
+        self.license = None
+        self.collection = None
         self.authors = set()
         self.describedBy = set()
         self.items = set()

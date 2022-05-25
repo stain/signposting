@@ -262,4 +262,80 @@ class TestSignPost(unittest.TestCase):
 
 class TestSignposting(unittest.TestCase):
     def testConstructorDefault(self):
-        Signposting("http://example.com/")
+        s = Signposting("http://example.com/page1")
+        self.assertEqual(AbsoluteURI("http://example.com/page1"), s.context_url)
+        self.assertIsNone(s.citeAs)
+        self.assertIsNone(s.license)
+        self.assertIsNone(s.collection)
+        self.assertEqual(set(), s.authors)
+        self.assertEqual(set(), s.describedBy)
+        self.assertEqual(set(), s.items)
+        self.assertEqual(set(), s.linksets)
+        self.assertEqual(set(), s.types)                          
+
+    def testConstructorEmpty(self):
+        s = Signposting("http://example.com/page1", [])
+        self.assertEqual(AbsoluteURI("http://example.com/page1"), s.context_url)
+        self.assertIsNone(s.citeAs)
+        self.assertEqual(set(), s.types)        
+    
+    def testConstructorCiteAs(self):
+        s = Signposting("http://example.com/page1",
+            [Signpost(LinkRel.cite_as, "http://example.com/pid/1")]
+        )
+        self.assertEqual(AbsoluteURI("http://example.com/page1"), s.context_url)
+        self.assertEqual(AbsoluteURI("http://example.com/pid/1"), s.citeAs.target)
+        
+    def testConstructorItems(self):
+        s = Signposting("http://example.com/page1", [
+                Signpost(LinkRel.item, "http://example.com/item/1.pdf"),
+                Signpost(LinkRel.item, "http://example.com/item/2.txt")])
+        self.assertEqual({"http://example.com/item/1.pdf", "http://example.com/item/2.txt"}, 
+                          set(str(i.target) for i in s.items ))
+
+    def testConstructorComplete(self):
+        s = Signposting("http://example.com/page1", [
+                Signpost(LinkRel.item, "http://example.com/item/1.pdf"),
+                Signpost(LinkRel.cite_as, "http://example.com/pid/1"),
+                # tip: order does not matter
+                Signpost(LinkRel.item, "http://example.com/item/2.txt"),
+                Signpost(LinkRel.license, "http://spdx.org/licenses/CC0-1.0"),
+                Signpost(LinkRel.collection, "http://example.com/collection/1"),
+                Signpost(LinkRel.author, "http://example.com/author/1"),  
+                Signpost(LinkRel.author, "http://example.com/author/2"),
+                Signpost(LinkRel.describedby, "http://example.com/metadata/1.ttl"),  
+                Signpost(LinkRel.describedby, "http://example.com/metadata/2.jsonld"),  
+                Signpost(LinkRel.linkset, "http://example.com/linkset/1.json"),  
+                Signpost(LinkRel.linkset, "http://example.com/linkset/2.txt"),
+                Signpost(LinkRel.type, "http://example.org/type/A"),
+                Signpost(LinkRel.type, "http://example.org/type/B")
+            ])
+        
+        self.assertEqual(AbsoluteURI("http://example.com/page1"), s.context_url)
+        self.assertEqual(AbsoluteURI("http://example.com/pid/1"), s.citeAs.target)
+        self.assertEqual(AbsoluteURI("http://spdx.org/licenses/CC0-1.0"), s.license.target)
+        self.assertEqual(AbsoluteURI("http://example.com/collection/1"), s.collection.target)
+        self.assertEqual({
+                        AbsoluteURI("http://example.com/item/1.pdf"), 
+                        AbsoluteURI("http://example.com/item/2.txt")}, 
+                    set(i.target for i in s.items ))
+        self.assertEqual({
+                        AbsoluteURI("http://example.com/author/1"), 
+                        AbsoluteURI("http://example.com/author/2")}, 
+                    set(i.target for i in s.authors ))
+        self.assertEqual({
+                        AbsoluteURI("http://example.com/metadata/1.ttl"), 
+                        AbsoluteURI("http://example.com/metadata/2.jsonld")}, 
+                    set(i.target for i in s.describedBy ))
+        self.assertEqual({
+                        AbsoluteURI("http://example.com/linkset/1.json"), 
+                        AbsoluteURI("http://example.com/linkset/2.txt")}, 
+                    set(i.target for i in s.linksets ))
+        self.assertEqual({
+                        AbsoluteURI("http://example.org/type/A"), 
+                        AbsoluteURI("http://example.org/type/B")}, 
+                    set(i.target for i in s.types ))
+                            
+
+
+
