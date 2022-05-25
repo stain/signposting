@@ -15,9 +15,11 @@
 Representation of single Signpost link relation
 """
 
+from multiprocessing.sharedctypes import Value
 import re
-from typing import Optional,Union,AbstractSet,FrozenSet
+from typing import Collection, List, Optional, Set,Union,AbstractSet,FrozenSet
 from enum import Enum,unique
+import warnings
 from rdflib.term import URIRef
 import rfc3987
 import urllib.parse
@@ -42,6 +44,20 @@ class AbsoluteURI(URIRef):
         # below will throw ValueError if not valid
         rfc3987.parse(uri, rule="absolute_URI")
         return uri
+
+    """Ensure value is of type AbsoluteURI."""
+    @staticmethod
+    def from_uri(cls, value: Union[URIRef,str,None]):
+        if not value:
+            return None
+        elif isinstance(value, AbsoluteURI):
+            return Value
+        elif isinstance(value, URIRef):
+            return cls(value)
+        else:
+            raise TypeError("Unsupported type for AbsoluteURI: {}".format(type(value)))
+
+
 
     #@staticmethod
     #def from_iri(cls, value: str, base: Optional[str] = None):
@@ -268,3 +284,108 @@ class Signpost:
 
         self.link = link
     
+
+class Signposting:
+    """Signposting links for a given resource.
+    
+    Links are categorized according to `FAIR`_ `signposting`_ conventions.
+
+    .. _signposting: https://signposting.org/conventions/
+    .. _FAIR: https://signposting.org/FAIR/
+    """
+
+    """Resource URL this is the signposting for, e.g. a HTML landing page.
+    
+    """
+    context_url: Optional[AbsoluteURI]
+
+    """Author(s) of the resource (and possibly its items)"""
+    authors: Set[Signpost]
+
+    """Metadata resources about the resource and its items, typically in a Linked Data format. 
+    
+    Resources may require content negotiation, check ``Link["type"]`` attribute
+    (if present) for content type, e.g. ``text/turtle``.
+    """
+    describedBy: Set[Signpost]
+
+    """Semantic types of the resource, e.g. from schema.org"""
+    types: Set[Signpost]
+
+    """Items contained by this resource, e.g. downloads.
+    
+    The content type of the download may be available as ``Link["type"]``` attribute.
+    """
+    items: Set[Signpost]
+
+    """Linkset resuorces with further signposting.
+
+    A `linkset`_ is a JSON or text serialization of Link headers available as a
+    separate resource, and may be used to externalize large collection of links, e.g.
+    thousands of "item" relations.
+
+    Resources may require content negotiation, check ``Link["type"]`` attribute
+    (if present)  for content types ``application/linkset`` or ``application/linkset+json``.
+
+    .. _linkset: https://datatracker.ietf.org/doc/draft-ietf-httpapi-linkset/
+    """
+    linksets: Set[Signpost]
+
+    """Persistent Identifier (PID) for this resource, preferred for citation and permalinks"""
+    citeAs: Optional[Signpost]
+
+    """Optional license of this resource (and presumably its items)"""
+    license: Optional[Signpost]
+
+    """Optional collections this resource is part of"""
+    collection: Optional[Signpost]
+
+    def __init__(self, context_url: Union[AbsoluteURI,str]=None, signposts: List[Signpost] = None):
+        if isinstance(context_url, AbsoluteURI):
+            self.context_url = context_url
+        elif context_url:
+            self.context_url = AbsoluteURI(context_url)
+
+        # Initialize collections
+        self.authors = set()
+        self.describedBy = set()
+        self.items = set()
+        self.linksets = set()
+        self.types = set()
+        
+        if signposts is None:
+            return
+        # Populate from list of signposts
+        for s in signposts:
+            # TODO: Replace with match..case requires Python 3.10+ (PEP 634)
+            #match s.rel:
+            #    case LinkRel.cite_as:
+            #        self.citeAs = s
+            #    case LinkRel.license:
+            # ...
+            if s.rel is LinkRel.cite_as:
+                if self.citeAs:
+                    warnings.warn("Ignoring additional cite-as signposts")
+                    continue
+                self.citeAs = s
+            if s.rel is LinkRel.license:
+                if self.license:
+                    warnings.warn("Ignoring additional license signposts")
+                    continue
+                self.license = s
+            if s.rel is LinkRel.collection:
+                if self.collection:
+                    warnings.warn("Ignoring additional collection signposts")
+                    continue
+                self.collection = s
+            if s.rel is LinkRel.author:
+                self.authors.add(s)
+            if s.rel is LinkRel.describedby:
+                self.describedBy.add(s)
+            if s.rel is LinkRel.item:
+                self.items.add(s)
+            if s.rel is LinkRel.linkset:
+                self.linksets.add(s)
+            if s.rel is LinkRel.type:
+                self.types.add(s)
+

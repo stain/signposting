@@ -81,7 +81,7 @@ class Signposting:
     """
     context_url: Optional[str]
 
-    """Author(s) of the resource (and presuambly it items)"""
+    """Author(s) of the resource (and possibly its items)"""
     author: List[Link]
 
     """Metadata resources about the resource and its items, typically in a Linked Data format. 

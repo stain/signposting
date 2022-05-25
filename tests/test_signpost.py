@@ -5,7 +5,7 @@ import warnings
 
 from httplink import Link
 
-from signposting.signpost import Signpost,AbsoluteURI,MediaType,LinkRel
+from signposting.signpost import Signpost,AbsoluteURI,MediaType,LinkRel,Signposting
 
 class TestAbsoluteURI(unittest.TestCase):
     def testStr(self):
@@ -259,3 +259,7 @@ class TestSignPost(unittest.TestCase):
                 "http://example.com/download/1.pdf",
                 profiles="https:/example.org/first-ok second-not-absolute"
             )
+
+class TestSignposting(unittest.TestCase):
+    def testConstructorDefault(self):
+        Signposting("http://example.com/")
