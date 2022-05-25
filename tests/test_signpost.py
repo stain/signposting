@@ -9,14 +9,42 @@ from signposting.signpost import Signpost, AbsoluteURI, MediaType, LinkRel, Sign
 
 
 class TestAbsoluteURI(unittest.TestCase):
+    def testConstructorAbsolute(self):
+        self.assertEqual("http://example.com/a.txt",
+            AbsoluteURI("http://example.com/a.txt"))
+
+    def testConstructorSelf(self):
+        a = AbsoluteURI("http://example.com/")
+        b = AbsoluteURI(a) # It's a str, but should not re-wrap
+        self.assertEqual(a, b)
+        self.assertIs(a, b)
+
+    def testConstructorRelative(self):
+        self.assertEqual("http://example.com/foo/a.txt",
+            AbsoluteURI("a.txt", "http://example.com/foo/"))
+
+    def testConstructorBaseIgnored(self):
+        self.assertEqual("http://example.com/a.txt",
+            AbsoluteURI("http://example.com/a.txt", "http://other.example.org/"))
+
+    def testConstructorRelativeWithoutBaseFails(self):
+        with self.assertRaises(ValueError):
+            AbsoluteURI("a.txt")
+        with self.assertRaises(ValueError):
+            AbsoluteURI("a.txt", "not/absolute/either")
+
     def testStr(self):
         # Still stringable
         self.assertEqual("http://example.com/",
                          str(AbsoluteURI("http://example.com/")))
+        # Regular string methods still there
+        self.assertTrue(AbsoluteURI("http://example.com/").startswith("http://"))
 
     def testEquals(self):
-        self.assertEqual(AbsoluteURI("http://example.com/"),
+        self.assertEqual("http://example.com/",
                          AbsoluteURI("http://example.com/"))
+        self.assertEqual(AbsoluteURI("http://example.com/"),
+                         "http://example.com/")
 
     def testNotAbsolute(self):
         with self.assertRaises(ValueError):

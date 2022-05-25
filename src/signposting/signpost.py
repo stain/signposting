@@ -15,22 +15,23 @@
 Representation of single Signpost link relation
 """
 
-from multiprocessing.sharedctypes import Value
 import re
-from typing import Collection, List, Optional, Set,Union,AbstractSet,FrozenSet
-from enum import Enum,unique
+from typing import Collection, List, Optional, Set, Union, AbstractSet, FrozenSet
+from enum import Enum, unique
 import warnings
-from rdflib.term import URIRef
+
 import rfc3987
 import urllib.parse
+from urllib.parse import urljoin
 from httplink import ParsedLinks, Link, parse_link_header
 from warnings import warn
 
-class AbsoluteURI(URIRef):
+
+class AbsoluteURI(str):
     """An absolute URI, e.g. "http://example.com/" """
     def __new__(cls, value: str, base: Optional[str] = None):
         """Create an absolute URI reference.
-        
+
         If the base parameter is given, it is used to resolve the
         potentially relative URI reference, otherwise the first argument
         must be an absolute URI.
@@ -40,35 +41,25 @@ class AbsoluteURI(URIRef):
 
         Note that IRIs are not supported.
         """
-        uri = URIRef.__new__(cls, value, base)
-        # below will throw ValueError if not valid
+        if isinstance(value, cls):
+            return value # Already AbsoluteURI, no need to check again
+        # Resolve potentially relative URI reference when base is given
+        uri = urljoin(base, value) 
+        # will throw ValueError if resolved URI is not valid
         rfc3987.parse(uri, rule="absolute_URI")
-        return uri
+        return str.__new__(cls, uri)
 
-    """Ensure value is of type AbsoluteURI."""
-    @staticmethod
-    def from_uri(cls, value: Union[URIRef,str,None]):
-        if not value:
-            return None
-        elif isinstance(value, AbsoluteURI):
-            return Value
-        elif isinstance(value, URIRef):
-            return cls(value)
-        else:
-            raise TypeError("Unsupported type for AbsoluteURI: {}".format(type(value)))
-
-
-
-    #@staticmethod
-    #def from_iri(cls, value: str, base: Optional[str] = None):
+    # @staticmethod
+    # def from_iri(cls, value: str, base: Optional[str] = None):
     #    """https://stackoverflow.com/a/49620774"""
     #    iri = rfc3987.parse(uri, rule="absolute_IRI")
     #    netloc = iri["authority"] and iri["netloc"].encode('idna').decode('ascii')
-    #    ## TODO: What about non-hostname schemes? 
+    #    ## TODO: What about non-hostname schemes?
     #    path = iri["path"] and urllib.parse.quote_from_bytes(iri['path'].encode('utf-8'))
     #    query = iri["query"] and urllib.parse.quote_from_bytes(iri['query'].encode('utf-8'))
     #    fragment = iri["fragment"] and urllib.parse.quote_from_bytes(iri['fragment'].encode('utf-8'))
     #   return ...
+
 
 class MediaType(str):
     """An IANA media type, e.g. text/plain.
@@ -87,7 +78,7 @@ class MediaType(str):
 
     .. _RFC6838: https://www.rfc-editor.org/rfc/rfc6838.html
     """
-    
+
     """Top level type trees as of 2022-05-17 in `IANA`_ registry
 
     .. _IANA: https://www.iana.org/assignments/media-types/media-types.xhtml"""
@@ -105,27 +96,31 @@ class MediaType(str):
         $""", re.VERBOSE)
 
     """The main type, e.g. image"""
-    main: str 
+    main: str
 
     """The sub-type, e.g. jpeg"""
     sub: str
 
     def __new__(cls, value=str):
         """Construct a MediaType.
-        
+
         Throws ValueError
         """
         if len(value) > 255:
             # Guard before giving large media type to regex
-            raise ValueError("Media type should be less than 255 characters long")
+            raise ValueError(
+                "Media type should be less than 255 characters long")
         match = cls.MAIN_SUB_RE.match(value.lower())
         if not match:
-            raise ValueError("Media type invalid according to RFC6838: {}".format(value))
-        main,sub = match.groups()
+            raise ValueError(
+                "Media type invalid according to RFC6838: {}".format(value))
+        main, sub = match.groups()
         if len(main) > 127:
-            raise ValueError("Media main type should be no more than 127 characters long")
+            raise ValueError(
+                "Media main type should be no more than 127 characters long")
         if len(sub) > 127:
-            raise ValueError("Media sub-type should be no more than 127 characters long")
+            raise ValueError(
+                "Media sub-type should be no more than 127 characters long")
         if not main in cls.MAIN:
             warn("Unrecognized media type main tree: {}".format(main))
         # Ensure we use the matched string
@@ -133,6 +128,7 @@ class MediaType(str):
         t.main = main
         t.sub = sub
         return t
+
 
 @unique
 class LinkRel(Enum):
@@ -155,7 +151,7 @@ class LinkRel(Enum):
     collection = "collection"
     describedby = "describedby"
     item = "item"
-    cite_as = "cite-as" # NOTE: _ vs - because of Python syntax
+    cite_as = "cite-as"  # NOTE: _ vs - because of Python syntax
     type = "type"
     license = "license"
     linkset = "linkset"
@@ -165,27 +161,29 @@ class LinkRel(Enum):
 
     def __str__(self):
         return self.value
-    
-SIGNPOSTING=set(LinkRel.__members__.keys())
+
+
+SIGNPOSTING = set(LinkRel.__members__.keys())
+
 
 class Signpost:
     """An individual link of Signposting, e.g. for rel=cite-as.
-    
+
     This is a convenience class that may be wrapping a `Link`. 
-    
+
     In some case the link relation may have additional attributes, 
     e.g. ``signpost.link["title"]`` - the purpose of this class is to 
     lift only the navigational attributes for FAIR Signposting.
     """
 
     """The link relation of this signposting"""
-    rel : LinkRel
+    rel: LinkRel
 
     """The URI that is the target of this link, e.g. "http://example.com/"
     
     Note that URIs with Unicode characters will be represented as %-escaped URIs.
     """
-    target : AbsoluteURI
+    target: AbsoluteURI
 
     """The media type of the target. 
     
@@ -195,7 +193,7 @@ class Signpost:
     This property is optional, and should only be expected 
     if `rel` is `LinkRel.describedby` or `LinkRel.item`
     """
-    ## TODO: Check RFC if this may also be a URI. 
+    # TODO: Check RFC if this may also be a URI.
     #type: Union[MediaType, AbsoluteURI]
     type: Optional[MediaType]
 
@@ -225,15 +223,15 @@ class Signpost:
     """
     link: Optional[Link]
 
-    def __init__(self, 
-        rel:Union[LinkRel, str], 
-        target:Union[AbsoluteURI, str], 
-        media_type:Union[MediaType, str]=None,
-        profiles:Union[AbstractSet[AbsoluteURI], str]=None,
-        context:Union[AbsoluteURI, str]=None, 
-        link:Link=None):
+    def __init__(self,
+                 rel: Union[LinkRel, str],
+                 target: Union[AbsoluteURI, str],
+                 media_type: Union[MediaType, str] = None,
+                 profiles: Union[AbstractSet[AbsoluteURI], str] = None,
+                 context: Union[AbsoluteURI, str] = None,
+                 link: Link = None):
         """Construct a Signpost from a link relation.
-        
+
         Required parameters:
         * ``rel`` (e.g. ``"cite-as"``)
         * ``target`` URI (e.g. ``"http://example.com/pid-01"``)
@@ -250,44 +248,45 @@ class Signpost:
         not valid. Alternatively, instances of these types can
         be provided directly.
         """
-        
+
         if isinstance(rel, LinkRel):
             self.rel = rel
         else:
-            self.rel = LinkRel(rel) # May throw ValueError
-        
+            self.rel = LinkRel(rel)  # May throw ValueError
+
         if isinstance(target, AbsoluteURI):
             self.target = target
         else:
-            self.target = AbsoluteURI(target) # may throw ValueError
-        
+            self.target = AbsoluteURI(target)  # may throw ValueError
+
         if isinstance(media_type, MediaType):
             self.type = media_type
         elif media_type:
             self.type = MediaType(media_type)
         else:
             self.type = None
-        
+
         if isinstance(profiles, AbstractSet):
             for p in profiles:
                 assert isinstance(p, AbsoluteURI)
             self.profiles = frozenset(profiles)
         elif profiles:
-            self.profiles = frozenset(AbsoluteURI(p) for p in profiles.split(" "))
+            self.profiles = frozenset(AbsoluteURI(p)
+                                      for p in profiles.split(" "))
         else:
             self.profiles = frozenset()
 
         if isinstance(context, AbsoluteURI):
             self.context = context
         elif context:
-            self.context = AbsoluteURI(context) # may throw ValueError
+            self.context = AbsoluteURI(context)  # may throw ValueError
 
         self.link = link
-    
+
 
 class Signposting:
     """Signposting links for a given resource.
-    
+
     Links are categorized according to `FAIR`_ `signposting`_ conventions.
 
     .. _signposting: https://signposting.org/conventions/
@@ -340,7 +339,7 @@ class Signposting:
     """Optional collections this resource is part of"""
     collection: Optional[Signpost]
 
-    def __init__(self, context_url: Union[AbsoluteURI,str]=None, signposts: List[Signpost] = None):
+    def __init__(self, context_url: Union[AbsoluteURI, str] = None, signposts: List[Signpost] = None):
         if isinstance(context_url, AbsoluteURI):
             self.context_url = context_url
         elif context_url:
@@ -355,13 +354,13 @@ class Signposting:
         self.items = set()
         self.linksets = set()
         self.types = set()
-        
+
         if signposts is None:
             return
         # Populate from list of signposts
         for s in signposts:
             # TODO: Replace with match..case requires Python 3.10+ (PEP 634)
-            #match s.rel:
+            # match s.rel:
             #    case LinkRel.cite_as:
             #        self.citeAs = s
             #    case LinkRel.license:
@@ -391,4 +390,3 @@ class Signposting:
                 self.linksets.add(s)
             if s.rel is LinkRel.type:
                 self.types.add(s)
-
