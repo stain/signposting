@@ -340,10 +340,7 @@ class Signposting:
     collection: Optional[Signpost]
 
     def __init__(self, context_url: Union[AbsoluteURI, str] = None, signposts: List[Signpost] = None):
-        if isinstance(context_url, AbsoluteURI):
-            self.context_url = context_url
-        elif context_url:
-            self.context_url = AbsoluteURI(context_url)
+        self.context_url = AbsoluteURI(context_url)
 
         # Initialize attributes with empty defaults
         self.citeAs = None

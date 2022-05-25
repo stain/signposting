@@ -384,3 +384,24 @@ class TestSignposting(unittest.TestCase):
             AbsoluteURI("http://example.org/type/A"),
             AbsoluteURI("http://example.org/type/B")},
             set(i.target for i in s.types))
+
+    def testConstructorWarnDuplicate(self):
+        with warnings.catch_warnings(record=True) as w:
+            s = Signposting("http://example.com/page1", [
+                Signpost(LinkRel.cite_as, "http://example.com/pid/1"),
+                Signpost(LinkRel.cite_as, "http://example.com/pid/2-ignored"),
+                Signpost(LinkRel.license, "http://spdx.org/licenses/CC0-1.0"),
+                Signpost(LinkRel.license, "https://creativecommons.org/publicdomain/zero/1.0/legalcode"),
+                Signpost(LinkRel.collection, "http://example.com/collection/1"),
+                Signpost(LinkRel.collection, "http://example.com/collection/2"),
+                ])
+
+            self.assertEqual(3, len(w))
+            # Only first signpost should be kept
+            self.assertEqual(AbsoluteURI(
+                "http://example.com/pid/1"), s.citeAs.target)
+            self.assertEqual(AbsoluteURI(
+                "http://spdx.org/licenses/CC0-1.0"), s.license.target)
+            self.assertEqual(AbsoluteURI(
+                "http://example.com/collection/1"), s.collection.target)
+            
