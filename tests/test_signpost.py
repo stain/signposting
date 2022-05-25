@@ -5,22 +5,27 @@ import warnings
 
 from httplink import Link
 
-from signposting.signpost import Signpost,AbsoluteURI,MediaType,LinkRel,Signposting
+from signposting.signpost import Signpost, AbsoluteURI, MediaType, LinkRel, Signposting
+
 
 class TestAbsoluteURI(unittest.TestCase):
     def testStr(self):
         # Still stringable
         self.assertEqual("http://example.com/",
-            str(AbsoluteURI("http://example.com/")))
+                         str(AbsoluteURI("http://example.com/")))
+
     def testEquals(self):
         self.assertEqual(AbsoluteURI("http://example.com/"),
-            AbsoluteURI("http://example.com/"))
+                         AbsoluteURI("http://example.com/"))
+
     def testNotAbsolute(self):
         with self.assertRaises(ValueError):
             AbsoluteURI("/relative/path.html")
+
     def testNotValidURL(self):
         with self.assertRaises(ValueError):
             AbsoluteURI("http: // not valid")
+
 
 class TestLinkRel(unittest.TestCase):
     def testStr(self):
@@ -40,6 +45,7 @@ class TestLinkRel(unittest.TestCase):
                          str(LinkRel.license))
         self.assertEqual("linkset",
                          str(LinkRel.linkset))
+
     def testRepr(self):
         self.assertEqual("rel=cite-as", repr(LinkRel.cite_as))
 
@@ -47,99 +53,102 @@ class TestLinkRel(unittest.TestCase):
         self.assertEqual(LinkRel.type, LinkRel("type"))
         self.assertEqual(LinkRel.cite_as, LinkRel("cite-as"))
         with self.assertRaises(ValueError):
-            LinkRel("stylesheet") # Registered relation, but not signposting
+            LinkRel("stylesheet")  # Registered relation, but not signposting
+
 
 class TestMediaType(unittest.TestCase):
     def testTextPlain(self):
         self.assertEqual("text/plain",
-            MediaType("text/plain"))
+                         MediaType("text/plain"))
+
     def testCaseInsensitive(self):
         self.assertEqual("text/plain",
-            MediaType("Text/PLAIN"))
+                         MediaType("Text/PLAIN"))
+
     def testValidMains(self):
         with warnings.catch_warnings(record=True) as w:
             self.assertEqual("application/pdf",
-                   MediaType("application/pdf"))
+                             MediaType("application/pdf"))
             # A particularly long one with mixedCasing
             self.assertEqual("application/vnd.openxmlformats-officedocument.spreadsheetml.pivotCacheDefinition+xml".lower(),
-                   MediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.pivotCacheDefinition+xml"))
+                             MediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.pivotCacheDefinition+xml"))
             self.assertEqual("audio/mpeg",
-                   MediaType("audio/mpeg"))
+                             MediaType("audio/mpeg"))
             self.assertEqual("example/test",
-                   MediaType("example/test"))
+                             MediaType("example/test"))
             self.assertEqual("font/woff",
-                   MediaType("font/woff"))
+                             MediaType("font/woff"))
             self.assertEqual("image/jpeg",
-                   MediaType("image/jpeg"))
+                             MediaType("image/jpeg"))
             self.assertEqual("message/sip",
-                   MediaType("message/sip"))
+                             MediaType("message/sip"))
             self.assertEqual("model/vrml",
-                   MediaType("model/vrml"))
+                             MediaType("model/vrml"))
 
             self.assertEqual("multipart/mixed",
-                   MediaType("multipart/mixed"))
+                             MediaType("multipart/mixed"))
             self.assertEqual("text/html",
-                   MediaType("text/html"))
+                             MediaType("text/html"))
             self.assertEqual("video/mp4",
-                   MediaType("video/mp4"))
+                             MediaType("video/mp4"))
             self.assertEqual([], w)
 
     def testOtherTrees(self):
         with warnings.catch_warnings(record=True) as w:
             self.assertEqual("application/ld+json",
-                   MediaType("application/ld+json"))
+                             MediaType("application/ld+json"))
             self.assertEqual("example/vnd.example.test",
-                   MediaType("example/vnd.example.test"))
+                             MediaType("example/vnd.example.test"))
             self.assertEqual("example/prv.example.test",
-                   MediaType("example/prv.example.test"))
+                             MediaType("example/prv.example.test"))
             self.assertEqual("example/x.example.test",
-                   MediaType("example/x.example.test"))
+                             MediaType("example/x.example.test"))
             self.assertEqual([], w)
 
     def testUnknownTrees(self):
         with warnings.catch_warnings(record=True) as w:
             self.assertEqual("other/example",
-                   MediaType("other/example"))
+                             MediaType("other/example"))
             self.assertEqual(1, len(w))
             self.assertTrue(issubclass(w[0].category, UserWarning))
 
     def testSurprisinglyValid(self):
         with warnings.catch_warnings(record=True) as w:
             self.assertEqual("example/92-#-z-$-x-&-^-_-+-.",
-                MediaType("example/92-#-z-$-x-&-^-_-+-."))
-            self.assertEqual("92-#-z-$-x-&-^-_-/example", # No +. this time
-                MediaType("92-#-z-$-x-&-^-_-/example"))
+                             MediaType("example/92-#-z-$-x-&-^-_-+-."))
+            self.assertEqual("92-#-z-$-x-&-^-_-/example",  # No +. this time
+                             MediaType("92-#-z-$-x-&-^-_-/example"))
             self.assertEqual("9/2",
-                MediaType("9/2"))
-        self.assertEqual(2, len(w)) # 92... and 9 invalid main types
+                             MediaType("9/2"))
+        self.assertEqual(2, len(w))  # 92... and 9 invalid main types
 
     def testInvalidMain(self):
         with warnings.catch_warnings(record=True) as w:
             with self.assertRaises(ValueError):
-                MediaType(".example/wrong") # first character not a-z0-9
+                MediaType(".example/wrong")  # first character not a-z0-9
             with self.assertRaises(ValueError):
-                MediaType("fantasy%text/handwritten") # % not permitted
+                MediaType("fantasy%text/handwritten")  # % not permitted
             with self.assertRaises(ValueError):
-                MediaType(" text/plain") # Space not permitted
+                MediaType(" text/plain")  # Space not permitted
             with self.assertRaises(ValueError):
-                MediaType("*/*") # * not permitted (but common in HTTP Accept!)
+                MediaType("*/*")  # * not permitted (but common in HTTP Accept!)
             with self.assertRaises(ValueError):
                 MediaType("image/*")  # As above, but in sub-type
             with self.assertRaises(ValueError):
-                MediaType("-test/example") # First character not a-z0-9
+                MediaType("-test/example")  # First character not a-z0-9
             with self.assertRaises(ValueError):
-                MediaType("example/-test") # First character not a-z0-9
-        self.assertEqual([], w) # Should fail before testing main type
+                MediaType("example/-test")  # First character not a-z0-9
+        self.assertEqual([], w)  # Should fail before testing main type
 
     def testInvalidLength(self):
         x256 = "x" * 256
         x127 = "x" * 127
         with warnings.catch_warnings(record=True) as w:
             # Maximum on either side
-            MediaType("example/"+x127)
+            MediaType("example/" + x127)
             MediaType(x127 + "/example")
             # This is the maximum permissable
-            MediaType(x127+"/"+x127)
+            MediaType(x127 + "/" + x127)
 
             # Total length is over - should ideally
             # fail before running expensive regex
@@ -153,7 +162,8 @@ class TestMediaType(unittest.TestCase):
                 MediaType("example/x" + x127)
             with self.assertRaises(ValueError):
                 MediaType(x127 + "x/example")
-        self.assertEqual(1, len(w)) # x127 main type unrecognized (second time filtered)
+        # x127 main type unrecognized (second time filtered)
+        self.assertEqual(1, len(w))
 
     def testInvalidType(self):
         with self.assertRaises(ValueError):
@@ -169,35 +179,40 @@ class TestMediaType(unittest.TestCase):
         with self.assertRaises(ValueError):
             MediaType("http://example.com")
 
+
 class TestSignPost(unittest.TestCase):
     def testConstructorFromObjects(self):
         s = Signpost(
             LinkRel.cite_as,
-            AbsoluteURI("http://example.com/pid/1"), 
-            MediaType("text/plain"), 
+            AbsoluteURI("http://example.com/pid/1"),
+            MediaType("text/plain"),
             {AbsoluteURI("http://example.org/profileA"),
              AbsoluteURI("http://example.org/profileB")},
             AbsoluteURI("http://example.com/resource/1.html"))
         self.assertEqual("cite-as", s.rel.value)
         self.assertEqual("http://example.com/pid/1", str(s.target))
         self.assertEqual("text/plain", str(s.type))
-        self.assertTrue(AbsoluteURI("http://example.org/profileA") in s.profiles)
-        self.assertTrue(AbsoluteURI("http://example.org/profileB") in s.profiles)
+        self.assertTrue(AbsoluteURI(
+            "http://example.org/profileA") in s.profiles)
+        self.assertTrue(AbsoluteURI(
+            "http://example.org/profileB") in s.profiles)
         self.assertEqual("http://example.com/resource/1.html", str(s.context))
         self.assertIsNone(s.link)
-        
+
     def testConstructorFromStrings(self):
         s = Signpost(
             "cite-as",
-            "http://example.com/pid/1", 
-            "text/plain", 
+            "http://example.com/pid/1",
+            "text/plain",
             "http://example.org/profileA http://example.org/profileB",
             "http://example.com/resource/1.html")
         self.assertEqual("cite-as", s.rel.value)
         self.assertEqual("http://example.com/pid/1", str(s.target))
         self.assertEqual("text/plain", str(s.type))
-        self.assertTrue(AbsoluteURI("http://example.org/profileA") in s.profiles)
-        self.assertTrue(AbsoluteURI("http://example.org/profileB") in s.profiles)
+        self.assertTrue(AbsoluteURI(
+            "http://example.org/profileA") in s.profiles)
+        self.assertTrue(AbsoluteURI(
+            "http://example.org/profileB") in s.profiles)
         self.assertEqual("http://example.com/resource/1.html", str(s.context))
         self.assertIsNone(s.link)
 
@@ -224,14 +239,14 @@ class TestSignPost(unittest.TestCase):
         self.assertEqual(link, s.link)
 
     def testConstructorEmptyStrings(self):
-        s = Signpost(            
+        s = Signpost(
             "cite-as",
             "http://example.com/pid/1",
             media_type="",
             profiles="")
         self.assertIsNone(s.type)
         self.assertEqual(set(), s.profiles)
-        
+
     def testConstructorUnknownRel(self):
         with self.assertRaises(ValueError):
             s = Signpost(
@@ -249,8 +264,8 @@ class TestSignPost(unittest.TestCase):
             s = Signpost(
                 "item",
                 "http://example.com/download/1.pdf",
-                "pdf" # should be "application/pdf"
-            )
+                "pdf"  # should be "application/pdf"
+                )
 
     def testConstructorInvalidProfiles(self):
         with self.assertRaises(ValueError):
@@ -258,7 +273,8 @@ class TestSignPost(unittest.TestCase):
                 "item",
                 "http://example.com/download/1.pdf",
                 profiles="https:/example.org/first-ok second-not-absolute"
-            )
+                )
+
 
 class TestSignposting(unittest.TestCase):
     def testConstructorDefault(self):
@@ -271,71 +287,72 @@ class TestSignposting(unittest.TestCase):
         self.assertEqual(set(), s.describedBy)
         self.assertEqual(set(), s.items)
         self.assertEqual(set(), s.linksets)
-        self.assertEqual(set(), s.types)                          
+        self.assertEqual(set(), s.types)
 
     def testConstructorEmpty(self):
         s = Signposting("http://example.com/page1", [])
         self.assertEqual(AbsoluteURI("http://example.com/page1"), s.context_url)
         self.assertIsNone(s.citeAs)
-        self.assertEqual(set(), s.types)        
-    
+        self.assertEqual(set(), s.types)
+
     def testConstructorCiteAs(self):
         s = Signposting("http://example.com/page1",
-            [Signpost(LinkRel.cite_as, "http://example.com/pid/1")]
-        )
+                        [Signpost(LinkRel.cite_as, "http://example.com/pid/1")]
+                        )
         self.assertEqual(AbsoluteURI("http://example.com/page1"), s.context_url)
-        self.assertEqual(AbsoluteURI("http://example.com/pid/1"), s.citeAs.target)
-        
+        self.assertEqual(AbsoluteURI(
+            "http://example.com/pid/1"), s.citeAs.target)
+
     def testConstructorItems(self):
         s = Signposting("http://example.com/page1", [
-                Signpost(LinkRel.item, "http://example.com/item/1.pdf"),
-                Signpost(LinkRel.item, "http://example.com/item/2.txt")])
-        self.assertEqual({"http://example.com/item/1.pdf", "http://example.com/item/2.txt"}, 
-                          set(str(i.target) for i in s.items ))
+            Signpost(LinkRel.item, "http://example.com/item/1.pdf"),
+            Signpost(LinkRel.item, "http://example.com/item/2.txt")])
+        self.assertEqual({"http://example.com/item/1.pdf", "http://example.com/item/2.txt"},
+                         set(str(i.target) for i in s.items))
 
     def testConstructorComplete(self):
         s = Signposting("http://example.com/page1", [
-                Signpost(LinkRel.item, "http://example.com/item/1.pdf"),
-                Signpost(LinkRel.cite_as, "http://example.com/pid/1"),
-                # tip: order does not matter
-                Signpost(LinkRel.item, "http://example.com/item/2.txt"),
-                Signpost(LinkRel.license, "http://spdx.org/licenses/CC0-1.0"),
-                Signpost(LinkRel.collection, "http://example.com/collection/1"),
-                Signpost(LinkRel.author, "http://example.com/author/1"),  
-                Signpost(LinkRel.author, "http://example.com/author/2"),
-                Signpost(LinkRel.describedby, "http://example.com/metadata/1.ttl"),  
-                Signpost(LinkRel.describedby, "http://example.com/metadata/2.jsonld"),  
-                Signpost(LinkRel.linkset, "http://example.com/linkset/1.json"),  
-                Signpost(LinkRel.linkset, "http://example.com/linkset/2.txt"),
-                Signpost(LinkRel.type, "http://example.org/type/A"),
-                Signpost(LinkRel.type, "http://example.org/type/B")
+            Signpost(LinkRel.item, "http://example.com/item/1.pdf"),
+            Signpost(LinkRel.cite_as, "http://example.com/pid/1"),
+            # tip: order does not matter
+            Signpost(LinkRel.item, "http://example.com/item/2.txt"),
+            Signpost(LinkRel.license, "http://spdx.org/licenses/CC0-1.0"),
+            Signpost(LinkRel.collection, "http://example.com/collection/1"),
+            Signpost(LinkRel.author, "http://example.com/author/1"),
+            Signpost(LinkRel.author, "http://example.com/author/2"),
+            Signpost(LinkRel.describedby, "http://example.com/metadata/1.ttl"),
+            Signpost(LinkRel.describedby,
+                     "http://example.com/metadata/2.jsonld"),
+            Signpost(LinkRel.linkset, "http://example.com/linkset/1.json"),
+            Signpost(LinkRel.linkset, "http://example.com/linkset/2.txt"),
+            Signpost(LinkRel.type, "http://example.org/type/A"),
+            Signpost(LinkRel.type, "http://example.org/type/B")
             ])
-        
+
         self.assertEqual(AbsoluteURI("http://example.com/page1"), s.context_url)
-        self.assertEqual(AbsoluteURI("http://example.com/pid/1"), s.citeAs.target)
-        self.assertEqual(AbsoluteURI("http://spdx.org/licenses/CC0-1.0"), s.license.target)
-        self.assertEqual(AbsoluteURI("http://example.com/collection/1"), s.collection.target)
+        self.assertEqual(AbsoluteURI(
+            "http://example.com/pid/1"), s.citeAs.target)
+        self.assertEqual(AbsoluteURI(
+            "http://spdx.org/licenses/CC0-1.0"), s.license.target)
+        self.assertEqual(AbsoluteURI(
+            "http://example.com/collection/1"), s.collection.target)
         self.assertEqual({
-                        AbsoluteURI("http://example.com/item/1.pdf"), 
-                        AbsoluteURI("http://example.com/item/2.txt")}, 
-                    set(i.target for i in s.items))
+            AbsoluteURI("http://example.com/item/1.pdf"),
+            AbsoluteURI("http://example.com/item/2.txt")},
+            set(i.target for i in s.items))
         self.assertEqual({
-                        AbsoluteURI("http://example.com/author/1"), 
-                        AbsoluteURI("http://example.com/author/2")}, 
-                    set(i.target for i in s.authors))
+            AbsoluteURI("http://example.com/author/1"),
+            AbsoluteURI("http://example.com/author/2")},
+            set(i.target for i in s.authors))
         self.assertEqual({
-                        AbsoluteURI("http://example.com/metadata/1.ttl"), 
-                        AbsoluteURI("http://example.com/metadata/2.jsonld")}, 
-                    set(i.target for i in s.describedBy))
+            AbsoluteURI("http://example.com/metadata/1.ttl"),
+            AbsoluteURI("http://example.com/metadata/2.jsonld")},
+            set(i.target for i in s.describedBy))
         self.assertEqual({
-                        AbsoluteURI("http://example.com/linkset/1.json"), 
-                        AbsoluteURI("http://example.com/linkset/2.txt")}, 
-                    set(i.target for i in s.linksets))
+            AbsoluteURI("http://example.com/linkset/1.json"),
+            AbsoluteURI("http://example.com/linkset/2.txt")},
+            set(i.target for i in s.linksets))
         self.assertEqual({
-                        AbsoluteURI("http://example.org/type/A"), 
-                        AbsoluteURI("http://example.org/type/B")}, 
-                    set(i.target for i in s.types))
-                            
-
-
-
+            AbsoluteURI("http://example.org/type/A"),
+            AbsoluteURI("http://example.org/type/B")},
+            set(i.target for i in s.types))
