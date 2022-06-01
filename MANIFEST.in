@@ -18,6 +18,7 @@ exclude Makefile
 
 prune devtools
 prune tests
+prune stubs
 
 global-exclude *.py[cod] __pycache__/* *.so *.dylib 
 global-exclude tags
