@@ -47,7 +47,7 @@ class AbsoluteURI(str):
         uri = urljoin(base, value) 
         # will throw ValueError if resolved URI is not valid
         rfc3987.parse(uri, rule="absolute_URI")
-        return str.__new__(cls, uri)
+        return super(AbsoluteURI, cls).__new__(cls, uri)
 
     # @staticmethod
     # def from_iri(cls, value: str, base: Optional[str] = None):
@@ -124,7 +124,7 @@ class MediaType(str):
         if not main in cls.MAIN:
             warn("Unrecognized media type main tree: {}".format(main))
         # Ensure we use the matched string
-        t = str.__new__(cls, match.group())
+        t = super(MediaType, cls).__new__(cls, match.group())
         t.main = main
         t.sub = sub
         return t
@@ -155,7 +155,7 @@ class LinkRel(Enum):
     type = "type"
     license = "license"
     linkset = "linkset"
-
+    
     def __repr__(self):
         return "rel=%s" % self.value
 
@@ -194,7 +194,6 @@ class Signpost:
     if `rel` is `LinkRel.describedby` or `LinkRel.item`
     """
     # TODO: Check RFC if this may also be a URI.
-    #type: Union[MediaType, AbsoluteURI]
     type: Optional[MediaType]
 
     """Profile URIs for the target with the given type.
