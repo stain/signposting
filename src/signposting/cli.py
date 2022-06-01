@@ -11,7 +11,8 @@ import sys
 import enum
 from urllib.error import HTTPError, URLError
 
-from . import Signposting, find_signposting, find_signposting_http, Link
+from .signpost import Signpost, Signposting
+from . import find_signposting, find_signposting_http, Link
 
 
 def _multiline(header: str, lines: Collection[str]):
@@ -19,13 +20,13 @@ def _multiline(header: str, lines: Collection[str]):
     return "%s: %s" % (header, indent.join(lines))
 
 
-def _target(link: Link):
-    return "<%s>" % link.target
+def _target(s: Signpost):
+    return "<%s>" % s.target
 
 
-def _target_and_type(link: Link):
-    return "<%s> %s" % (link.target,
-                        "type" in link and link["type"] or "")
+def _target_and_type(s: Signpost):
+    return "<%s> %s" % (s.target,
+                        s.type or "")
 
 
 errors = enum.IntEnum("Error",
@@ -72,22 +73,22 @@ def main(*args: str):
         print("Signposting for", signposting.context_url or url)
         if (signposting.citeAs):
             print("CiteAs:", _target(signposting.citeAs))
-        if (signposting.type):
-            print(_multiline("Type", [_target(l) for l in signposting.type]))
+        if (signposting.types):
+            print(_multiline("Type", [_target(l) for l in signposting.types]))
         if (signposting.collection):
             print("Collection:", _target(signposting.collection))
         if (signposting.license):
             print("License:", _target(signposting.license))
-        if (signposting.author):
+        if (signposting.authors):
             print(_multiline("Author", [_target(l)
-                  for l in signposting.author]))
+                  for l in signposting.authors]))
         if (signposting.describedBy):
             print(_multiline("DescribedBy", [
                   _target_and_type(l) for l in signposting.describedBy]))
         if (signposting.item):
             print(_multiline("Item", [_target_and_type(l)
-                  for l in signposting.item]))
+                  for l in signposting.items]))
         if (signposting.linkset):
             print(_multiline("Linkset", [_target_and_type(l)
-                  for l in signposting.linkset]))
+                  for l in signposting.linksets]))
     return errors.OK

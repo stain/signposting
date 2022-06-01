@@ -20,14 +20,7 @@ import httplink
 from httplink import ParsedLinks, Link, parse_link_header
 from urllib.parse import urljoin
 from . import signpost
-
-# Only relations listed below will be selected
-# Sources:
-#   https://signposting.org/conventions/
-#   https://signposting.org/FAIR/
-"""Valid Signposting link relations"""
-SIGNPOSTING = set(
-    "author collection describedby describes item cite-as type license linkset".split(" "))
+from .signpost import SIGNPOSTING, Signpost, Signposting, LinkRel
 
 
 def _filter_links_by_rel(parsedLinks: ParsedLinks, *rels: str) -> List[Link]:
@@ -66,14 +59,23 @@ def _optional_link(parsedLinks: ParsedLinks, rel: str) -> Optional[Link]:
         return parsedLinks[rel]
     return None
 
-# FIXME: No need for subclass
-class Signposting(signpost.Signposting):
-    def __init__(self, parsedLinks: ParsedLinks, context_url: str = None):
+def linkToSignpost(link: Link, rel: LinkRel, context_url: str) -> Signpost:
+    return Signpost(rel, link.target, 
+        link.attributes.get("type"), # return None if not listed
+        link.attributes.get("profile"), # TODO: Suport multiple profiles?
+        context_url, link)
+
+def linksToSignposting(links: List[Link], context_url: str = None) -> Signposting:
         """Initialize Signposting object for a given `ParsedLinks` 
         as discovered from the (optional) `context_url` base URL.
         """
         signposts = []
-        super(Signposting, self).__init__(context_url, signposts)
+        for l in links:
+            # TODO: Check if context_url matches "anchor"
+            for rel in l.rel:
+                if rel in SIGNPOSTING:                    
+                    signposts.append(linkToSignpost(l, LinkRel(rel), context_url))
+
 
 def _absolute_attribute(k: str, v: str, baseurl: str) -> Tuple[str, str]:
     """Ensure link attribute value uses absolute URI, resolving from the baseurl.
@@ -115,4 +117,4 @@ def find_signposting(headers: List[str], baseurl: str = None) -> Signposting:
         else:
             link = l  # unchanged
         signposting.append(link)
-    return Signposting(ParsedLinks(signposting), baseurl)
+    return linksToSignposting(signposting, baseurl)

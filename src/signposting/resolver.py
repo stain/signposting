@@ -20,6 +20,7 @@ import warnings
 from httplink import Link
 
 from . import linkheader
+from .signpost import Signposting,Signpost
 
 from typing import Dict, List, Set, Tuple, Optional, Collection, Set
 
@@ -35,7 +36,7 @@ _http_opener = urllib.request.build_opener(_HTTPErrorHandler)
 # urllib.request.install_opener(opener)
 
 
-def find_signposting_http(url: str) -> linkheader.Signposting:
+def find_signposting_http(url: str) -> Signposting:
     """Find signposting from HTTP headers.
 
     Return a parsed `Signposting` object of the discovered signposting.
