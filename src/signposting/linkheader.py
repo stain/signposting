@@ -59,23 +59,34 @@ def _optional_link(parsedLinks: ParsedLinks, rel: str) -> Optional[Link]:
         return parsedLinks[rel]
     return None
 
-def linkToSignpost(link: Link, rel: LinkRel, context_url: str) -> Signpost:
+def _link_attr(link: Link, key: str) -> Optional[str]:
+    """Look up an optional link attribute with given `key` from a `Link`.
+    
+    Return the attribute value, or ``None`` if the link attribute was not found.
+
+    This is a workaround as `Link` exposes ``__getitem__`` and ``__contains__`` but not ``Dict.get()``
+    """
+    if key in link:
+        return link[key]
+    return None
+
+def linkToSignpost(link: Link, rel: LinkRel, context_url: str = None) -> Signpost:
     return Signpost(rel, link.target, 
-        link.attributes.get("type"), # return None if not listed
-        link.attributes.get("profile"), # TODO: Suport multiple profiles?
+        _link_attr(link, "type"),
+        _link_attr(link, "profile"),
         context_url, link)
 
 def linksToSignposting(links: List[Link], context_url: str = None) -> Signposting:
         """Initialize Signposting object for a given `ParsedLinks` 
         as discovered from the (optional) `context_url` base URL.
         """
-        signposts = []
+        signposts: List[Signpost] = []
         for l in links:
             # TODO: Check if context_url matches "anchor"
             for rel in l.rel:
                 if rel in SIGNPOSTING:                    
                     signposts.append(linkToSignpost(l, LinkRel(rel), context_url))
-
+        return Signposting(context_url, signposts)
 
 def _absolute_attribute(k: str, v: str, baseurl: str) -> Tuple[str, str]:
     """Ensure link attribute value uses absolute URI, resolving from the baseurl.

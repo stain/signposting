@@ -44,7 +44,7 @@ class AbsoluteURI(str):
         if isinstance(value, cls):
             return value # Already AbsoluteURI, no need to check again
         # Resolve potentially relative URI reference when base is given
-        uri = urljoin(base, value) 
+        uri = urljoin(base or "", value)
         # will throw ValueError if resolved URI is not valid
         rfc3987.parse(uri, rule="absolute_URI")
         return super(AbsoluteURI, cls).__new__(cls, uri)
@@ -163,8 +163,8 @@ class LinkRel(Enum):
         return self.value
 
 
-SIGNPOSTING = set(LinkRel.__members__.keys())
-
+"""Signposting link relations as strings"""
+SIGNPOSTING = set(l.value for l in LinkRel)
 
 class Signpost:
     """An individual link of Signposting, e.g. for rel=cite-as.
@@ -339,7 +339,10 @@ class Signposting:
     collection: Optional[Signpost]
 
     def __init__(self, context_url: Union[AbsoluteURI, str] = None, signposts: List[Signpost] = None):
-        self.context_url = AbsoluteURI(context_url)
+        if context_url:
+            self.context_url = AbsoluteURI(context_url)
+        else:
+            self.context_url = None
 
         # Initialize attributes with empty defaults
         self.citeAs = None

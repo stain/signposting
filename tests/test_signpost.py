@@ -5,7 +5,7 @@ import warnings
 
 from httplink import Link
 
-from signposting.signpost import Signpost, AbsoluteURI, MediaType, LinkRel, Signposting
+from signposting.signpost import Signpost, AbsoluteURI, MediaType, LinkRel, Signposting, SIGNPOSTING
 
 
 class TestAbsoluteURI(unittest.TestCase):
@@ -83,6 +83,11 @@ class TestLinkRel(unittest.TestCase):
         with self.assertRaises(ValueError):
             LinkRel("stylesheet")  # Registered relation, but not signposting
 
+    def testSIGNPOSTING(self):
+        for l in SIGNPOSTING:
+            self.assertEqual(l, LinkRel(l).value)
+        for l in LinkRel:
+            self.assertTrue(l.value in SIGNPOSTING)
 
 class TestMediaType(unittest.TestCase):
     def testTextPlain(self):

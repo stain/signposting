@@ -85,10 +85,10 @@ def main(*args: str):
         if (signposting.describedBy):
             print(_multiline("DescribedBy", [
                   _target_and_type(l) for l in signposting.describedBy]))
-        if (signposting.item):
+        if (signposting.items):
             print(_multiline("Item", [_target_and_type(l)
                   for l in signposting.items]))
-        if (signposting.linkset):
+        if (signposting.linksets):
             print(_multiline("Linkset", [_target_and_type(l)
                   for l in signposting.linksets]))
     return errors.OK
