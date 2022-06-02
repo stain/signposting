@@ -30,7 +30,7 @@ def _target_and_type(s: Signpost):
 
 
 errors = enum.IntEnum("Error",
-                      "OK BAD_URL HTTP_ERROR LINK_SYNTAX INTERNAL_ERROR",
+                      "OK URL_ERROR HTTP_ERROR LINK_SYNTAX INTERNAL_ERROR",
                       start=0
                       )
 
@@ -47,21 +47,21 @@ def main(*args: str):
         parsed = parser.parse_args()
     isFirst = True
     for url in parsed.url:
-        if not isFirst:
+        if isFirst:
             isFirst = False
         else:
             print()  # separator
 
         try:
             signposting = find_signposting_http(url)
-        except URLError as e:
-            print("Failed URL %s" % url, file=sys.stderr)
-            print("%s" % e.reason, file=sys.stderr)
-            return errors.BAD_URL
         except HTTPError as e:
             print("HTTP error for %s" % url, file=sys.stderr)
             print("%s" % e.reason, file=sys.stderr)
             return errors.HTTP_ERROR
+        except URLError as e:
+            print("Failed URL %s" % url, file=sys.stderr)
+            print("%s" % e.reason, file=sys.stderr)
+            return errors.URL_ERROR
         except ValueError as e:
             print("Could not parse Link header for %s" % url, file=sys.stderr)
             print("%s" % e, file=sys.stderr)
