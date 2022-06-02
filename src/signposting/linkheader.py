@@ -19,23 +19,19 @@ from typing import Dict, List, Set, Tuple, Optional, Collection, Set
 import httplink
 from httplink import ParsedLinks, Link, parse_link_header
 from urllib.parse import urljoin
+from . import signpost
+from .signpost import SIGNPOSTING, Signpost, Signposting, LinkRel
 
-# Only relations listed below will be selected
-# Sources:
-#   https://signposting.org/conventions/
-#   https://signposting.org/FAIR/
-"""Valid Signposting link relations"""
-SIGNPOSTING=set("author collection describedby describes item cite-as type license linkset".split(" "))
 
-def _filter_links_by_rel(parsedLinks:ParsedLinks, *rels:str) -> List[Link]:
+def _filter_links_by_rel(parsedLinks: ParsedLinks, *rels: str) -> List[Link]:
     """Filter links to select from a set of relations.
 
     The relations must be valid Signposting relation listed in `SIGNPOSTING`.
 
     Return a list of ``Link``s which ``rel`` match the given ``rels``.
-    
+
     """
-    if rels:        
+    if rels:
         # Ensure all filters are in lower case
         filterRels = set(r.lower() for r in rels)
         unknown = filterRels - SIGNPOSTING
@@ -46,7 +42,8 @@ def _filter_links_by_rel(parsedLinks:ParsedLinks, *rels:str) -> List[Link]:
         filterRels = SIGNPOSTING
     return [l for l in parsedLinks.links if l.rel & filterRels]
 
-def _optional_link(parsedLinks:ParsedLinks, rel:str) -> Optional[Link]:
+
+def _optional_link(parsedLinks: ParsedLinks, rel: str) -> Optional[Link]:
     """Look up a single link relation.
 
     The relation must be a valid Signposting relation listed in `SIGNPOSTING`.
@@ -62,106 +59,61 @@ def _optional_link(parsedLinks:ParsedLinks, rel:str) -> Optional[Link]:
         return parsedLinks[rel]
     return None
 
-
-class Signposting:
-    """Signposting links for a given resource.
+def _link_attr(link: Link, key: str) -> Optional[str]:
+    """Look up an optional link attribute with given `key` from a `Link`.
     
-    Links are discovered according to `FAIR`_ `signposting`_ conventions.
+    Return the attribute value, or ``None`` if the link attribute was not found.
 
-    .. _signposting: https://signposting.org/conventions/
-    .. _FAIR: https://signposting.org/FAIR/
+    This is a workaround as `Link` exposes ``__getitem__`` and ``__contains__`` but not ``Dict.get()``
     """
+    if key in link:
+        return link[key]
+    return None
 
-    """Resource URL this is the signposting for, e.g. a HTML landing page.
-    
-    Note that individual links may override the `context`_ using the ``Link["anchor"]`` attribute.
+def linkToSignpost(link: Link, rel: LinkRel, context_url: str = None) -> Signpost:
+    return Signpost(rel, link.target, 
+        _link_attr(link, "type"),
+        _link_attr(link, "profile"),
+        context_url, link)
 
-    .. _context: https://datatracker.ietf.org/doc/html/rfc8288#section-3.2
-
-    """
-    context_url: Optional[str]
-
-    """Author(s) of the resource (and presuambly it items)"""
-    author: List[Link]
-
-    """Metadata resources about the resource and its items, typically in a Linked Data format. 
-    
-    Resources may require content negotiation, check ``Link["type"]`` attribute
-    (if present) for content type, e.g. ``text/turtle``.
-    """
-    describedBy: List[Link]
-
-    """Semantic types of the resource, e.g. from schema.org"""
-    type: List[Link]
-
-    """Items contained by this resource, e.g. downloads.
-    
-    The content type of the download may be available as ``Link["type"]``` attribute.
-    """
-    item: List[Link]
-
-    """Linkset resuorces with further signposting.
-
-    A `linkset`_ is a JSON or text serialization of Link headers available as a
-    separate resource, and may be used to externalize large collection of links, e.g.
-    thousands of "item" relations.
-
-    Resources may require content negotiation, check ``Link["type"]`` attribute
-    (if present)  for content types ``application/linkset`` or ``application/linkset+json``.
-
-    .. _linkset: https://datatracker.ietf.org/doc/draft-ietf-httpapi-linkset/
-    """
-    linkset: List[Link]
-
-    """Persistent Identifier (PID) for this resource, preferred for citation and permalinks"""
-    citeAs: Optional[Link]
-
-    """Optional license of this resource (and presumably its items)"""
-    license: Optional[Link]
-
-    """Optional collection this resource is part of"""
-    collection: Optional[Link]
-
-    def __init__(self, parsedLinks:ParsedLinks, context_url:str=None):
+def linksToSignposting(links: List[Link], context_url: str = None) -> Signposting:
         """Initialize Signposting object for a given `ParsedLinks` 
         as discovered from the (optional) `context_url` base URL.
         """
-        # According to FAIR Signposting
-        # <https://www.signposting.org/FAIR/> version 20220225
-        self.context_url = context_url
-        self.author = _filter_links_by_rel(parsedLinks, "author")
-        self.describedBy = _filter_links_by_rel(parsedLinks, "describedby")
-        self.type = _filter_links_by_rel(parsedLinks, "type")
-        self.item = _filter_links_by_rel(parsedLinks, "item")
-        self.linkset =  _filter_links_by_rel(parsedLinks, "linkset")
-        self.citeAs = _optional_link(parsedLinks, "cite-as")
-        self.license = _optional_link(parsedLinks, "license")
-        self.collection = _optional_link(parsedLinks, "collection")
+        signposts: List[Signpost] = []
+        for l in links:
+            # TODO: Check if context_url matches "anchor"
+            for rel in l.rel:
+                if rel in SIGNPOSTING:                    
+                    signposts.append(linkToSignpost(l, LinkRel(rel), context_url))
+        return Signposting(context_url, signposts)
 
-def _absolute_attribute(k:str, v:str, baseurl:str) -> Tuple[str,str]:
+def _absolute_attribute(k: str, v: str, baseurl: str) -> Tuple[str, str]:
     """Ensure link attribute value uses absolute URI, resolving from the baseurl.
 
-    Currently this will mean the `context`_ attribute ``anchor`` will be rewritten.
+    Currently this will mean the `context`_ attribute ``anchor`` 
+    and ``profile`` will be rewritten.
 
     .. _context: https://datatracker.ietf.org/doc/html/rfc8288#section-3.2
     """
-    if k.lower() == "anchor":
+    if k.lower() == "anchor" or k.lower() == "profile":
         return k, urljoin(baseurl, v)
     return k, v
 
-def find_signposting(headers:List[str], baseurl:str=None) -> Signposting:
+
+def find_signposting(headers: List[str], baseurl: str = None) -> Signposting:
     """Find signposting among HTTP Link headers. 
 
     Optionally make the links absolute according to the base URL.
 
     The link headers should be valid according to `RFC8288`_, excluding the "Link:" prefix.
-    
+
     Links are discovered according to defined `FAIR`_ `signposting`_ relations.
 
     .. _signposting: https://signposting.org/conventions/
     .. _FAIR: https://signposting.org/FAIR/
     .. _rfc8288: https://doi.org/10.17487/RFC8288
-    
+
     """
     parsed = parse_link_header(", ".join(headers))
     signposting: List[Link] = []
@@ -170,9 +122,10 @@ def find_signposting(headers:List[str], baseurl:str=None) -> Signposting:
         if baseurl is not None:
             # Make URLs absolute by modifying Link object in-place
             target = urljoin(baseurl, l.target)
-            attributes = [_absolute_attribute(k,v, baseurl) for k,v in l.attributes]            
+            attributes = [_absolute_attribute(
+                k, v, baseurl) for k, v in l.attributes]
             link = Link(target, attributes)
         else:
-            link = l # unchanged
+            link = l  # unchanged
         signposting.append(link)
-    return Signposting(ParsedLinks(signposting), baseurl)
+    return linksToSignposting(signposting, baseurl)
