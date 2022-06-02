@@ -131,7 +131,7 @@ class MediaType(str):
 
 
 @unique
-class LinkRel(Enum):
+class LinkRel(str, Enum):
     """A link relation as used in Signposting.
 
     Link relations are defined by `RFC8288`_, but 

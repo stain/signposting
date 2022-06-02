@@ -69,6 +69,14 @@ class TestAbsoluteURI(unittest.TestCase):
 
 
 class TestLinkRel(unittest.TestCase):
+    def testEqual(self):
+        self.assertEqual("cite-as", LinkRel.cite_as)
+        self.assertEqual(LinkRel.cite_as, "cite-as")
+
+    def testStrMethods(self):
+        self.assertTrue(LinkRel.cite_as.startswith("cite"))
+        self.assertTrue(LinkRel.cite_as.endswith("-as"))
+
     def testStr(self):
         self.assertEqual("author",
                          str(LinkRel.author))
