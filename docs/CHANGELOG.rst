@@ -2,6 +2,9 @@
 Changelog
 =========
 
+v0.2.0 (2022-06-02)
+------------------------------------------------------------
+
 
 * API Change: Refactored to new ``Signposting`` classes
   to avoid exposing the ``ParsedLink`` implementation.
