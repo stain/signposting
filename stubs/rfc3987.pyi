@@ -1,3 +1,5 @@
+# Auto-generated from rfc3987 1.3.8
+
 from _typeshed import Incomplete
 
 basestring = str
