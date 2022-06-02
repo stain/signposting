@@ -4,6 +4,7 @@ import unittest
 from unittest.mock import Mock, MagicMock, patch
 
 from signposting.resolver import find_signposting_http
+from signposting.signpost import LinkRel
 import urllib.error
 
 import os
@@ -34,7 +35,7 @@ class TestResolverA2A(unittest.TestCase):
         s = find_signposting_http(
             "https://w3id.org/a2a-fair-metrics/03-http-citeas-only/")
         self.assertEqual(s.citeAs.target,
-                         {"https://w3id.org/a2a-fair-metrics/03-http-citeas-only/"})
+                         "https://w3id.org/a2a-fair-metrics/03-http-citeas-only/")
 
     def test_04_iri(self):
         s = find_signposting_http(
@@ -60,7 +61,7 @@ class TestResolverA2A(unittest.TestCase):
                          "https://w3id.org/a2a-fair-metrics/06-http-citeas-describedby-item/")
         self.assertEqual({d.target for d in s.describedBy}, 
             {"https://s11.no/2022/a2a-fair-metrics/06-http-citeas-describedby-item/index.ttl"})
-        self.assertEqual({d.type for d in s.describedBy}, "text/turtle")
+        self.assertEqual({d.type for d in s.describedBy}, {"text/turtle"})
         self.assertEqual({i.type for i in s.items}, {"text/csv"})
         self.assertEqual({i.target for i in s.items}, 
             {"https://s11.no/2022/a2a-fair-metrics/06-http-citeas-describedby-item/test-apple-data.csv"})
@@ -123,7 +124,7 @@ class TestResolverA2A(unittest.TestCase):
         self.assertEqual({i.target for i in s.items}, 
             {"https://s11.no/2022/a2a-fair-metrics/12-http-item-does-not-resolve/fake.ttl"})
         # .. which is  404 Not Found, but not our job to test
-        self.assertEquals({None}, {i.type for i in s.items})
+        self.assertEqual({None}, {i.type for i in s.items})
 
     def test_13_describedby(self):
         s = find_signposting_http(
@@ -156,9 +157,8 @@ class TestResolverA2A(unittest.TestCase):
     def test_16_describedby_nconneg(self):
         s = find_signposting_http(
             "https://w3id.org/a2a-fair-metrics/16-http-describedby-conneg/")
-        self.assertEqual({d.target for d in s.describedBy}, 
-            {"https://s11.no/2022/a2a-fair-metrics/16-http-describedby-conneg/metadata"
-             "https://s11.no/2022/a2a-fair-metrics/16-http-describedby-conneg/metadata"})
+        self.assertEqual({d.target for d in s.describedBy},  # twice in set
+            {"https://s11.no/2022/a2a-fair-metrics/16-http-describedby-conneg/metadata"})
         self.assertEqual({d.type for d in s.describedBy}, 
             # .. e.g. have to content-negotiate
             {"text/turtle", "application/ld+json"})
@@ -168,7 +168,7 @@ class TestResolverA2A(unittest.TestCase):
             "https://w3id.org/a2a-fair-metrics/17-http-citeas-multiple-rels/")
         self.assertEqual(s.citeAs.target,
                          "https://w3id.org/a2a-fair-metrics/17-http-citeas-multiple-rels/")
-        self.assertEqual(s.citeAs.rel, "cite-as")
+        self.assertEqual(s.citeAs.rel, LinkRel.cite_as)
         # Note: We preserve the remaining rel's under the Link
         self.assertEqual(s.citeAs.link.rel,
                          set(("canonical", "cite-as", "http://schema.org/identifier")))
@@ -239,7 +239,7 @@ class TestResolverA2A(unittest.TestCase):
         self.assertEqual(s.citeAs.target,
                          "https://w3id.org/a2a-fair-metrics/25-http-citeas-author-410-gone/")
         self.assertEqual({a.target for a in s.authors},
-                         "https://orcid.org/0000-0002-1825-0097")
+                         {"https://orcid.org/0000-0002-1825-0097"})
 
     def test_26_citeas_non_authorative(self):
         # This will give 26 Non-Authorative and may be rewritten by a proxy
@@ -283,7 +283,7 @@ class TestResolverA2A(unittest.TestCase):
         self.assertEqual({d.target for d in s.describedBy},
                          {"https://s11.no/2022/a2a-fair-metrics/30-http-citeas-describedby-item-license-type-author-joint/index.ttl"})
         self.assertEqual({d.type for d in s.describedBy},
-                         "text/turtle")
+                         {"text/turtle"})
         self.assertEqual({i.target for i in s.items},
                          {"https://s11.no/2022/a2a-fair-metrics/30-http-citeas-describedby-item-license-type-author-joint/test-apple-data.csv"})
         self.assertEqual({i.type for i in s.items},
