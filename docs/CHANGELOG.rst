@@ -2,11 +2,20 @@
 Changelog
 =========
 
+* API Change: Refactored to new ``Signposting`` classes
+  to avoid exposing the ``ParsedLink`` implementation.
+* Note: ``Signposting`` attributes like ``.authors`` are now
+  sets to indicate order is not (very) important.
+* Removed rdflib dependency
+
 v0.1.2 (2022-05-17)
 ------------------------------------------------------------
+* Draft implementation of ``Signposting`` classes
 
 v0.1.1 (2022-04-13)
 ------------------------------------------------------------
+
+* Build improvements
 
 v0.1.0 (2022-04-13)
 ------------------------------------------------------------
