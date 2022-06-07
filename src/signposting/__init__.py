@@ -11,7 +11,7 @@ This can then be used to navigate between:
 * Structured metadata
 
 The library works by inspecting the HTTP messages for
-``Link`` headers from a given URI with `find_signposting_http`, which
+``Link:`` headers from a given URI with `find_signposting_http`, which
 which categorize them by their `rel` `Link relation`_ into a 
 `Signposting` object with absolute URIs.
 
@@ -34,6 +34,7 @@ __version__ = '0.2.0'
 
 from .linkheader import Signposting, find_signposting
 from .resolver import find_signposting_http
-from httplink import Link
+from .signpost import Signposting, Signpost, AbsoluteURI, MediaType, LinkRel
 
-__all__ = "Signposting find_signposting find_signposting_http Link".split()
+__all__ = """Signposting find_signposting find_signposting_http
+Signposting Signpost AbsoluteURI MediaType LinkRel""".split()

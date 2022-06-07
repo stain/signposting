@@ -17,7 +17,6 @@ Resolve a URI (possibly a PID) to find FAIR Signposting
 
 import urllib.request
 import warnings
-from httplink import Link
 
 from . import linkheader
 from .signpost import Signposting,Signpost

@@ -23,7 +23,7 @@ import warnings
 import rfc3987
 import urllib.parse
 from urllib.parse import urljoin
-from httplink import ParsedLinks, Link, parse_link_header
+from httplink import Link
 from warnings import warn
 
 

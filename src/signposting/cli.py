@@ -11,9 +11,7 @@ import sys
 import enum
 from urllib.error import HTTPError, URLError
 
-from .signpost import Signpost, Signposting
-from . import find_signposting, find_signposting_http, Link
-
+from . import find_signposting, find_signposting_http, Signpost, Signposting
 
 def _multiline(header: str, lines: Collection[str]):
     indent = "\n" + (" " * (len(header) + 2))

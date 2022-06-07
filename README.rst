@@ -42,7 +42,7 @@ which categorize them by their `rel` `Link relation`_ into a
 
 It is up to the clients of this library to decide how to further
 navigate or retrieve the associated resources, e.g. using a 
-RDF library like `rdflib`_.
+RDF library like `rdflib`_ or retrieving resources using `urllib`_.
 
 Future versions of this library may also provide ways to discover
 FAIR signposting in HTML ``<link>`` annotations and in 
