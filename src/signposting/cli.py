@@ -14,27 +14,30 @@ from urllib.error import HTTPError, URLError
 from . import find_signposting, find_signposting_http, Signpost, Signposting
 
 def _multiline(header: str, lines: Collection[str]):
+    """Format header, with subsequent lines indented correspondingly"""
     indent = "\n" + (" " * (len(header) + 2))
     return "%s: %s" % (header, indent.join(lines))
 
 
 def _target(s: Signpost):
+    """Format just target"""
     return "<%s>" % s.target
 
 
 def _target_and_type(s: Signpost):
+    """Format target and type"""
     return "<%s> %s" % (s.target,
                         s.type or "")
-
 
 errors = enum.IntEnum("Error",
                       "OK URL_ERROR HTTP_ERROR LINK_SYNTAX INTERNAL_ERROR",
                       start=0
                       )
+"""Error codes returned by CLI"""
 
 
 def main(*args: str):
-    """Discover signposting"""
+    """Discover signposting and print to STDOUT"""
 
     parser = argparse.ArgumentParser()
     parser.add_argument("url", nargs='+',

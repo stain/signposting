@@ -79,27 +79,27 @@ class MediaType(str):
     .. _RFC6838: https://www.rfc-editor.org/rfc/rfc6838.html
     """
 
+    MAIN = "application audio example font image message model multipart text video".split()
     """Top level type trees as of 2022-05-17 in `IANA`_ registry
 
     .. _IANA: https://www.iana.org/assignments/media-types/media-types.xhtml"""
-    MAIN = "application audio example font image message model multipart text video".split()
 
+
+    _MAIN_SUB_RE = re.compile(r"""^
+        ([a-z0-9] [a-z0-9!#$&^_-]*)
+        /
+        ([a-z0-9] [a-z0-9!#$&^_+.-]*)
+        $""", re.VERBOSE)
     """Check the type string is valid following `section 4.2`_ of RFC6838.
 
      .. _section 4.2: https://www.rfc-editor.org/rfc/rfc6838.html#section-4.2
     """
 
-    MAIN_SUB_RE = re.compile(r"""^
-        ([a-z0-9] [a-z0-9!#$&^_-]*)
-        /
-        ([a-z0-9] [a-z0-9!#$&^_+.-]*)
-        $""", re.VERBOSE)
-
-    """The main type, e.g. image"""
     main: str
+    """The main type, e.g. image"""
 
-    """The sub-type, e.g. jpeg"""
     sub: str
+    """The sub-type, e.g. jpeg"""
 
     def __new__(cls, value=str):
         """Construct a MediaType.
@@ -110,7 +110,7 @@ class MediaType(str):
             # Guard before giving large media type to regex
             raise ValueError(
                 "Media type should be less than 255 characters long")
-        match = cls.MAIN_SUB_RE.match(value.lower())
+        match = cls._MAIN_SUB_RE.match(value.lower())
         if not match:
             raise ValueError(
                 "Media type invalid according to RFC6838: {}".format(value))
@@ -141,7 +141,7 @@ class LinkRel(str, Enum):
     A link relation enum can be looked up from its RFC8288 _value_
     by calling ``LinkRel("cite-as")`` - note that this particular
     example has a different Python-compatible spelling in it's
-    enum _name_ (`LinkRel.cite_as`).
+    enum *name* (``LinkRel.cite_as``).
 
     .. _signposting: https://signposting.org/conventions/
     .. _FAIR: https://signposting.org/FAIR/
@@ -167,35 +167,37 @@ class LinkRel(str, Enum):
 SIGNPOSTING = set(l.value for l in LinkRel)
 
 class Signpost:
-    """An individual link of Signposting, e.g. for rel=cite-as.
+    """An individual link of Signposting, e.g. for ``rel=cite-as``.
 
-    This is a convenience class that may be wrapping a `Link`. 
+    This is a convenience class that may be wrapping a :attr:``link``. 
 
     In some case the link relation may have additional attributes, 
-    e.g. ``signpost.link["title"]`` - the purpose of this class is to 
+    e.g. ``signpost.link["title"]`` - the purpose of this class is however to 
     lift only the navigational attributes for FAIR Signposting.
     """
 
-    """The link relation of this signposting"""
     rel: LinkRel
+    """The link relation of this signposting"""
 
+    target: AbsoluteURI
     """The URI that is the target of this link, e.g. "http://example.com/"
     
     Note that URIs with Unicode characters will be represented as %-escaped URIs.
     """
-    target: AbsoluteURI
 
+    # TODO: Check RFC if this may also be a URI.
+    type: Optional[MediaType]
     """The media type of the target. 
     
     It is recommended to use this type in content-negotiation for
     retrieving the target URI.
 
     This property is optional, and should only be expected 
-    if `rel` is `LinkRel.describedby` or `LinkRel.item`
+    if `rel` is :const:`LinkRel.describedby` or :const:`LinkRel.item`
     """
-    # TODO: Check RFC if this may also be a URI.
-    type: Optional[MediaType]
 
+    # FIXME: Correct JSON-LD profile
+    profiles: FrozenSet[AbsoluteURI]
     """Profile URIs for the target with the given type.
 
     Profiles are mainly identifiers, indicating that a particular
@@ -205,22 +207,20 @@ class Signpost:
     ``type=application/ld+json`` and ``profile=http://www.w3.org/ns/json-ld#compacted``
 
     As there may be multiple profiles, or (more commonly) none, 
-    this property is typed as a `FrozenSet`.
+    this property is typed as a :class:`FrozenSet`.
     """
-    # FIXME: Correct JSON-LD profile
-    profiles: FrozenSet[AbsoluteURI]
 
+    context: Optional[AbsoluteURI]
     """Resource URL this is the signposting for, e.g. a HTML landing page.    
     """
-    context: Optional[AbsoluteURI]
 
+    link: Optional[Link]
     """The Link this signpost came from. 
     
     May contain additional attributes such as ``link["title"]``.
     Note that a single Link may have multiple ``rel``s, therefore it is
-    possible that multiple `Signpost`s refer to the same link.
+    possible that multiple :class:`Signpost`s refer to the same link.
     """
-    link: Optional[Link]
 
     def __init__(self,
                  rel: Union[LinkRel, str],
@@ -231,21 +231,14 @@ class Signpost:
                  link: Link = None):
         """Construct a Signpost from a link relation.
 
-        Required parameters:
-        * ``rel`` (e.g. ``"cite-as"``)
-        * ``target`` URI (e.g. ``"http://example.com/pid-01"``)
+        :param rel: Link relation, e.g. ``"cite-as"``
+        :param target: URI (e.g. ``"http://example.com/pid-01"``)
+        :param media_type_: Optional expected media type of the target (e.g. ``"text/html"``)
+        :param context: Optional URI this is a signposting from (e.g. ``"http://example.com/page-01.html"``) (called ``anchor`` in Link header)
+        :param link: Optional origin :class:`Link` header (not parsed further) for further attributes
 
-        Optionally include:
-        * Expected ``media_type`` of the target (e.g. ``"text/html"``) 
-        * The ``context`` URI this is a signposting from (e.g. ``"http://example.com/page-01.html"``) (called ``anchor`` in Link header)
-        * Origin `Link` header (not parsed further) for further attributes
+        :raise ValueError: If a plain string value is invalid for the corresponding type-checked classes :class:`LinkRel`, :class:`AbsoluteURI` or :class:`MediaType`,
 
-        This constructor will convert plain string values 
-        to the corresponding type-checked 
-        classes `LinkRel`, `AbsoluteURI`, `MediaType`,
-        which may throw exception `ValueError` if they are 
-        not valid. Alternatively, instances of these types can
-        be provided directly.
         """
 
         if isinstance(rel, LinkRel):
@@ -292,30 +285,30 @@ class Signposting:
     .. _FAIR: https://signposting.org/FAIR/
     """
 
-    """Resource URL this is the signposting for, e.g. a HTML landing page.
-    
-    """
     context_url: Optional[AbsoluteURI]
+    """Resource URL this is the signposting for, e.g. a HTML landing page.
+    """
 
-    """Author(s) of the resource (and possibly its items)"""
     authors: Set[Signpost]
+    """Author(s) of the resource (and possibly its items)"""
 
+    describedBy: Set[Signpost]
     """Metadata resources about the resource and its items, typically in a Linked Data format. 
     
     Resources may require content negotiation, check ``Link["type"]`` attribute
     (if present) for content type, e.g. ``text/turtle``.
     """
-    describedBy: Set[Signpost]
 
-    """Semantic types of the resource, e.g. from schema.org"""
     types: Set[Signpost]
+    """Semantic types of the resource, e.g. from schema.org"""
 
+    items: Set[Signpost]
     """Items contained by this resource, e.g. downloads.
     
     The content type of the download may be available as ``Link["type"]``` attribute.
     """
-    items: Set[Signpost]
 
+    linksets: Set[Signpost]
     """Linkset resuorces with further signposting.
 
     A `linkset`_ is a JSON or text serialization of Link headers available as a
@@ -327,18 +320,20 @@ class Signposting:
 
     .. _linkset: https://datatracker.ietf.org/doc/draft-ietf-httpapi-linkset/
     """
-    linksets: Set[Signpost]
 
-    """Persistent Identifier (PID) for this resource, preferred for citation and permalinks"""
     citeAs: Optional[Signpost]
+    """Persistent Identifier (PID) for this resource, preferred for citation and permalinks"""
 
-    """Optional license of this resource (and presumably its items)"""
     license: Optional[Signpost]
+    """Optional license of this resource (and presumably its items)"""
 
-    """Optional collections this resource is part of"""
     collection: Optional[Signpost]
+    """Optional collections this resource is part of"""
 
     def __init__(self, context_url: Union[AbsoluteURI, str] = None, signposts: List[Signpost] = None):
+        """Construct a Signposting from a list of :class:`Signpost`s. 
+        The ``context_url` is the resource this is the signposting for.        
+        """
         if context_url:
             self.context_url = AbsoluteURI(context_url)
         else:

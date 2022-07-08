@@ -11,13 +11,13 @@ This can then be used to navigate between:
 * Structured metadata
 
 The library works by inspecting the HTTP messages for
-``Link:`` headers from a given URI with `find_signposting_http`, which
-which categorize them by their `rel` `Link relation`_ into a 
-`Signposting` object with absolute URIs.
+``Link:`` headers from a given URI with :meth:`find_signposting_http`, which
+which categorize them by their ``rel`` `Link relation`_ into a 
+:class:`Signposting` object with absolute URIs.
 
 It is up to the clients of this library to decide how to further
 navigate or retrieve the associated resources, e.g. using a 
-RDF library like `rdflib`_.
+RDF library like :mod:`rdflib`.
 
 Future versions of this library may also provide ways to discover
 FAIR signposting in HTML ``<link>`` annotations and in 
