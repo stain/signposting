@@ -11,11 +11,11 @@ To use ``signposting`` from Python::
 	print(s.citeAs.target)
 	for d in s.describedBy:
 		print(d.target)
-		if "type" in d:
-			print(d["type"])
+                print(d.type)
 
-The `Signposting` object returned points to `Link` instances which has attributes matching the 
-FAIR signposting profile.
+The :class:`signposting.Signposting` object returned points to
+:class:`signposting.Link` instances which have attributes matching the FAIR
+signposting profile.
 
 If no signposting was found for a link relation, its attributes return ``None`` or an empty list depending on its cardinality.
 
@@ -31,3 +31,5 @@ A benchmark set of signposted resources (`a2a-fair-matrics`_) is provided for te
 support the ``"-http-"`` tests.
 
 .. _a2a-fair-metrics: https://w3id.org/a2a-fair-metrics/
+.. _Signposting: reference/signposting.html#signposting.Signposting
+.. _Link: reference/signposting.html#signposting.Link

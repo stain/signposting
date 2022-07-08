@@ -10,7 +10,6 @@ import sphinx_py3doc_enhanced_theme
 
 
 mock_modules = [
-    'matplotlib',
     ]
 
 for modulename in mock_modules:
@@ -44,7 +43,7 @@ if os.getenv('SPELLCHECK'):
 
 source_suffix = '.rst'
 master_doc = 'index'
-project = 'Python-Project-Skeleton'
+project = 'signposting link parser'
 year = '2022'
 author = 'Stian Soiland-Reyes'
 copyright = '{0}, {1}'.format(year, author)

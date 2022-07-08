@@ -108,5 +108,6 @@ v0.2.2
 .. _FAIR Signposting: https://signposting.org/FAIR/
 .. _Link Relation: https://www.iana.org/assignments/link-relations/
 .. _rdflib: https://rdflib.readthedocs.io/en/stable/
+.. _urllib: https://docs.python.org/3/library/urllib.html
 .. _linkset: https://signposting.org/FAIR/#linksetrec
 

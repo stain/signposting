@@ -6,8 +6,8 @@ At the command line::
 
     pip install signposting
 
-If you are installing from `source code`_::
+If you are installing from `source`_::
 
     pip install .
 
-.. source code: https://github.com/stain/signposting/
+.. _source: https://github.com/stain/signposting/
