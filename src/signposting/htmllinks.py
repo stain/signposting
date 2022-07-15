@@ -18,8 +18,7 @@ Parse HTML to find <link> elements for signposting.
 
 import requests
 from bs4 import BeautifulSoup
-from httplink import ParsedLinks, Link
-from .linkheader import Signposting
+from .linkheader import Signposting,Link
 from .common import SIGNPOSTING
 
 def find_signposting(uri:str) -> Signposting:
@@ -37,3 +36,4 @@ def find_signposting(uri:str) -> Signposting:
         type = link.get("type")
         profile = link.get("profile")
         
+
