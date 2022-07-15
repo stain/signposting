@@ -19,13 +19,8 @@ from typing import Dict, List, Set, Tuple, Optional, Collection, Set
 import httplink
 from httplink import ParsedLinks, Link, parse_link_header
 from urllib.parse import urljoin
+from .common import SIGNPOSTING
 
-# Only relations listed below will be selected
-# Sources:
-#   https://signposting.org/conventions/
-#   https://signposting.org/FAIR/
-"""Valid Signposting link relations"""
-SIGNPOSTING=set("author collection describedby describes item cite-as type license linkset".split(" "))
 
 def _filter_links_by_rel(parsedLinks:ParsedLinks, *rels:str) -> List[Link]:
     """Filter links to select from a set of relations.
