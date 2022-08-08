@@ -22,8 +22,7 @@ Common types for describing signposting link relations:
 
 These classes are general data holders, independent of the way 
 signposting links have been discovered or parsed. They would
-be returned by "find_signposting_*" methods in 
-modules mod::`.linkheader` and mod::`.resolver`
+be returned by methods like :meth:`find_signposting` 
 or could be constructed manually for other purposes.
 
 The main purpose of the typed strings is to ensure syntactic
@@ -186,7 +185,7 @@ SIGNPOSTING = set(l.value for l in LinkRel)
 class Signpost:
     """An individual link of Signposting, e.g. for ``rel=cite-as``.
 
-    This is a convenience class that may be wrapping a :attr:``link``. 
+    This is a convenience class that may be wrapping a :attr:`link`. 
 
     In some case the link relation may have additional attributes, 
     e.g. ``signpost.link["title"]`` - the purpose of this class is however to 
@@ -197,7 +196,7 @@ class Signpost:
     """The link relation of this signposting"""
 
     target: AbsoluteURI
-    """The URI that is the target of this link, e.g. "http://example.com/"
+    """The URI that is the target of this link, e.g. ``http://example.com/``
     
     Note that URIs with Unicode characters will be represented as %-escaped URIs.
     """
