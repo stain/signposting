@@ -12,7 +12,24 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 """
-Representation of single Signpost link relation
+Common types for describing signposting link relations:
+
+* `Signposting` represent all the signposts for a given resource
+* `Signpost` represent one particular signposting corresponding to a single link relation and single URI
+* `LinkRel` enumerates signposting link relations
+* `AbsoluteURI` represent an URI string
+* `MediaType` represent an IANA media type string
+
+These classes are general data holders, independent of the way 
+signposting links have been discovered or parsed. They would
+be returned by "find_signposting_*" methods in 
+modules mod::`.linkheader` and mod::`.resolver`
+or could be constructed manually for other purposes.
+
+The main purpose of the typed strings is to ensure syntactic
+validity at construction time, so that consumers of 
+`Signposting` objects can make strong assumptions
+about type safety.
 """
 
 import re

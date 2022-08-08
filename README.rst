@@ -80,12 +80,13 @@ Acknowledgements to Mark Wilkinson, Herbert van de Sompel, Finn Bacall.
 How to use this repository
 ==========================
 
-The `documentation`_ pages explain how to use this template for your projects and the implementation details adopted here. Use the documentation as a reference to learn the rationale behind this repository and also as a demonstration of how to deploy documentation in ReadTheDocs.
+The `documentation`_ pages explain briefly how to use this library including a listing of modules and methods.
+
 
 Issues and Discussions
 ======================
 
-As usual in any GitHub based project, raise an `issue`_ if you find any bug or room for improvement (certainly there are many), or open a `discussion`_  if you want to discuss or talk :-)
+As usual in any GitHub based project, raise an `issue`_ if you find any bug or have other suggestions; or open a `discussion`_  if you want to discuss or talk :-)
 
 Version
 =======
