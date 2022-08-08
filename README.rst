@@ -102,7 +102,7 @@ v0.2.4
 .. _main branch: https://github.com/stain/signposting/tree/main
 .. _pdb-tools: https://github.com/haddocking/pdb-tools
 .. _project's documentation: https://signposting.readthedocs.io/en/latest/index.html
-.. _pytest: https://docs.pytest.org/en/stable/
+.. _pytest: https://docs.pytest.org/en/stable/git
 .. _test.pypi.org: https://test.pypi.org
 .. _ReadTheDocs: https://readthedocs.org/
 .. _signposting: https://signposting.org/conventions/
