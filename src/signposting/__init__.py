@@ -32,9 +32,10 @@ FAIR signposting in HTML ``<link>`` annotations and in
 
 __version__ = '0.2.6'
 
-from .linkheader import Signposting, find_signposting
-from .resolver import find_signposting_http
 from .signpost import Signposting, Signpost, AbsoluteURI, MediaType, LinkRel
+from .linkheader import find_signposting
+from .resolver import find_signposting_http
+from .htmllinks import find_signposting_html
 
-__all__ = """Signposting find_signposting find_signposting_http
+__all__ = """find_signposting find_signposting_http find_signposting_html
 Signposting Signpost AbsoluteURI MediaType LinkRel""".split()
