@@ -322,7 +322,14 @@ class Signpost:
 class Signposting:
     """Signposting links for a given resource.
 
-    Links are categorized according to `FAIR`_ `signposting`_ conventions.
+    Links are categorized according to `FAIR`_ `signposting`_ conventions and 
+    split into different attributes like `citeAs` or `describedBy`.
+
+    It is possible to iterate over this class or use the `signposts` property to
+    find all recognized signposts.
+
+    Note that in the case of a resource not having any signposts, instances
+    of this class are considered false.
 
     .. _signposting: https://signposting.org/conventions/
     .. _FAIR: https://signposting.org/FAIR/
@@ -338,7 +345,7 @@ class Signposting:
     describedBy: Set[Signpost]
     """Metadata resources about the resource and its items, typically in a Linked Data format.
 
-    Resources may require content negotiation, check ``Link["type"]`` attribute
+    Resources may require content negotiation, check `Signpost.type` attribute
     (if present) for content type, e.g. ``text/turtle``.
     """
 
@@ -348,7 +355,7 @@ class Signposting:
     items: Set[Signpost]
     """Items contained by this resource, e.g. downloads.
 
-    The content type of the download may be available as ``Link["type"]``` attribute.
+    The content type of the download may be available as `Signpost.type` attribute.
     """
 
     linksets: Set[Signpost]
@@ -371,7 +378,7 @@ class Signposting:
     """Optional license of this resource (and presumably its items)"""
 
     collection: Optional[Signpost]
-    """Optional collections this resource is part of"""
+    """Optional collection this resource is part of"""
 
     def __init__(self, context_url: Union[AbsoluteURI, str] = None, signposts: List[Signpost] = None):
         """Construct a Signposting from a list of :class:`Signpost`s.
@@ -391,7 +398,7 @@ class Signposting:
         self.items = set()
         self.linksets = set()
         self.types = set()
-        self._extras = set() # Any extra signposts, ideally 0
+        self._extras = set() # Any extra signposts, ideally none
 
         if signposts is None:
             return
@@ -440,14 +447,23 @@ class Signposting:
     def signposts(self) -> Set[Signpost]:
         """Return all FAIR Signposts for recognized relation types.
         
-        It is also possible to iterate directly over this class.
+        This may include any additional signposts for link relations
+        that only expect a single link, like :prop:`citeAs`.
+
+        It is also possible to iterate directly over this class, see
+        :meth:`__iter__`
         """
         return frozenset(self)
 
     def __len__(self):
+        """Count how many FAIR Signposts were recognized"""
         return len(self.signposts)
     
     def __iter__(self) -> Iterator[Signpost]:
+        """Iterate over all recognized FAIR signposts.
+
+        See also the property :prop:`signposts`
+        """
         if self.citeAs:
             yield self.citeAs
         if self.license:
@@ -492,4 +508,11 @@ class Signposting:
         return "<Signposting %s>" % "\n ".join(repr)
 
     def __str__(self):
-        return "\n".join(map(str, self.signposts))
+        """Represent signposts as HTTP Link headers.
+        
+        Note that these are reconstructed from the recognized link relations only,
+        and do not include unparsed additional link attributes.
+
+        See also `Signpost.link`
+        """
+        return "\n".join(map(str, self))
