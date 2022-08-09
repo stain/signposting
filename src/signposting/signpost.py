@@ -391,6 +391,7 @@ class Signposting:
         self.items = set()
         self.linksets = set()
         self.types = set()
+        self._extras = set() # Any extra signposts, ideally 0
 
         if signposts is None:
             return
@@ -405,28 +406,35 @@ class Signposting:
             if s.rel is LinkRel.cite_as:
                 if self.citeAs:
                     warnings.warn("Ignoring additional cite-as signposts")
-                    continue
-                self.citeAs = s
-            if s.rel is LinkRel.license:
+                    self._extras.add(s)
+                else:
+                    self.citeAs = s
+            elif s.rel is LinkRel.license:
                 if self.license:
                     warnings.warn("Ignoring additional license signposts")
-                    continue
-                self.license = s
-            if s.rel is LinkRel.collection:
+                    self._extras.add(s)
+                else:
+                    self.license = s
+            elif s.rel is LinkRel.collection:
                 if self.collection:
                     warnings.warn("Ignoring additional collection signposts")
-                    continue
-                self.collection = s
-            if s.rel is LinkRel.author:
+                    self._extras.add(s)
+                else:
+                    self.collection = s
+            elif s.rel is LinkRel.author:
                 self.authors.add(s)
-            if s.rel is LinkRel.describedby:
+            elif s.rel is LinkRel.describedby:
                 self.describedBy.add(s)
-            if s.rel is LinkRel.item:
+            elif s.rel is LinkRel.item:
                 self.items.add(s)
-            if s.rel is LinkRel.linkset:
+            elif s.rel is LinkRel.linkset:
                 self.linksets.add(s)
-            if s.rel is LinkRel.type:
+            elif s.rel is LinkRel.type:
                 self.types.add(s)
+            else:
+                warnings.warn("Unrecognized link relation: %s" % s.rel)
+                # NOTE: This means a new enum member in LinkRel that we should handle above
+                self._extras.add(s)
 
     @property
     def signposts(self) -> Set[Signpost]:
@@ -454,6 +462,8 @@ class Signposting:
             yield i
         for t in self.types:
             yield t
+        for e in self._extras:
+            yield e
 
     def _repr_signposts(self, signposts):
         return " ".join(set(d.target for d in signposts))
