@@ -16,6 +16,7 @@
 Parse HTML to find <link> elements for signposting.
 """
 
+from html.parser import HTMLParser
 from typing import Union
 import warnings
 import requests
@@ -29,12 +30,31 @@ def find_signposting_html(uri:Union[AbsoluteURI, str]) -> Signposting:
 
     :param uri: An absolute http/https URI, which HTML will be inspected.
     :throws ValueError: If the `uri` is invalid
-    :throws IOError: If the network/HTTP request failed.
+    :throws IOError: If the network request failed, e.g. connection timeout
+    :throws requests.HTTPError: If the HTTP request failed, e.g. 404 Not Found
+    :throws HTMLParser.HTMLParseError: If the HTML could not be parsed.
     :returns: A parsed `Signposting` object (which may be empty)
     """
-    page = requests.get(AbsoluteURI(uri))
-    # TODO: Check return code
+    HEADERS = {
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9"
+    }
+    page = requests.get(AbsoluteURI(uri), headers=HEADERS)
     context = page.url
+    if page.status_code == 203:
+        warnings.warn("203 Non-Authoritative Information <%s> - Signposting URIs may have been rewritten by proxy" %
+                    context)
+    elif page.status_code == 410:
+            warnings.warn(
+                "410 Gone <%s> - still processing signposting for thumbstone page" % context)
+    else:
+        # raise requests.HTTPError for any other 4xx/5xx error
+        page.raise_for_status()
+    
+    ct = page.headers["Content-Type"]
+    if not "text/html" in ct or "application/xhtml+xml" in ct or "application/xml" in ct or "+xml" in ct:
+        warnings.warn("Unrecognised media type %s for <%s>, skipping HTML parsing" % (ct, uri))
+        return Signposting(context) # empty
+
     soup = BeautifulSoup(page.content, 'html.parser', 
         # Ignore any other elements to reduce chance of parse errors
         parse_only=SoupStrainer(["head", "link"]))
