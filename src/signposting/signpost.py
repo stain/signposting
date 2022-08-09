@@ -20,14 +20,14 @@ Common types for describing signposting link relations:
 * `AbsoluteURI` represent an URI string
 * `MediaType` represent an IANA media type string
 
-These classes are general data holders, independent of the way 
+These classes are general data holders, independent of the way
 signposting links have been discovered or parsed. They would
-be returned by "find_signposting_*" methods in 
+be returned by "find_signposting_*" methods in
 modules mod::`.linkheader` and mod::`.resolver`
 or could be constructed manually for other purposes.
 
 The main purpose of the typed strings is to ensure syntactic
-validity at construction time, so that consumers of 
+validity at construction time, so that consumers of
 `Signposting` objects can make strong assumptions
 about type safety.
 """
@@ -53,7 +53,7 @@ class AbsoluteURI(str):
         potentially relative URI reference, otherwise the first argument
         must be an absolute URI.
 
-        This constructor will throw `ValueError` if the 
+        This constructor will throw `ValueError` if the
         final URI reference is invalid or not absolute.
 
         Note that IRIs are not supported.
@@ -86,11 +86,11 @@ class MediaType(str):
 
     While the constructor do check that the main type is an offical IANA subtree
     (see `MediaType.MAIN`), it does not enforce the individual subtype to be registered.
-    In particular RFC6838 permits unregistered subtypes 
+    In particular RFC6838 permits unregistered subtypes
     starting with `vnd.`, `prs.` and `x.`
 
-    Extra content type parameters such as ``;profile=http://example.com/`` are 
-    **not** supported by this class, as they do not form part of the 
+    Extra content type parameters such as ``;profile=http://example.com/`` are
+    **not** supported by this class, as they do not form part of the
     media type registration.
 
     .. _RFC6838: https://www.rfc-editor.org/rfc/rfc6838.html
@@ -151,8 +151,8 @@ class MediaType(str):
 class LinkRel(str, Enum):
     """A link relation as used in Signposting.
 
-    Link relations are defined by `RFC8288`_, but 
-    only link relations listed in `FAIR`_ and `signposting`_ 
+    Link relations are defined by `RFC8288`_, but
+    only link relations listed in `FAIR`_ and `signposting`_
     conventions are included in this enumerator.
 
     A link relation enum can be looked up from its RFC8288 _value_
@@ -172,7 +172,7 @@ class LinkRel(str, Enum):
     type = "type"
     license = "license"
     linkset = "linkset"
-    
+
     def __repr__(self):
         return "rel=%s" % self.value
 
@@ -186,10 +186,10 @@ SIGNPOSTING = set(l.value for l in LinkRel)
 class Signpost:
     """An individual link of Signposting, e.g. for ``rel=cite-as``.
 
-    This is a convenience class that may be wrapping a :attr:``link``. 
+    This is a convenience class that may be wrapping a :attr:``link``.
 
-    In some case the link relation may have additional attributes, 
-    e.g. ``signpost.link["title"]`` - the purpose of this class is however to 
+    In some case the link relation may have additional attributes,
+    e.g. ``signpost.link["title"]`` - the purpose of this class is however to
     lift only the navigational attributes for FAIR Signposting.
     """
 
@@ -198,18 +198,18 @@ class Signpost:
 
     target: AbsoluteURI
     """The URI that is the target of this link, e.g. "http://example.com/"
-    
+
     Note that URIs with Unicode characters will be represented as %-escaped URIs.
     """
 
     # TODO: Check RFC if this may also be a URI.
     type: Optional[MediaType]
-    """The media type of the target. 
-    
+    """The media type of the target.
+
     It is recommended to use this type in content-negotiation for
     retrieving the target URI.
 
-    This property is optional, and should only be expected 
+    This property is optional, and should only be expected
     if `rel` is :const:`LinkRel.describedby` or :const:`LinkRel.item`
     """
 
@@ -218,22 +218,22 @@ class Signpost:
     """Profile URIs for the target with the given type.
 
     Profiles are mainly identifiers, indicating that a particular
-    convention or subtype should be expected in the target's . 
-    
+    convention or subtype should be expected in the target's .
+
     For instance, a ``rel=describedby`` signpost to a JSON-LD document can have
     ``type=application/ld+json`` and ``profile=http://www.w3.org/ns/json-ld#compacted``
 
-    As there may be multiple profiles, or (more commonly) none, 
+    As there may be multiple profiles, or (more commonly) none,
     this property is typed as a :class:`FrozenSet`.
     """
 
     context: Optional[AbsoluteURI]
-    """Resource URL this is the signposting for, e.g. a HTML landing page.    
+    """Resource URL this is the signposting for, e.g. a HTML landing page.
     """
 
     link: Optional[Link]
-    """The Link this signpost came from. 
-    
+    """The Link this signpost came from.
+
     May contain additional attributes such as ``link["title"]``.
     Note that a single Link may have multiple ``rel``s, therefore it is
     possible that multiple :class:`Signpost`s refer to the same link.
@@ -299,16 +299,16 @@ class Signpost:
         repr.append("rel=%s" % self.rel)
         repr.append("target=%s" % self.target)
         if self.type:
-            repr.append("type=%s" % self.type)            
+            repr.append("type=%s" % self.type)
         if self.profiles:
             repr.append("profiles=%s" % self.profiles)
 
         return "<Signpost %s>" % " ".join(repr)
-    
+
     def __str__(self):
         strs = []
         strs.append("Link: <%s>" % self.target)
-        strs.append("rel=%s" % self.rel)        
+        strs.append("rel=%s" % self.rel)
         if self.type:
             strs.append('type="%s"' % self.type)
         if self.profiles:
@@ -334,8 +334,8 @@ class Signposting:
     """Author(s) of the resource (and possibly its items)"""
 
     describedBy: Set[Signpost]
-    """Metadata resources about the resource and its items, typically in a Linked Data format. 
-    
+    """Metadata resources about the resource and its items, typically in a Linked Data format.
+
     Resources may require content negotiation, check ``Link["type"]`` attribute
     (if present) for content type, e.g. ``text/turtle``.
     """
@@ -345,7 +345,7 @@ class Signposting:
 
     items: Set[Signpost]
     """Items contained by this resource, e.g. downloads.
-    
+
     The content type of the download may be available as ``Link["type"]``` attribute.
     """
 
@@ -372,8 +372,8 @@ class Signposting:
     """Optional collections this resource is part of"""
 
     def __init__(self, context_url: Union[AbsoluteURI, str] = None, signposts: List[Signpost] = None):
-        """Construct a Signposting from a list of :class:`Signpost`s. 
-        The ``context_url` is the resource this is the signposting for.        
+        """Construct a Signposting from a list of :class:`Signpost`s.
+        The ``context_url` is the resource this is the signposting for.
         """
         if context_url:
             self.context_url = AbsoluteURI(context_url)
