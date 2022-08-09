@@ -17,6 +17,7 @@ Parse HTML to find <link> elements for signposting.
 """
 
 from html.parser import HTMLParser
+from io import FileIO
 from typing import Union
 import warnings
 import requests
@@ -35,17 +36,31 @@ def find_signposting_html(uri:Union[AbsoluteURI, str]) -> Signposting:
     :throws HTMLParser.HTMLParseError: If the HTML could not be parsed.
     :returns: A parsed `Signposting` object (which may be empty)
     """
+    (html,resolved_url) = _get_html(AbsoluteURI(uri))
+    if not html:
+        return Signposting(resolved_url) # empty
+    return _parse_html(html, resolved_url)
+
+class HTML(str):
+    def __new__(cls, value=str):
+        pass
+
+class XHTML(str):
+    def __new__(cls, value=str):
+        pass
+
+def _get_html(uri:AbsoluteURI) -> () :
     HEADERS = {
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9"
     }
-    page = requests.get(AbsoluteURI(uri), headers=HEADERS)
-    context = page.url
+    page = requests.get(uri, headers=HEADERS)
+    resolved_url = AbsoluteURI(page.url);
     if page.status_code == 203:
         warnings.warn("203 Non-Authoritative Information <%s> - Signposting URIs may have been rewritten by proxy" %
-                    context)
+                    resolved_url)
     elif page.status_code == 410:
             warnings.warn(
-                "410 Gone <%s> - still processing signposting for thumbstone page" % context)
+                "410 Gone <%s> - still processing signposting for thumbstone page" % resolved_url)
     else:
         # raise requests.HTTPError for any other 4xx/5xx error
         page.raise_for_status()
@@ -53,9 +68,11 @@ def find_signposting_html(uri:Union[AbsoluteURI, str]) -> Signposting:
     ct = page.headers["Content-Type"]
     if not "text/html" in ct or "application/xhtml+xml" in ct or "application/xml" in ct or "+xml" in ct:
         warnings.warn("Unrecognised media type %s for <%s>, skipping HTML parsing" % (ct, uri))
-        return Signposting(context) # empty
+        return (None, resolved_url)
+    return (page.content, resolved_url)
 
-    soup = BeautifulSoup(page.content, 'html.parser', 
+def _parse_html(html:Union[str, FileIO], context:AbsoluteURI) -> Signposting:
+    soup = BeautifulSoup(html, 'html.parser', 
         # Ignore any other elements to reduce chance of parse errors
         parse_only=SoupStrainer(["head", "link"]))
     signposts = []
@@ -77,5 +94,5 @@ def find_signposting_html(uri:Union[AbsoluteURI, str]) -> Signposting:
                     continue
                 signposts.append(signpost)
     if not signposts:
-        warnings.warn("No signposting found: %s" % uri)
+        warnings.warn("No signposting found: %s" % context)
     return Signposting(context, signposts)

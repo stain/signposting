@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<!--
+    In the http header use:
+
+-->
+<html lang="en"> <!-- language used on the landing page-->
+    <head>
+        <title>Apples to Apples Dataset</title>
+
+        
+
+        <!-- general description will be used in search results -->
+        <meta name="description" content="Apples to Apples description in english">
+
+        <link rel="cite-as" href="https://w3id.org/a2a-fair-metrics/02-html-full/" />
+        <link rel="type" href="https://schema.org/Dataset" />
+        <link rel="type" href="https://schema.org/AboutPage" />
+
+        <link rel="schema.DC" href="http://purl.org/dc/elements/1.1/" />
+        <link rel="schema.DCTERMS" href="http://purl.org/dc/terms/" />
+
+        <meta name="DC.title" content="Apples to Apples dataset" />
+        <meta name="DC.creator" content="Apple" />
+        <meta name="DC.publisher" content="Example Apples Data Archive" />
+        
+        <!-- link to autors via ror and orcid -->
+        <link rel="author" href="https://orcid.org/0000-0002-1825-0097" />
+        <link rel="author" href="https://ror.org/02wg9xc72" />
+        
+        <!-- declare license used-->
+        <link rel="license" href="https://creativecommons.org/licenses/by/4.0/" />
+        
+        <!-- indicate openAccess -->
+        <meta name="DC.rights" content="info:eu-repo/semantics/openAccess" scheme="DCTERMS.URI" />
+        
+        <!-- link to downloadable data files-->
+
+        <link rel="item" type="text/csv" href="https://s11.no/2022/a2a-fair-metrics/02-html-full/data/test-apple-data.csv" />
+        
+        <!-- link to json-ld representation -->
+        <link rel="describedby" type="application/ld+json" href="https://s11.no/2022/a2a-fair-metrics/02-html-full/metadata/02-html-full.jsonld" />
+        
+        <!-- link to rdf-xml representation -->
+        <link rel="describedby" type="application/rdf+xml" href="https://s11.no/2022/a2a-fair-metrics/02-html-full/metadata/02-html-full.xml" />
+        
+    </head>
+    <body>
+        <article>
+            <h1>Apples to Apples Dataset</h1>
+            
+            <h2>Description</h2>
+            <p>Apples to Apples description.</p>
+
+            <h2>Creator</h2>
+            <ul>
+                <li>
+                    <a href="https://orcid.org/0000-0002-1825-0097">
+                        Josiah Carberry
+                        <img alt="ORCID logo" src="https://info.orcid.org/wp-content/uploads/2019/11/orcid_16x16.png" width="16" height="16" />
+                    </a>
+                </li>
+            </ul>
+
+            <h2>Downloads</h2>
+            <a href="https://s11.no/2022/a2a-fair-metrics/02-html-full/data/test-apple-data.csv">test-apple-data.csv</a>
+            
+            <h2>License</h2>
+            <!-- License information with rel attribute -->
+            <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://s11.no/images/cc-by-4.0.svg" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.
+        </article>
+    </body>
+</html>
