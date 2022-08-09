@@ -16,16 +16,28 @@
 Parse HTML to find <link> elements for signposting.
 """
 
+from typing import Union
 import warnings
 import requests
-from bs4 import BeautifulSoup
-from .signpost import SIGNPOSTING,Signpost,Signposting
+from bs4 import BeautifulSoup,SoupStrainer
+from .signpost import SIGNPOSTING,AbsoluteURI,Signpost,Signposting
 
-def find_signposting(uri:str) -> Signposting:
-    page = requests.get(uri)
+def find_signposting_html(uri:Union[AbsoluteURI, str]) -> Signposting:
+    """Parse HTML to find <link> elements for signposting.
+    
+    HTTP redirects will be followed.
+
+    :param uri: An absolute http/https URI, which HTML will be inspected.
+    :throws ValueError: If the `uri` is invalid
+    :throws IOError: If the network/HTTP request failed.
+    :returns: A parsed `Signposting` object (which may be empty)
+    """
+    page = requests.get(AbsoluteURI(uri))
     # TODO: Check return code
     context = page.url
-    soup = BeautifulSoup(page.content, 'html.parser')
+    soup = BeautifulSoup(page.content, 'html.parser', 
+        # Ignore any other elements to reduce chance of parse errors
+        parse_only=SoupStrainer(["head", "link"]))
     signposts = []
     for link in soup.head.find_all("link"):
         # Ensure all filters are in lower case and known
