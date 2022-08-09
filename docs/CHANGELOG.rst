@@ -2,7 +2,9 @@
 Changelog
 =========
 
+* Initial HTML parsing of <link> elements
 * Further documentation improvements
+* Added str/repr for ``Signposting`` and ``Signpost`` classes. str() return HTTP link headers.
 
 v0.2.4 (2022-07-08)
 ------------------------------------------------------------
