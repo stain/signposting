@@ -18,22 +18,34 @@ Parse HTML to find <link> elements for signposting.
 
 import requests
 from bs4 import BeautifulSoup
-from .linkheader import Signposting,Link
-from .signpost import SIGNPOSTING
+from .signpost import SIGNPOSTING,Signpost,Signposting
+import warnings
 
 def find_signposting(uri:str) -> Signposting:
     page = requests.get(uri)
+    # TODO: Check return code
+    context = page.url
     soup = BeautifulSoup(page.content, 'html.parser')
-    links = []
+    signposts = []
     for link in soup.head.find_all("link"):
         # Ensure all filters are in lower case and known
-        rels = set(r.lower() for r in link.get("rel", []) if r.lower() in SIGNPOSTING)        
-        if not rels:
-            continue
         url = link.get("href")
         if not url:
             continue
         type = link.get("type")
-        profile = link.get("profile")
-        
-
+        profile = link.get("profile", "")
+        profiles = []
+        if profile:
+            profiles = profile.split(" ")
+        rels = set(r.lower() for r in link.get("rel", [])
+                    if r.lower() in SIGNPOSTING)
+        for rel in rels:
+            try:
+                signpost = Signpost(rel, url, type, profiles, context)
+            except ValueError as e:
+                warnings.warn("Ignoring invalid signpost from %s: %s" % (uri, e))
+                continue
+            signposts.append(signpost)
+    if not signposts:
+        warnings.warn("No signposting found: %s" % uri)
+    return Signposting(context, signposts)
