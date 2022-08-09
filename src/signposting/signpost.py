@@ -292,6 +292,30 @@ class Signpost:
 
         self.link = link
 
+    def __repr__(self):
+        repr = []
+        if self.context:
+            repr.append("context=%s" % self.context)
+        repr.append("rel=%s" % self.rel)
+        repr.append("target=%s" % self.target)
+        if self.type:
+            repr.append("type=%s" % self.type)            
+        if self.profiles:
+            repr.append("profiles=%s" % self.profiles)
+
+        return "<Signpost %s>" % " ".join(repr)
+    
+    def __str__(self):
+        strs = []
+        strs.append("Link: <%s>" % self.target)
+        strs.append("rel=%s" % self.rel)        
+        if self.type:
+            strs.append('type="%s"' % self.type)
+        if self.profiles:
+            strs.append('profile="%s"' % " ".join(self.profiles))
+        if self.context:
+            strs.append('context="%s"' % self.context)
+        return "; ".join(strs)
 
 class Signposting:
     """Signposting links for a given resource.
@@ -401,3 +425,52 @@ class Signposting:
                 self.linksets.add(s)
             if s.rel is LinkRel.type:
                 self.types.add(s)
+
+    def _repr_signposts(self, signposts):
+        return " ".join(set(d.target for d in signposts))
+
+    def __repr__(self):
+        repr = []
+        if self.context_url:
+            repr.append("context=%s" % self.context_url)
+        if self.citeAs:
+            repr.append("citeAs=%s" % self.citeAs.target)
+        if self.license:
+            repr.append("license=%s" % self.license.target)
+        if self.collection:
+            repr.append("collection=%s" % self.collection)
+        if self.authors:
+            repr.append("authors=%s" % self._repr_signposts(self.authors))
+        if self.describedBy:
+            repr.append("describedBy=%s" % self._repr_signposts(self.describedBy))
+        if self.items:
+            repr.append("items=%s" % self._repr_signposts(self.items))
+        if self.linksets:
+            repr.append("linksets=%s" % self._repr_signposts(self.linksets))
+        if self.types:
+            repr.append("types=%s" % self._repr_signposts(self.types))
+
+        return "<Signposting %s>" % "\n ".join(repr)
+
+    def __str__(self):
+        strs = []
+        links = set() # TODO: Remove duplicates
+        if self.context_url:
+            strs.append("Content-Location: %s" % self.context_url)
+        if self.citeAs:
+            strs.append(str(self.citeAs))
+        if self.license:
+            strs.append(str(self.license))
+        if self.collection:
+            strs.append(str(self.collection))
+        if self.authors:
+            strs.extend(map(str, self.authors))
+        if self.describedBy:
+            strs.extend(map(str, self.describedBy))
+        if self.items:
+            strs.extend(map(str, self.items))
+        if self.linksets:
+            strs.extend(map(str, self.linksets))
+        if self.types:
+            strs.extend(map(str, self.types))
+        return "\n".join(strs)
