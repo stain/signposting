@@ -32,9 +32,11 @@ validity at construction time, so that consumers of
 about type safety.
 """
 
+import itertools
+from multiprocessing import AuthenticationError
 import re
-from typing import Collection, List, Optional, Set, Union, AbstractSet, FrozenSet
-from enum import Enum, unique
+from typing import Collection, Iterator, List, Optional, Set, Union, AbstractSet, FrozenSet
+from enum import Enum, auto, unique
 import warnings
 
 import rfc3987
@@ -426,6 +428,33 @@ class Signposting:
             if s.rel is LinkRel.type:
                 self.types.add(s)
 
+    @property
+    def signposts(self) -> Set[Signpost]:
+        """Return all FAIR Signposts for recognized relation types.
+        
+        It is also possible to iterate directly over this class.
+        """
+        return frozenset(self)
+
+    def __len__(self):
+        return len(self.signposts)
+    
+    def __iter__(self) -> Iterator[Signpost]:
+        if self.citeAs:
+            yield self.citeAs
+        if self.license:
+            yield self.license
+        if self.collection:
+            yield self.collection
+        for a in self.authors:
+            yield a
+        for d in self.describedBy:
+            yield d
+        for i in self.items:
+            yield i
+        for t in self.types:
+            yield t
+
     def _repr_signposts(self, signposts):
         return " ".join(set(d.target for d in signposts))
 
@@ -438,7 +467,7 @@ class Signposting:
         if self.license:
             repr.append("license=%s" % self.license.target)
         if self.collection:
-            repr.append("collection=%s" % self.collection)
+            repr.append("collection=%s" % self.collection.target)
         if self.authors:
             repr.append("authors=%s" % self._repr_signposts(self.authors))
         if self.describedBy:
@@ -453,24 +482,4 @@ class Signposting:
         return "<Signposting %s>" % "\n ".join(repr)
 
     def __str__(self):
-        strs = []
-        links = set() # TODO: Remove duplicates
-        if self.context_url:
-            strs.append("Content-Location: %s" % self.context_url)
-        if self.citeAs:
-            strs.append(str(self.citeAs))
-        if self.license:
-            strs.append(str(self.license))
-        if self.collection:
-            strs.append(str(self.collection))
-        if self.authors:
-            strs.extend(map(str, self.authors))
-        if self.describedBy:
-            strs.extend(map(str, self.describedBy))
-        if self.items:
-            strs.extend(map(str, self.items))
-        if self.linksets:
-            strs.extend(map(str, self.linksets))
-        if self.types:
-            strs.extend(map(str, self.types))
-        return "\n".join(strs)
+        return "\n".join(map(str, self.signposts))
