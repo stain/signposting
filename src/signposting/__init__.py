@@ -30,7 +30,7 @@ FAIR signposting in HTML ``<link>`` annotations and in
 .. _linkset: https://signposting.org/FAIR/#linksetrec
 """
 
-__version__ = '0.2.6'
+__version__ = '0.3.0'
 
 from .signpost import Signposting, Signpost, AbsoluteURI, MediaType, LinkRel
 from .linkheader import find_signposting
