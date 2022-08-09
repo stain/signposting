@@ -77,7 +77,8 @@ setup(
     install_requires=[
         'beautifulsoup4>=4.10',
         'httplink==0.2.0',
-        'rfc3987>=1.3.8'
+        'rfc3987>=1.3.8',
+        'requests>=2.28.1'
         ],
     extras_require={
         # eg:
