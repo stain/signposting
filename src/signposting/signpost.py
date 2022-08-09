@@ -443,7 +443,7 @@ class Signposting(Iterable[Signpost], Sized):
                 self._extras.add(s)
 
     @property
-    def signposts(self) -> Set[Signpost]:
+    def signposts(self) -> AbstractSet[Signpost]:
         """Return all FAIR Signposts for recognized relation types.
         
         This may include any additional signposts for link relations

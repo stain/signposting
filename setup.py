@@ -86,6 +86,8 @@ setup(
         #   ':python_version=="2.6"': ['argparse'],
         },
     setup_requires=[
+            'types-requests>=2.28.1',
+            'types-beautifulsoup4>=4.10',
         #   'pytest-runner',
         #   'setuptools_scm>=3.3.1',
         ],

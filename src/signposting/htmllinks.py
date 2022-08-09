@@ -59,25 +59,23 @@ def find_signposting_html(uri:Union[AbsoluteURI, str]) -> Signposting:
         # Ignore any other elements to reduce chance of parse errors
         parse_only=SoupStrainer(["head", "link"]))
     signposts = []
-    for link in soup.head.find_all("link"):
-        # Ensure all filters are in lower case and known
-        url = link.get("href")
-        if not url:
-            continue
-        type = link.get("type")
-        profile = link.get("profile", "")
-        profiles = []
-        if profile:
-            profiles = profile.split(" ")
-        rels = set(r.lower() for r in link.get("rel", [])
-                    if r.lower() in SIGNPOSTING)
-        for rel in rels:
-            try:
-                signpost = Signpost(rel, url, type, profiles, context)
-            except ValueError as e:
-                warnings.warn("Ignoring invalid signpost from %s: %s" % (uri, e))
+    if soup.head: # In case <head> was missing
+        for link in soup.head.find_all("link"):
+            # Ensure all filters are in lower case and known
+            url = link.get("href")
+            if not url:
                 continue
-            signposts.append(signpost)
+            type = link.get("type")
+            profiles = link.get("profile")
+            rels = set(r.lower() for r in link.get("rel", [])
+                        if r.lower() in SIGNPOSTING)
+            for rel in rels:
+                try:
+                    signpost = Signpost(rel, url, type, profiles, context)
+                except ValueError as e:
+                    warnings.warn("Ignoring invalid signpost from %s: %s" % (uri, e))
+                    continue
+                signposts.append(signpost)
     if not signposts:
         warnings.warn("No signposting found: %s" % uri)
     return Signposting(context, signposts)
