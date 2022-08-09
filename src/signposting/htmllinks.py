@@ -16,10 +16,10 @@
 Parse HTML to find <link> elements for signposting.
 """
 
+import warnings
 import requests
 from bs4 import BeautifulSoup
 from .signpost import SIGNPOSTING,Signpost,Signposting
-import warnings
 
 def find_signposting(uri:str) -> Signposting:
     page = requests.get(uri)
