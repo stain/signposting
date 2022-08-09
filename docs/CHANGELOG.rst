@@ -6,6 +6,10 @@ v0.2.5 (2022-08-08)
 ------------------------------------------------------------
 
 * Further documentation improvements
+* Initial HTML parsing of <link> elements (import ``signposting.htmllinks`` for now)
+* Added str/repr for ``Signposting`` and ``Signpost`` classes. ``str(s)`` return HTTP link headers.
+* Added ``Signposting.signposts`` property
+* ``Signposting`` is now iterable
 
 v0.2.4 (2022-07-08)
 ------------------------------------------------------------

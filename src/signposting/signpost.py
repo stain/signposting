@@ -20,20 +20,22 @@ Common types for describing signposting link relations:
 * `AbsoluteURI` represent an URI string
 * `MediaType` represent an IANA media type string
 
-These classes are general data holders, independent of the way 
+These classes are general data holders, independent of the way
 signposting links have been discovered or parsed. They would
 be returned by methods like :meth:`find_signposting` 
 or could be constructed manually for other purposes.
 
 The main purpose of the typed strings is to ensure syntactic
-validity at construction time, so that consumers of 
+validity at construction time, so that consumers of
 `Signposting` objects can make strong assumptions
 about type safety.
 """
 
+import itertools
+from multiprocessing import AuthenticationError
 import re
-from typing import Collection, List, Optional, Set, Union, AbstractSet, FrozenSet
-from enum import Enum, unique
+from typing import Collection, Iterable, Iterator, List, Optional, Set, Sized, Union, AbstractSet, FrozenSet
+from enum import Enum, auto, unique
 import warnings
 
 import rfc3987
@@ -52,7 +54,7 @@ class AbsoluteURI(str):
         potentially relative URI reference, otherwise the first argument
         must be an absolute URI.
 
-        This constructor will throw `ValueError` if the 
+        This constructor will throw `ValueError` if the
         final URI reference is invalid or not absolute.
 
         Note that IRIs are not supported.
@@ -85,11 +87,11 @@ class MediaType(str):
 
     While the constructor do check that the main type is an offical IANA subtree
     (see `MediaType.MAIN`), it does not enforce the individual subtype to be registered.
-    In particular RFC6838 permits unregistered subtypes 
+    In particular RFC6838 permits unregistered subtypes
     starting with `vnd.`, `prs.` and `x.`
 
-    Extra content type parameters such as ``;profile=http://example.com/`` are 
-    **not** supported by this class, as they do not form part of the 
+    Extra content type parameters such as ``;profile=http://example.com/`` are
+    **not** supported by this class, as they do not form part of the
     media type registration.
 
     .. _RFC6838: https://www.rfc-editor.org/rfc/rfc6838.html
@@ -150,8 +152,8 @@ class MediaType(str):
 class LinkRel(str, Enum):
     """A link relation as used in Signposting.
 
-    Link relations are defined by `RFC8288`_, but 
-    only link relations listed in `FAIR`_ and `signposting`_ 
+    Link relations are defined by `RFC8288`_, but
+    only link relations listed in `FAIR`_ and `signposting`_
     conventions are included in this enumerator.
 
     A link relation enum can be looked up from its RFC8288 _value_
@@ -171,7 +173,7 @@ class LinkRel(str, Enum):
     type = "type"
     license = "license"
     linkset = "linkset"
-    
+
     def __repr__(self):
         return "rel=%s" % self.value
 
@@ -187,8 +189,8 @@ class Signpost:
 
     This is a convenience class that may be wrapping a :attr:`link`. 
 
-    In some case the link relation may have additional attributes, 
-    e.g. ``signpost.link["title"]`` - the purpose of this class is however to 
+    In some case the link relation may have additional attributes,
+    e.g. ``signpost.link["title"]`` - the purpose of this class is however to
     lift only the navigational attributes for FAIR Signposting.
     """
 
@@ -203,12 +205,12 @@ class Signpost:
 
     # TODO: Check RFC if this may also be a URI.
     type: Optional[MediaType]
-    """The media type of the target. 
-    
+    """The media type of the target.
+
     It is recommended to use this type in content-negotiation for
     retrieving the target URI.
 
-    This property is optional, and should only be expected 
+    This property is optional, and should only be expected
     if `rel` is :const:`LinkRel.describedby` or :const:`LinkRel.item`
     """
 
@@ -217,22 +219,22 @@ class Signpost:
     """Profile URIs for the target with the given type.
 
     Profiles are mainly identifiers, indicating that a particular
-    convention or subtype should be expected in the target's . 
-    
+    convention or subtype should be expected in the target's .
+
     For instance, a ``rel=describedby`` signpost to a JSON-LD document can have
     ``type=application/ld+json`` and ``profile=http://www.w3.org/ns/json-ld#compacted``
 
-    As there may be multiple profiles, or (more commonly) none, 
+    As there may be multiple profiles, or (more commonly) none,
     this property is typed as a :class:`FrozenSet`.
     """
 
     context: Optional[AbsoluteURI]
-    """Resource URL this is the signposting for, e.g. a HTML landing page.    
+    """Resource URL this is the signposting for, e.g. a HTML landing page.
     """
 
     link: Optional[Link]
-    """The Link this signpost came from. 
-    
+    """The Link this signpost came from.
+
     May contain additional attributes such as ``link["title"]``.
     Note that a single Link may have multiple ``rel``s, therefore it is
     possible that multiple :class:`Signpost`s refer to the same link.
@@ -291,11 +293,42 @@ class Signpost:
 
         self.link = link
 
+    def __repr__(self):
+        repr = []
+        if self.context:
+            repr.append("context=%s" % self.context)
+        repr.append("rel=%s" % self.rel)
+        repr.append("target=%s" % self.target)
+        if self.type:
+            repr.append("type=%s" % self.type)
+        if self.profiles:
+            repr.append("profiles=%s" % self.profiles)
 
-class Signposting:
+        return "<Signpost %s>" % " ".join(repr)
+
+    def __str__(self):
+        strs = []
+        strs.append("Link: <%s>" % self.target)
+        strs.append("rel=%s" % self.rel)
+        if self.type:
+            strs.append('type="%s"' % self.type)
+        if self.profiles:
+            strs.append('profile="%s"' % " ".join(self.profiles))
+        if self.context:
+            strs.append('context="%s"' % self.context)
+        return "; ".join(strs)
+
+class Signposting(Iterable[Signpost], Sized):
     """Signposting links for a given resource.
 
-    Links are categorized according to `FAIR`_ `signposting`_ conventions.
+    Links are categorized according to `FAIR`_ `signposting`_ conventions and 
+    split into different attributes like `citeAs` or `describedBy`.
+
+    It is possible to iterate over this class or use the `signposts` property to
+    find all recognized signposts.
+
+    Note that in the case of a resource not having any signposts, instances
+    of this class are considered false.
 
     .. _signposting: https://signposting.org/conventions/
     .. _FAIR: https://signposting.org/FAIR/
@@ -309,9 +342,9 @@ class Signposting:
     """Author(s) of the resource (and possibly its items)"""
 
     describedBy: Set[Signpost]
-    """Metadata resources about the resource and its items, typically in a Linked Data format. 
-    
-    Resources may require content negotiation, check ``Link["type"]`` attribute
+    """Metadata resources about the resource and its items, typically in a Linked Data format.
+
+    Resources may require content negotiation, check `Signpost.type` attribute
     (if present) for content type, e.g. ``text/turtle``.
     """
 
@@ -320,8 +353,8 @@ class Signposting:
 
     items: Set[Signpost]
     """Items contained by this resource, e.g. downloads.
-    
-    The content type of the download may be available as ``Link["type"]``` attribute.
+
+    The content type of the download may be available as `Signpost.type` attribute.
     """
 
     linksets: Set[Signpost]
@@ -344,11 +377,11 @@ class Signposting:
     """Optional license of this resource (and presumably its items)"""
 
     collection: Optional[Signpost]
-    """Optional collections this resource is part of"""
+    """Optional collection this resource is part of"""
 
     def __init__(self, context_url: Union[AbsoluteURI, str] = None, signposts: List[Signpost] = None):
-        """Construct a Signposting from a list of :class:`Signpost`s. 
-        The ``context_url` is the resource this is the signposting for.        
+        """Construct a Signposting from a list of :class:`Signpost`s.
+        The ``context_url` is the resource this is the signposting for.
         """
         if context_url:
             self.context_url = AbsoluteURI(context_url)
@@ -364,6 +397,7 @@ class Signposting:
         self.items = set()
         self.linksets = set()
         self.types = set()
+        self._extras = set() # Any extra signposts, ideally none
 
         if signposts is None:
             return
@@ -378,25 +412,106 @@ class Signposting:
             if s.rel is LinkRel.cite_as:
                 if self.citeAs:
                     warnings.warn("Ignoring additional cite-as signposts")
-                    continue
-                self.citeAs = s
-            if s.rel is LinkRel.license:
+                    self._extras.add(s)
+                else:
+                    self.citeAs = s
+            elif s.rel is LinkRel.license:
                 if self.license:
                     warnings.warn("Ignoring additional license signposts")
-                    continue
-                self.license = s
-            if s.rel is LinkRel.collection:
+                    self._extras.add(s)
+                else:
+                    self.license = s
+            elif s.rel is LinkRel.collection:
                 if self.collection:
                     warnings.warn("Ignoring additional collection signposts")
-                    continue
-                self.collection = s
-            if s.rel is LinkRel.author:
+                    self._extras.add(s)
+                else:
+                    self.collection = s
+            elif s.rel is LinkRel.author:
                 self.authors.add(s)
-            if s.rel is LinkRel.describedby:
+            elif s.rel is LinkRel.describedby:
                 self.describedBy.add(s)
-            if s.rel is LinkRel.item:
+            elif s.rel is LinkRel.item:
                 self.items.add(s)
-            if s.rel is LinkRel.linkset:
+            elif s.rel is LinkRel.linkset:
                 self.linksets.add(s)
-            if s.rel is LinkRel.type:
+            elif s.rel is LinkRel.type:
                 self.types.add(s)
+            else:
+                warnings.warn("Unrecognized link relation: %s" % s.rel)
+                # NOTE: This means a new enum member in LinkRel that we should handle above
+                self._extras.add(s)
+
+    @property
+    def signposts(self) -> Set[Signpost]:
+        """Return all FAIR Signposts for recognized relation types.
+        
+        This may include any additional signposts for link relations
+        that only expect a single link, like :prop:`citeAs`.
+
+        It is also possible to iterate directly over this class, see
+        :meth:`__iter__`
+        """
+        return frozenset(self)
+
+    def __len__(self):
+        """Count how many FAIR Signposts were recognized"""
+        return len(self.signposts)
+    
+    def __iter__(self) -> Iterator[Signpost]:
+        """Iterate over all recognized FAIR signposts.
+
+        See also the property :prop:`signposts`
+        """
+        if self.citeAs:
+            yield self.citeAs
+        if self.license:
+            yield self.license
+        if self.collection:
+            yield self.collection
+        for a in self.authors:
+            yield a
+        for d in self.describedBy:
+            yield d
+        for i in self.items:
+            yield i
+        for t in self.types:
+            yield t
+        for e in self._extras:
+            yield e
+
+    def _repr_signposts(self, signposts):
+        return " ".join(set(d.target for d in signposts))
+
+    def __repr__(self):
+        repr = []
+        if self.context_url:
+            repr.append("context=%s" % self.context_url)
+        if self.citeAs:
+            repr.append("citeAs=%s" % self.citeAs.target)
+        if self.license:
+            repr.append("license=%s" % self.license.target)
+        if self.collection:
+            repr.append("collection=%s" % self.collection.target)
+        if self.authors:
+            repr.append("authors=%s" % self._repr_signposts(self.authors))
+        if self.describedBy:
+            repr.append("describedBy=%s" % self._repr_signposts(self.describedBy))
+        if self.items:
+            repr.append("items=%s" % self._repr_signposts(self.items))
+        if self.linksets:
+            repr.append("linksets=%s" % self._repr_signposts(self.linksets))
+        if self.types:
+            repr.append("types=%s" % self._repr_signposts(self.types))
+
+        return "<Signposting %s>" % "\n ".join(repr)
+
+    def __str__(self):
+        """Represent signposts as HTTP Link headers.
+        
+        Note that these are reconstructed from the recognized link relations only,
+        and do not include unparsed additional link attributes.
+
+        See also `Signpost.link`
+        """
+        return "\n".join(map(str, self))
