@@ -2,9 +2,11 @@
 Changelog
 =========
 
-* Initial HTML parsing of <link> elements
 * Further documentation improvements
-* Added str/repr for ``Signposting`` and ``Signpost`` classes. str() return HTTP link headers.
+* Initial HTML parsing of <link> elements (import ``signposting.htmllinks`` for now)
+* Added str/repr for ``Signposting`` and ``Signpost`` classes. ``str(s)`` return HTTP link headers.
+* Added ``Signposting.signposts`` property
+* ``Signposting`` is now iterable
 
 v0.2.4 (2022-07-08)
 ------------------------------------------------------------
