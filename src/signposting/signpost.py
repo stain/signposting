@@ -35,7 +35,7 @@ about type safety.
 import itertools
 from multiprocessing import AuthenticationError
 import re
-from typing import Collection, Iterator, List, Optional, Set, Union, AbstractSet, FrozenSet
+from typing import Collection, Iterable, Iterator, List, Optional, Set, Sized, Union, AbstractSet, FrozenSet
 from enum import Enum, auto, unique
 import warnings
 
@@ -319,7 +319,7 @@ class Signpost:
             strs.append('context="%s"' % self.context)
         return "; ".join(strs)
 
-class Signposting:
+class Signposting(Iterable[Signpost], Sized):
     """Signposting links for a given resource.
 
     Links are categorized according to `FAIR`_ `signposting`_ conventions and 
