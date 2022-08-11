@@ -75,7 +75,7 @@ class XHTML(DownloadedText):
 
 class UnrecognizedContentType(Exception):
     def __init__(self, content_type:str, uri:AbsoluteURI):
-        super("Unrecognized content-type %s for <%s>" % (content_type, uri))
+        super().__init__("Unrecognized content-type %s for <%s>" % (content_type, uri))
         self.content_type = content_type
         self.uri = uri
 

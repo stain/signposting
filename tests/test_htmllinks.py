@@ -114,6 +114,13 @@ class TestDownloadedText(unittest.TestCase):
         )
         self.assertEqual('<html xmlns="http://www.w3.org/1999/xhtml"><body>Hello</body></html>', xhtml)
 
+class TestUnrecognizedContentType(unittest.TestCase):
+    def test_raise(self):
+        with self.assertRaises(htmllinks.UnrecognizedContentType) as e:
+            raise htmllinks.UnrecognizedContentType("image/jpeg", 
+                AbsoluteURI("http://example.com/img1.jpeg"))
+        self.assertEqual("image/jpeg", e.exception.content_type)
+        self.assertEqual("http://example.com/img1.jpeg", e.exception.uri)
 
 class TestGetHTML(unittest.TestCase):
     pass
