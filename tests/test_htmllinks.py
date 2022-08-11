@@ -60,7 +60,6 @@ class TestHtmlLinks(unittest.TestCase):
             signposts = htmllinks.find_signposting_html(URL)
 
             self.assertEqual("https://w3id.org/a2a-fair-metrics/02-html-full/", signposts.citeAs.target)
-            self.assertEqual("https://w3id.org/a2a-fair-metrics/02-html-full/", signposts.citeAs.target)
             self.assertEqual(
                 {"https://orcid.org/0000-0002-1825-0097", "https://ror.org/02wg9xc72"},
                 {a.target for a in signposts.authors}
