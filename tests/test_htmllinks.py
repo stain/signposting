@@ -14,6 +14,7 @@
 """Test htmllinks parsing."""
 
 import unittest
+import requests_mock
 import importlib.resources
 
 from signposting import htmllinks
@@ -24,6 +25,18 @@ a2a_18 = importlib.resources.read_text("tests.data.a2a-fair-metrics", "18-html-c
 a2a_19 = importlib.resources.read_text("tests.data.a2a-fair-metrics", "19-html-citeas-multiple-rels.html")
 
 class TestHtmlLinks(unittest.TestCase):
-    def test_foo(self):
-        self.assertEqual("http://example.com/author1", "Ouch")
+    def test_find_signposting_html(self):
+        with requests_mock.Mocker() as m:
+            m.get("https://w3id.example.org/a2a-fair-metrics/a02-html-full/", text=a2a_02)
+            signposts = htmllinks.find_signposting_html("https://w3id.example.org/a2a-fair-metrics/a02-html-full/")            
+            self.assertEqual("https://w3id.org/a2a-fair-metrics/a02-html-full/", signposts.citeAs)
 
+
+class TestDownloadedText(unittest.TestCase):
+    pass
+
+class TestGetHTML(unittest.TestCase):
+    pass
+
+class TestParseHTML(unittest.TestCase):
+    pass
