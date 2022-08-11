@@ -64,7 +64,7 @@ setup(
         ],
     project_urls={
         'webpage': 'https://github.com/stain/signposting',
-        #'Documentation': 'https://signposting.readthedocs.io/en/latest/',
+        'Documentation': 'https://signposting.readthedocs.io/en/latest/',
         'Changelog': 'https://github.com/stain/signposting/blob/main/docs/CHANGELOG.rst',
         'Issue Tracker': 'https://github.com/stain/signposting/issues',
         'Discussion Forum': 'https://github.com/stain/signposting/discussions',
@@ -81,13 +81,16 @@ setup(
         'requests>=2.28.1'
         ],
     extras_require={
+            'tests': [
+                'types-requests>=2.28.1',
+                'types-beautifulsoup4>=4.10',
+                'requests-mock>=1.9.3'
+            ]
         # eg:
         #   'rst': ['docutils>=0.11'],
         #   ':python_version=="2.6"': ['argparse'],
         },
     setup_requires=[
-            'types-requests>=2.28.1',
-            'types-beautifulsoup4>=4.10',
         #   'pytest-runner',
         #   'setuptools_scm>=3.3.1',
         ],
