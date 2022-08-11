@@ -19,9 +19,9 @@ import importlib.resources
 from signposting import htmllinks
 
 
-a2a_02 = importlib.resources.path(".", "data/w3id.org/a2a-fair-metrics/02-html-full/index.html")
-a2a_18 = importlib.resources.path(".", "data/w3id.org/a2a-fair-metrics/18-html-citeas-only/index.html")
-a2a_19 = importlib.resources.path(".", "data/w3id.org/a2a-fair-metrics/19-html-citeas-multiple-rels/index.html")
+a2a_02 = importlib.resources.read_text("tests.data.a2a-fair-metrics", "02-html-full.html")
+a2a_18 = importlib.resources.read_text("tests.data.a2a-fair-metrics", "18-html-citeas-only.html")
+a2a_19 = importlib.resources.read_text("tests.data.a2a-fair-metrics", "19-html-citeas-multiple-rels.html")
 
 class TestHtmlLinks(unittest.TestCase):
     def test_foo(self):

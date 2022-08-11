@@ -202,7 +202,7 @@
    limitations under the License.
 
 -------------------------------
-tests/data/w3id.org/a2a-fair-metrics/02-html-full/index.html
+tests/data/a2a-fair-metrics/02-html-full.html
 
 "Apples to Apples Dataset" 
 by Josiah Carberry (not really)
@@ -212,8 +212,8 @@ Redistributed under the terms of
 Creative Commons Attribution 4.0 International License
 <http://creativecommons.org/licenses/by/4.0/>
 -------------------------------
-tests/data/w3id.org/a2a-fair-metrics
-(except 02-html-full)
+tests/data/a2a-fair-metrics/
+(except 02-html-full.html)
 
 Adapted from https://w3id.org/a2a-fair-metrics/ under the terms
 of Creative Commons Zero v1.0 Universal
