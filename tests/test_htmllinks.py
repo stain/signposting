@@ -27,8 +27,7 @@ a2a_19 = importlib.resources.read_text("tests.data.a2a-fair-metrics", "19-html-c
 class TestHtmlLinks(unittest.TestCase):
     def test_find_signposting_html_a2a_18(self):
         with requests_mock.Mocker() as m:
-            # Below URL will only work through mocker, to use real one
-            # delete "example."
+            # This example.org URL will deliberaly only work through mocker
             URL="https://w3id.example.org/a2a-fair-metrics/18-html-citeas-only/"
             m.get(URL, 
                 text=a2a_18, 
@@ -39,8 +38,6 @@ class TestHtmlLinks(unittest.TestCase):
 
     def test_find_signposting_html_a2a_19(self):
         with requests_mock.Mocker() as m:
-            # Below URL will only work through mocker, to use real one
-            # delete "example."
             URL="https://w3id.example.org/a2a-fair-metrics/19-html-citeas-multiple-rels/"
             m.get(URL, 
                 text=a2a_19, 
@@ -51,8 +48,6 @@ class TestHtmlLinks(unittest.TestCase):
 
     def test_find_signposting_html_a2a_02(self):
         with requests_mock.Mocker() as m:
-            # Below URL will only work through mocker, to use real one
-            # delete "example."
             URL="https://w3id.example.org/a2a-fair-metrics/02-html-full/"
             m.get(URL, 
                 text=a2a_02, 
