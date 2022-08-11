@@ -13,6 +13,7 @@
 #   limitations under the License.
 """Test htmllinks parsing."""
 
+import warnings
 import unittest
 from urllib.error import HTTPError
 import requests
@@ -132,16 +133,32 @@ class TestGetHTML(unittest.TestCase):
             m.get(URL, 
                 text=a2a_18, 
                 headers={"Content-Type": "text/html;charset=UTF-8"})
-            html = htmllinks._get_html(URL)            
+            html = htmllinks._get_html(URL)
+            self.assertIsInstance(html, htmllinks.HTML)
             self.assertIn("<!doctype html>", html)
             self.assertIn("18-html-citeas-only", html)
             self.assertEqual("text/html;charset=UTF-8", html.content_type)
             self.assertEqual("https://w3id.example.org/a2a-fair-metrics/18-html-citeas-only/", html.requested_url)
             self.assertEqual("https://w3id.example.org/a2a-fair-metrics/18-html-citeas-only/", html.resolved_url)
 
+    def test_get_xhtml(self):
+        with requests_mock.Mocker() as m:
+            # TODO: Add a XHTML variant of 02-html-full to a2a benchmarks
+            URL=AbsoluteURI("https://w3id.example.com/a2a-fair-metrics/TODO-xhtml/")
+            m.get(URL, 
+                text='<html xmlns="http://www.w3.org/1999/xhtml"><body>Hello</body></html>', 
+                headers={"Content-Type": "application/xml+xhtml",
+                         "Content-Location": "index.xhtml"
+                })
+            html = htmllinks._get_html(URL)
+            self.assertIsInstance(html, htmllinks.XHTML)
+            self.assertIn("xmlns=", html)
+            self.assertEqual("application/xml+xhtml", html.content_type)
+            self.assertEqual("https://w3id.example.com/a2a-fair-metrics/TODO-xhtml/", html.requested_url)
+            self.assertEqual("https://w3id.example.com/a2a-fair-metrics/TODO-xhtml/index.xhtml", html.resolved_url)
+
     def test_get_html_resolved_relative(self):
         with requests_mock.Mocker() as m:
-            # This example.org URL will deliberaly only work through mocker
             URL=AbsoluteURI("https://w3id.example.org/a2a-fair-metrics/18-html-citeas-only/")
             m.get(URL, 
                 text=a2a_18, 
@@ -156,11 +173,50 @@ class TestGetHTML(unittest.TestCase):
 
     def test_get_html_404(self):
         with requests_mock.Mocker() as m:
-            # This example.org URL will deliberaly only work through mocker
             URL=AbsoluteURI("https://w3id.example.org/a2a-fair-metrics/00-http-404-not-found/")
             m.get(URL, status_code=404)
             with self.assertRaises(requests.HTTPError):
                 htmllinks._get_html(URL)
+
+    def test_get_html_203(self):
+        with requests_mock.Mocker() as m:
+            URL=AbsoluteURI("https://w3id.example.org/a2a-fair-metrics/26-http-citeas-203-non-authorative/")
+            m.get(URL, status_code=203, text="<html><body>Non-authorative</body></html>",
+                headers={"Content-Type": "text/html"})            
+
+            with warnings.catch_warnings(record=True) as w:
+                html = htmllinks._get_html(URL)
+            self.assertEqual("<html><body>Non-authorative</body></html>", html)
+            self.assertEqual(URL, html.resolved_url)
+            # Check warning occurred
+            self.assertEqual(1, len(w))
+            self.assertEqual(w[0].category, UserWarning)
+            self.assertIn("203", str(w[0].message))
+
+    def test_get_html_410(self):
+        with requests_mock.Mocker() as m:
+            URL=AbsoluteURI("https://w3id.example.org/a2a-fair-metrics/25-http-citeas-author-410-gone/")
+            m.get(URL, status_code=410, text="<html><body>Tombstone</body></html>",
+                headers={"Content-Type": "text/html"})            
+            with warnings.catch_warnings(record=True) as w:
+                html = htmllinks._get_html(URL)
+            self.assertEqual("<html><body>Tombstone</body></html>", html)
+            self.assertEqual(URL, html.resolved_url)
+            # Check warning occurred
+            self.assertEqual(1, len(w))
+            self.assertEqual(w[0].category, UserWarning)
+            self.assertIn("410 Gone", str(w[0].message))
+
+    def test_get_html_wrong_type(self):
+        with requests_mock.Mocker() as m:
+            URL=AbsoluteURI("https://w3id.example.org/a2a-fair-metrics/TODO-text-plain/")
+            m.get(URL, text="Unrecognized plain text",
+                headers={"Content-Type": "text/plain"})       
+            with self.assertRaises(htmllinks.UnrecognizedContentType) as e:
+                htmllinks._get_html(URL)                
+            self.assertEqual("text/plain", e.exception.content_type)
+            self.assertEqual(URL, e.exception.uri)
+
 
 class TestParseHTML(unittest.TestCase):
     pass
