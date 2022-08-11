@@ -25,12 +25,73 @@ a2a_18 = importlib.resources.read_text("tests.data.a2a-fair-metrics", "18-html-c
 a2a_19 = importlib.resources.read_text("tests.data.a2a-fair-metrics", "19-html-citeas-multiple-rels.html")
 
 class TestHtmlLinks(unittest.TestCase):
-    def test_find_signposting_html(self):
+    def test_find_signposting_html_a2a_18(self):
         with requests_mock.Mocker() as m:
-            m.get("https://w3id.example.org/a2a-fair-metrics/a02-html-full/", text=a2a_02)
-            signposts = htmllinks.find_signposting_html("https://w3id.example.org/a2a-fair-metrics/a02-html-full/")            
-            self.assertEqual("https://w3id.org/a2a-fair-metrics/a02-html-full/", signposts.citeAs)
+            # Below URL will only work through mocker, to use real one
+            # delete "example."
+            URL="https://w3id.example.org/a2a-fair-metrics/18-html-citeas-only/"
+            m.get(URL, 
+                text=a2a_18, 
+                headers={"Content-Type": "text/html;charset=UTF-8"})
+            signposts = htmllinks.find_signposting_html(URL)            
+            self.assertEqual("https://w3id.org/a2a-fair-metrics/18-html-citeas-only/", signposts.citeAs.target)            # Note: Non-signposting links like rel=schema.DC are ignored
+            self.assertEqual(1, len(signposts))
 
+    def test_find_signposting_html_a2a_19(self):
+        with requests_mock.Mocker() as m:
+            # Below URL will only work through mocker, to use real one
+            # delete "example."
+            URL="https://w3id.example.org/a2a-fair-metrics/19-html-citeas-multiple-rels/"
+            m.get(URL, 
+                text=a2a_19, 
+                headers={"Content-Type": "text/html;charset=UTF-8"})
+            signposts = htmllinks.find_signposting_html(URL)            
+            self.assertEqual("https://w3id.org/a2a-fair-metrics/19-html-citeas-multiple-rels/", signposts.citeAs.target)            # Note: Non-signposting links like rel=schema.DC are ignored
+            self.assertEqual(1, len(signposts))
+
+    def test_find_signposting_html_a2a_02(self):
+        with requests_mock.Mocker() as m:
+            # Below URL will only work through mocker, to use real one
+            # delete "example."
+            URL="https://w3id.example.org/a2a-fair-metrics/02-html-full/"
+            m.get(URL, 
+                text=a2a_02, 
+                headers={"Content-Type": "text/html;charset=UTF-8"})
+            signposts = htmllinks.find_signposting_html(URL)
+
+            self.assertEqual("https://w3id.org/a2a-fair-metrics/02-html-full/", signposts.citeAs.target)
+            self.assertEqual("https://w3id.org/a2a-fair-metrics/02-html-full/", signposts.citeAs.target)
+            self.assertEqual(
+                {"https://orcid.org/0000-0002-1825-0097", "https://ror.org/02wg9xc72"},
+                {a.target for a in signposts.authors}
+            )
+            self.assertEqual(
+                {"https://schema.org/Dataset", "https://schema.org/AboutPage"},
+                {t.target for t in signposts.types}
+            )
+            self.assertEqual(
+                "https://creativecommons.org/licenses/by/4.0/",
+                signposts.license.target
+            )
+            self.assertEqual(
+                {"https://s11.no/2022/a2a-fair-metrics/02-html-full/data/test-apple-data.csv"},
+                {i.target for i in signposts.items}
+            )
+            self.assertEqual(
+                {"text/csv"},
+                {i.type for i in signposts.items}
+            )
+            self.assertEqual(
+                {"https://s11.no/2022/a2a-fair-metrics/02-html-full/metadata/02-html-full.jsonld", 
+                "https://s11.no/2022/a2a-fair-metrics/02-html-full/metadata/02-html-full.xml"},
+                {d.target for d in signposts.describedBy}
+            )
+            self.assertEqual(
+                {"application/ld+json", "application/rdf+xml"},
+                {d.type for d in signposts.describedBy}
+            )
+            # Note: Non-signposting links like rel=schema.DC are ignored
+            self.assertEqual(9, len(signposts))
 
 class TestDownloadedText(unittest.TestCase):
     pass
