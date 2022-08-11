@@ -18,7 +18,7 @@ Parse HTML to find <link> elements for signposting.
 
 from html.parser import HTMLParser
 from io import FileIO
-from typing import Union
+from typing import Tuple, Union
 import warnings
 import requests
 from bs4 import BeautifulSoup,SoupStrainer
@@ -27,34 +27,68 @@ from .signpost import SIGNPOSTING,AbsoluteURI,Signpost,Signposting
 def find_signposting_html(uri:Union[AbsoluteURI, str]) -> Signposting:
     """Parse HTML to find <link> elements for signposting.
     
-    HTTP redirects will be followed.
+    HTTP redirects will be followed and any relative paths in links
+    made absolute correspondingly.
 
     :param uri: An absolute http/https URI, which HTML will be inspected.
     :throws ValueError: If the `uri` is invalid
     :throws IOError: If the network request failed, e.g. connection timeout
     :throws requests.HTTPError: If the HTTP request failed, e.g. 404 Not Found
+    :throws UnrecognizedContentType: If the HTTP resource was not a recognized HTML/XHTML content type
     :throws HTMLParser.HTMLParseError: If the HTML could not be parsed.
     :returns: A parsed `Signposting` object (which may be empty)
     """
-    (html,resolved_url) = _get_html(AbsoluteURI(uri))
-    if not html:
-        return Signposting(resolved_url) # empty
-    return _parse_html(html, resolved_url)
+    html = _get_html(AbsoluteURI(uri))
+    return _parse_html(html)
 
-class HTML(str):
-    def __new__(cls, value=str):
-        pass
+class DownloadedText(str):
+    """Text downloaded from HTTP"""
 
-class XHTML(str):
-    def __new__(cls, value=str):
-        pass
+    content_type: str
+    """The returned Content-Type of the downloaded text"""
 
-def _get_html(uri:AbsoluteURI) -> () :
+    requested_url: AbsoluteURI
+    """The requested URL, before redirection"""
+
+    resolved_url: AbsoluteURI
+    """The resolved URL, after redirection and observing any Content-Location header."""
+
+    def __new__(cls, value:str, content_type:str, requested_url:AbsoluteURI, resolved_url:AbsoluteURI):
+        s = super().__new__(cls, value)
+        # NOTE: content_type is necessarily a signpost.MediaType, 
+        # as this string typically include charset, e.g. 
+        # "text/html; charset=iso-8859-1"
+        s.content_type = content_type
+        s.requested_url = requested_url
+        s.resolved_url = resolved_url
+        return s
+
+class HTML(DownloadedText):
+    """HTML document as string"""
+    pass
+
+class XHTML(DownloadedText):
+    """XHTML document as a string"""
+    pass
+
+class UnrecognizedContentType(Exception):
+    def __init__(self, content_type:str, uri:AbsoluteURI):
+        super("Unrecognized content-type %s for <%s>" % (content_type, uri))
+        self.content_type = content_type
+        self.uri = uri
+
+def _get_html(uri:AbsoluteURI) -> Union[HTML,XHTML]:
     HEADERS = {
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9"
     }
+    # Should ideally throw Not Acceptable error if none of the above
     page = requests.get(uri, headers=HEADERS)
-    resolved_url = AbsoluteURI(page.url);
+
+    resolved_url = AbsoluteURI(page.url, uri)
+    if "Content-Location" in page.headers:
+        # More specific, e.g. "index.en.html" - parse as relative URI reference
+        resolved_url = AbsoluteURI(page.headers["Content-Location"], resolved_url)
+
     if page.status_code == 203:
         warnings.warn("203 Non-Authoritative Information <%s> - Signposting URIs may have been rewritten by proxy" %
                     resolved_url)
@@ -66,12 +100,24 @@ def _get_html(uri:AbsoluteURI) -> () :
         page.raise_for_status()
     
     ct = page.headers["Content-Type"]
-    if not "text/html" in ct or "application/xhtml+xml" in ct or "application/xml" in ct or "+xml" in ct:
-        warnings.warn("Unrecognised media type %s for <%s>, skipping HTML parsing" % (ct, uri))
-        return (None, resolved_url)
+    if "text/html" in ct:
+        # page.text should get HTTP-level encoding correct,
+        # but will not know about any charset declarations inside.
+        return HTML(page.text, ct, uri, resolved_url)
+    elif "application/xhtml+xml" in ct or "application/xml" in ct or "xhtml" in ct or "+xml" in ct:
+        # Hopefully some XHTML inside.
+        # These typically don't have charset parameter, the below
+        # will guess by detection
+        return XHTML(page.text, ct, uri, resolved_url)
+    else:
+        # HTTP server didn't honor our Accept header, and returned non-HTML.
+        # It may be an image or something else that will crash our HTML parser,
+        # so we'll bail out here.
+        raise UnrecognizedContentType(ct, uri)
+
     return (page.content, resolved_url)
 
-def _parse_html(html:Union[str, FileIO], context:AbsoluteURI) -> Signposting:
+def _parse_html(html:Union[HTML,XHTML]) -> Signposting:
     soup = BeautifulSoup(html, 'html.parser', 
         # Ignore any other elements to reduce chance of parse errors
         parse_only=SoupStrainer(["head", "link"]))
@@ -88,11 +134,11 @@ def _parse_html(html:Union[str, FileIO], context:AbsoluteURI) -> Signposting:
                         if r.lower() in SIGNPOSTING)
             for rel in rels:
                 try:
-                    signpost = Signpost(rel, url, type, profiles, context)
+                    signpost = Signpost(rel, url, type, profiles, html.resolved_url)
                 except ValueError as e:
-                    warnings.warn("Ignoring invalid signpost from %s: %s" % (uri, e))
+                    warnings.warn("Ignoring invalid signpost from %s: %s" % (html.requested_url, e))
                     continue
                 signposts.append(signpost)
     if not signposts:
-        warnings.warn("No signposting found: %s" % context)
-    return Signposting(context, signposts)
+        warnings.warn("No signposting found from <%s>" % html.requested_url)
+    return Signposting(html.resolved_url, signposts)
