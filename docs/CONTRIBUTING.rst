@@ -137,7 +137,15 @@ Also, you can run individual environments if you wish to test only specific func
     tox -e docs  # only builds the documentation
     tox -e prreqs  # special requirements before Pull Request
     tox -e py310
+    tox -e py310 tests/test_htmllinks.py  # only one test file
 
+Note that integration tests ``TestResolverA2A`` in ``tests/test_resolver.py`` require network access
+to <https://w3id.org/a2a-fair-metrics/> and may take some time to complete. 
+The integration tests can be disabled by setting the environment variable ``CI=true``:
+
+::
+
+    CI=true tox -e py310
 
 .. _a2a-fair-metrics: https://w3id.org/a2a-fair-metrics/
 .. _tox.ini: https://github.com/stain/signposting/blob/latest/tox.ini
