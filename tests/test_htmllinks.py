@@ -16,7 +16,7 @@
 import unittest
 import importlib.resources
 
-from signposting import htmlheader
+from signposting import htmllinks
 
 
 a2a_02 = importlib.resources.path(".", "data/w3id.org/a2a-fair-metrics/02-html-full/index.html")
@@ -25,5 +25,5 @@ a2a_19 = importlib.resources.path(".", "data/w3id.org/a2a-fair-metrics/19-html-c
 
 class TestHtmlLinks(unittest.TestCase):
     def test_foo(self):
-        self.assertEqual("http://example.com/author1", filtered[0].target)
+        self.assertEqual("http://example.com/author1", "Ouch")
 
