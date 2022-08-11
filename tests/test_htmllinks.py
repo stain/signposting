@@ -18,7 +18,7 @@ import requests_mock
 import importlib.resources
 
 from signposting import htmllinks
-
+from signposting.signpost import AbsoluteURI
 
 a2a_02 = importlib.resources.read_text("tests.data.a2a-fair-metrics", "02-html-full.html")
 a2a_18 = importlib.resources.read_text("tests.data.a2a-fair-metrics", "18-html-citeas-only.html")
@@ -88,7 +88,32 @@ class TestHtmlLinks(unittest.TestCase):
             self.assertEqual(9, len(signposts))
 
 class TestDownloadedText(unittest.TestCase):
-    pass
+    def test_downloaded(self):
+        d = htmllinks.DownloadedText("Hello World", "text/plain;charset=UTF-8",
+            AbsoluteURI("http://example.com/"),
+            AbsoluteURI("http://example.com/index.txt")
+        )
+        self.assertEqual("Hello World", d)
+        self.assertEqual("text/plain;charset=UTF-8", d.content_type)
+        self.assertEqual("http://example.com/", d.requested_url)
+        self.assertEqual("http://example.com/index.txt", d.resolved_url)
+
+    def test_html(self):
+        html = htmllinks.HTML("<html><body>Hello</body></html>", 
+            "text/html;charset=UTF-8",
+            AbsoluteURI("http://example.com/"),
+            AbsoluteURI("http://example.com/index.html")
+        )
+        self.assertEqual("<html><body>Hello</body></html>", html)
+
+    def test_xhtml(self):
+        xhtml = htmllinks.XHTML('<html xmlns="http://www.w3.org/1999/xhtml"><body>Hello</body></html>', 
+            "application/xml+html",
+            AbsoluteURI("http://example.com/"),
+            AbsoluteURI("http://example.com/index.xhtml")
+        )
+        self.assertEqual('<html xmlns="http://www.w3.org/1999/xhtml"><body>Hello</body></html>', xhtml)
+
 
 class TestGetHTML(unittest.TestCase):
     pass

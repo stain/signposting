@@ -54,6 +54,8 @@ class DownloadedText(str):
     """The resolved URL, after redirection and observing any Content-Location header."""
 
     def __new__(cls, value:str, content_type:str, requested_url:AbsoluteURI, resolved_url:AbsoluteURI):
+        # NOTE: Do not return value if it's already an DownloadedText
+        # instance; it may differ in the other attributes or subclass
         s = super().__new__(cls, value)
         # NOTE: content_type is necessarily a signpost.MediaType, 
         # as this string typically include charset, e.g. 
@@ -64,11 +66,11 @@ class DownloadedText(str):
         return s
 
 class HTML(DownloadedText):
-    """HTML document as string"""
+    """Downloaded HTML document as string"""
     pass
 
 class XHTML(DownloadedText):
-    """XHTML document as a string"""
+    """Downloaded XHTML document as a string"""
     pass
 
 class UnrecognizedContentType(Exception):
