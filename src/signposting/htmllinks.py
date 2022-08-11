@@ -99,7 +99,7 @@ def _get_html(uri:AbsoluteURI) -> Union[HTML,XHTML]:
         # raise requests.HTTPError for any other 4xx/5xx error
         page.raise_for_status()
     
-    ct = page.headers["Content-Type"]
+    ct = page.headers.get("Content-Type")
     if "text/html" in ct:
         # page.text should get HTTP-level encoding correct,
         # but will not know about any charset declarations inside.
