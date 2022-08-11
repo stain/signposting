@@ -14,6 +14,8 @@
 """Test htmllinks parsing."""
 
 import unittest
+from urllib.error import HTTPError
+import requests
 import requests_mock
 import importlib.resources
 
@@ -123,7 +125,43 @@ class TestUnrecognizedContentType(unittest.TestCase):
         self.assertEqual("http://example.com/img1.jpeg", e.exception.uri)
 
 class TestGetHTML(unittest.TestCase):
-    pass
+    def test_get_html(self):
+        with requests_mock.Mocker() as m:
+            # This example.org URL will deliberaly only work through mocker
+            URL=AbsoluteURI("https://w3id.example.org/a2a-fair-metrics/18-html-citeas-only/")
+            m.get(URL, 
+                text=a2a_18, 
+                headers={"Content-Type": "text/html;charset=UTF-8"})
+            html = htmllinks._get_html(URL)            
+            self.assertIn("<!doctype html>", html)
+            self.assertIn("18-html-citeas-only", html)
+            self.assertEqual("text/html;charset=UTF-8", html.content_type)
+            self.assertEqual("https://w3id.example.org/a2a-fair-metrics/18-html-citeas-only/", html.requested_url)
+            self.assertEqual("https://w3id.example.org/a2a-fair-metrics/18-html-citeas-only/", html.resolved_url)
+
+    def test_get_html_resolved_relative(self):
+        with requests_mock.Mocker() as m:
+            # This example.org URL will deliberaly only work through mocker
+            URL=AbsoluteURI("https://w3id.example.org/a2a-fair-metrics/18-html-citeas-only/")
+            m.get(URL, 
+                text=a2a_18, 
+                headers={"Content-Type": "text/html;charset=UTF-8",
+                         "Content-Location": "index.html"})
+            html = htmllinks._get_html(URL)            
+            self.assertIn("<!doctype html>", html)
+            self.assertIn("18-html-citeas-only", html)
+            self.assertEqual("text/html;charset=UTF-8", html.content_type)
+            self.assertEqual("https://w3id.example.org/a2a-fair-metrics/18-html-citeas-only/", html.requested_url)
+            self.assertEqual("https://w3id.example.org/a2a-fair-metrics/18-html-citeas-only/index.html", html.resolved_url)
+
+    def test_get_html_404(self):
+        with requests_mock.Mocker() as m:
+            # This example.org URL will deliberaly only work through mocker
+            URL=AbsoluteURI("https://w3id.example.org/a2a-fair-metrics/00-http-404-not-found/")
+            m.get(URL, status_code=404)
+            with self.assertRaises(requests.HTTPError):
+                htmllinks._get_html(URL)
 
 class TestParseHTML(unittest.TestCase):
     pass
+
