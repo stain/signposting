@@ -73,7 +73,7 @@ setup(
         'FAIR', 'signposting', 'linked data',
         'DOI', 'HTTP', 'linkset'
         ],
-    python_requires='>=3.6',
+    python_requires='>=3.7',
     install_requires=[
         'beautifulsoup4>=4.10',
         'httplink==0.2.0',
