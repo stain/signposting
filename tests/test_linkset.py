@@ -46,9 +46,23 @@ class TestParseLinkset(unittest.TestCase):
         signposts = linkset._parse_linkset(ls)
         self.assertEqual("https://s11.example.net/2022/a2a-fair-metrics/28-http-linkset-txt-only/linkset.txt", signposts.context_url)
         self.assertEqual("https://w3id.org/a2a-fair-metrics/28-http-linkset-txt-only/", signposts.citeAs.target)
-        self.assertEqual("https://s11.no/2022/a2a-fair-metrics/28-http-linkset-txt-only/", signposts.citeAs.context)
+        
 
-        ## TODO: Test describedby and item
+        self.assertEqual({"https://s11.no/2022/a2a-fair-metrics/28-http-linkset-txt-only/index.ttl"},
+            {d.target for d in signposts.describedBy})
+        self.assertEqual({"text/turtle"},
+            {d.type for d in signposts.describedBy})
+
+        self.assertEqual({"https://s11.no/2022/a2a-fair-metrics/28-http-linkset-txt-only/test-apple-data.csv"},
+            {i.target for i in signposts.items})
+        self.assertEqual({"text/csv"},
+            {i.type for i in signposts.items})
 
         self.assertEqual(3, len(signposts))
+        # Assert context is picked up from anchor=""
+        for s in signposts:
+            self.assertEqual("https://s11.no/2022/a2a-fair-metrics/28-http-linkset-txt-only/", s.context)
 
+# TODO: Check relative paths
+# TODO: Check encoding
+# TODO: Check same for JSON
