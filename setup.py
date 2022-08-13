@@ -36,7 +36,7 @@ long_description = '{}\n{}'.format(
 
 setup(
     name='signposting',
-    version='0.4.0',
+    version='0.5.0',
     description='Parse and navigate FAIR Signposting Link headers',
     long_description=long_description,
     long_description_content_type='text/x-rst',
