@@ -71,10 +71,11 @@ def _link_attr(link: Link, key: str) -> Optional[str]:
     return None
 
 def linkToSignpost(link: Link, rel: LinkRel, context_url: str = None) -> Signpost:
+    context = _link_attr(link, "anchor") or context_url
     return Signpost(rel, link.target,
         _link_attr(link, "type"),
         _link_attr(link, "profile"),
-        context_url, link)
+        context, link)
 
 def linksToSignposting(links: List[Link], context_url: str = None) -> Signposting:
         """Initialize Signposting object for a given `ParsedLinks`

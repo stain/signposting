@@ -2,6 +2,8 @@
 Changelog
 =========
 
+* Add experimental RFC9264 linkset parsing (text and json)
+
 v0.4.0 (2022-08-13)
 ------------------------------------------------------------
 
