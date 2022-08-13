@@ -83,11 +83,10 @@ def _get_linkset(uri:AbsoluteURI) -> Union[LinksetJSON,Linkset]:
         raise UnrecognizedContentType(ct, uri)    
 
 def _parse_linkset(linkset:Linkset) -> Signposting:
-    # TODO: RFC9264 is based on RFC8288 but also permits newlines.
-    # hopefully the below supports such whitespace
-    # with link-splitting on ",", but it may be sensitive to
-    # how strictly the `httplink` library follows RFC8288 
-    return find_signposting_http_link([linkset], linkset.resolved_url)
+    # RFC9264 is based on RFC8288 but also permits newlines.
+    # We'll lazily replace them with accepted whitespace:
+    link = linkset.replace("\r", " ").replace("\n", " ").strip()
+    return find_signposting_http_link([link], linkset.resolved_url)
     # TODO: Filter away links that do not have the desired context?
 
 def _parse_linkset_json(linkset:LinksetJSON) -> Signposting:
