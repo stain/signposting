@@ -287,4 +287,19 @@ class TestParseHTML(unittest.TestCase):
         self.assertEqual(w[0].category, UserWarning)
         self.assertIn("missing href attribute", str(w[0].message))
 
+    def test_parse_html_invalid_url_ignored(self):
+        """A variant of test_parse_html_a2a_18, but HTML inline"""
+        html = htmllinks.HTML('<html><head><link rel="describedBy" href="ignore broken URL"><link rel="cite-as" href="https://example.com/TODO-ignore-broken-href/"></head></html>', "text/html",
+            AbsoluteURI("https://example.com/TODO-ignore-broken-href/"),
+            AbsoluteURI("https://example.com/TODO-ignore-broken-href/index.html"))
+        with warnings.catch_warnings(record=True) as w:
+            signposts = htmllinks._parse_html(html)
+        self.assertEqual("https://example.com/TODO-ignore-broken-href/index.html", signposts.context_url)
+        self.assertEqual(1, len(signposts))
+        # cite-as should be picked up even if the broken describedBy give warning.
+        self.assertEqual("https://example.com/TODO-ignore-broken-href/", signposts.citeAs.target)
+
+        self.assertEqual(1, len(w))
+        self.assertEqual(w[0].category, UserWarning)
+        self.assertIn("invalid signpost", str(w[0].message))
 
