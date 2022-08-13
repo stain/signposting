@@ -32,10 +32,17 @@ FAIR signposting in HTML ``<link>`` annotations and in
 
 __version__ = '0.3.3'
 
+from typing import List
+import warnings
 from .signpost import Signposting, Signpost, AbsoluteURI, MediaType, LinkRel
-from .linkheader import find_signposting
+from .linkheader import find_signposting_http_link
 from .resolver import find_signposting_http
 from .htmllinks import find_signposting_html
 
-__all__ = """find_signposting find_signposting_http find_signposting_html
+def find_signposting(headers: List[str], baseurl: str = None) -> Signposting:
+    """DEPRECATED: Use meth:`find_signposting_http_link` instead"""
+    warnings.warn("find_signposting() is deprecated, use find_signposting_http_link()")
+    return find_signposting_http_link(headers, baseurl)
+
+__all__ = """find_signposting_http_link find_signposting_http find_signposting_html
 Signposting Signpost AbsoluteURI MediaType LinkRel""".split()

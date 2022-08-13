@@ -97,7 +97,7 @@ class TestAbsoluteAttribute(unittest.TestCase):
 
 class TestFindSignposting(unittest.TestCase):
     def test_find_signposting_no_headers(self):
-        s = linkheader.find_signposting([])
+        s = linkheader.find_signposting_http_link([])
         self.assertEqual(set(), s.authors)
         self.assertEqual(set(), s.describedBy)
         self.assertEqual(set(), s.types)
@@ -121,7 +121,7 @@ class TestFindSignposting(unittest.TestCase):
         ]
 
     def test_find_signposting_absolute(self):
-        s = linkheader.find_signposting(self.absolute_headers)
+        s = linkheader.find_signposting_http_link(self.absolute_headers)
         self.assertEqual({a.target for a in s.authors},
                          {"http://example.com/author1", "http://example.com/author2"})
         self.assertEqual({d.target for d in s.describedBy},
@@ -149,7 +149,7 @@ class TestFindSignposting(unittest.TestCase):
         ]
 
     def test_find_signposting_relative(self):
-        s = linkheader.find_signposting(self.relative_headers,
+        s = linkheader.find_signposting_http_link(self.relative_headers,
                                 "http://example.org/nested/")
         self.assertEqual({a.target for a in s.authors},
                          {"http://example.org/nested/author1",

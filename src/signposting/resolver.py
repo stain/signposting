@@ -54,4 +54,4 @@ def find_signposting_http(url: str) -> Signposting:
 
     # TODO: Also check HTML for <link>
     # TODO: Also check for linkset
-    return linkheader.find_signposting(link_headers, res.geturl())
+    return linkheader.find_signposting_http_link(link_headers, res.geturl())

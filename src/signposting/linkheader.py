@@ -101,7 +101,7 @@ def _absolute_attribute(k: str, v: str, baseurl: str) -> Tuple[str, str]:
     return k, v
 
 
-def find_signposting(headers: List[str], baseurl: str = None) -> Signposting:
+def find_signposting_http_link(headers: List[str], baseurl: str = None) -> Signposting:
     """Find signposting among HTTP Link headers.
 
     Optionally make the links absolute according to the base URL.

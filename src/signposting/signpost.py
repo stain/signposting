@@ -22,7 +22,7 @@ Common types for describing signposting link relations:
 
 These classes are general data holders, independent of the way
 signposting links have been discovered or parsed. They would
-be returned by methods like :meth:`find_signposting` 
+be returned by methods like :meth:`find_signposting_http` 
 or could be constructed manually for other purposes.
 
 The main purpose of the typed strings is to ensure syntactic
