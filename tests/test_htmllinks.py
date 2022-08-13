@@ -246,15 +246,19 @@ class TestParseHTML(unittest.TestCase):
         html = htmllinks.HTML('<html><head><link rel="canonical" href="http://example.com/"></head></html>', "text/html",
             AbsoluteURI("https://w3id.org/a2a-fair-metrics/TODO-no-signposting/"),
             AbsoluteURI("https://w3id.org/a2a-fair-metrics/TODO-no-signposting/index.html"))
-        with warnings.catch_warnings(record=True) as w:
+        with warnings.catch_warnings(record=True):
             signposts = htmllinks._parse_html(html)
         self.assertEqual("https://w3id.org/a2a-fair-metrics/TODO-no-signposting/index.html", signposts.context_url)
         self.assertEqual(0, len(signposts))
 
-        self.assertEqual(1, len(w))
-        self.assertEqual(w[0].category, UserWarning)
-        self.assertIn("No signposting found", str(w[0].message))
-
     def test_parse_html_ignore_links_in_body(self):
-        pass # TODO
+        html = htmllinks.HTML('<html><head></head><body><link rel="cite-as" href="http://example.com/"></body></html>', "text/html",
+            AbsoluteURI("https://w3id.org/a2a-fair-metrics/TODO-ignore-links-in-body/"),
+            AbsoluteURI("https://w3id.org/a2a-fair-metrics/TODO-ignore-links-in-body/index.html"))
+        with warnings.catch_warnings(record=True):
+            signposts = htmllinks._parse_html(html)
+        self.assertEqual("https://w3id.org/a2a-fair-metrics/TODO-ignore-links-in-body/index.html", signposts.context_url)
+        self.assertEqual(0, len(signposts))
+
+
 
