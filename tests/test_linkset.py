@@ -45,8 +45,8 @@ class TestParseLinkset(unittest.TestCase):
             AbsoluteURI("https://s11.example.net/2022/a2a-fair-metrics/28-http-linkset-txt-only/linkset.txt"))
         signposts = linkset._parse_linkset(ls)
         self.assertEqual("https://s11.example.net/2022/a2a-fair-metrics/28-http-linkset-txt-only/linkset.txt", signposts.context_url)
-        self.assertEqual("https://w3id.org/a2a-fair-metrics/28-http-linkset-txt-only/", signposts.citeAs.target)
         
+        self.assertEqual("https://w3id.org/a2a-fair-metrics/28-http-linkset-txt-only/", signposts.citeAs.target)
 
         self.assertEqual({"https://s11.no/2022/a2a-fair-metrics/28-http-linkset-txt-only/index.ttl"},
             {d.target for d in signposts.describedBy})
@@ -63,6 +63,30 @@ class TestParseLinkset(unittest.TestCase):
         for s in signposts:
             self.assertEqual("https://s11.no/2022/a2a-fair-metrics/28-http-linkset-txt-only/", s.context)
 
+    def test_parse_linkset_a2a_27(self):
+        ls = linkset.LinksetJSON(a2a_27, "application/linkset+json", 
+            AbsoluteURI("https://s11.example.net/2022/a2a-fair-metrics/27-http-linkset-json-only/linkset.json"),
+            AbsoluteURI("https://s11.example.net/2022/a2a-fair-metrics/27-http-linkset-json-only/linkset.json"))
+        signposts = linkset._parse_linkset_json(ls)
+        self.assertEqual("https://s11.example.net/2022/a2a-fair-metrics/27-http-linkset-json-only/linkset.json", signposts.context_url)
+        
+        self.assertEqual("https://w3id.org/a2a-fair-metrics/27-http-linkset-json-only/", signposts.citeAs.target)
+        
+        self.assertEqual({"https://s11.no/2022/a2a-fair-metrics/27-http-linkset-json-only/index.ttl"},
+            {d.target for d in signposts.describedBy})
+        self.assertEqual({"text/turtle"},
+            {d.type for d in signposts.describedBy})
+
+        self.assertEqual({"https://s11.no/2022/a2a-fair-metrics/27-http-linkset-json-only/test-apple-data.csv"},
+            {i.target for i in signposts.items})
+        self.assertEqual({"text/csv"},
+            {i.type for i in signposts.items})
+
+        self.assertEqual(3, len(signposts))
+        # Assert context is picked up from "anchor"
+        for s in signposts:
+            self.assertEqual("https://s11.no/2022/a2a-fair-metrics/27-http-linkset-json-only/", s.context)
+
+
 # TODO: Check relative paths
-# TODO: Check encoding
-# TODO: Check same for JSON
+# TODO: Check encoding of linkset file

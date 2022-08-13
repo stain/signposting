@@ -18,7 +18,7 @@ Parse linkset documents (`RFC9264`_) for signposting.
 .. _RFC9264: https://www.rfc-editor.org/rfc/rfc9264.html
 """
 
-from typing import Tuple, Union
+from typing import List, Tuple, Union
 import warnings
 import requests
 import json
@@ -90,4 +90,39 @@ def _parse_linkset(linkset:Linkset) -> Signposting:
     # TODO: Filter away links that do not have the desired context?
 
 def _parse_linkset_json(linkset:LinksetJSON) -> Signposting:
-    pass
+    linksetJSON = json.loads(linkset)
+    if not "linkset" in linksetJSON or not isinstance(linksetJSON["linkset"], list):
+        raise ValueError("Not a valid RFC9264 JSON, top list 'linkset' required")
+    signposts: List[Signpost] = []
+    for link_context in linksetJSON["linkset"]:
+        if "anchor" in link_context:
+            anchor = AbsoluteURI(link_context["anchor"], linkset.resolved_url)
+        else:
+            # The linkset itself
+            anchor = linkset.resolved_url
+        for rel in link_context:
+            if rel == "anchor": 
+                # Not a link relation, handled above
+                continue
+            if not rel in SIGNPOSTING:
+                # Not a signposting relation, ignored
+                continue
+            # Proceed to find signposts
+            if not isinstance(link_context[rel], list):
+                warnings.warn("Not an array, ignoring link targets for rel=%s" % rel)
+                continue
+            for link_target in link_context[rel]:
+                if not "href" in link_target:
+                    warnings.warn("Missing required 'href' attribute, ignoring link target for rel=%s" % rel)
+                    continue
+                href = link_target["href"]
+                type = link_target.get("type")
+                profile = link_target.get("profile")
+                # Signposting ignores the other attributes for now. 
+                # TODO: parse them into a Link object for equivalence with
+                # _parse_linkset() 
+                s = Signpost(rel, href, type, profile, anchor)
+                signposts.append(s)
+    if not signposts:
+        warnings.warn("No signposts found: <%s>" % linkset.requested_url)
+    return Signposting(linkset.resolved_url, signposts)
