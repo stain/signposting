@@ -1,10 +1,10 @@
 <https://w3id.org/a2a-fair-metrics/28-http-linkset-txt-only/>
  ; anchor="https://s11.no/2022/a2a-fair-metrics/28-http-linkset-txt-only/"
- ; rel="cite-as"
+ ; rel="cite-as",
 <https://s11.no/2022/a2a-fair-metrics/28-http-linkset-txt-only/index.ttl>
  ; anchor="https://s11.no/2022/a2a-fair-metrics/28-http-linkset-txt-only/"
  ; rel="describedby"
- ; type="text/turtle"
+ ; type="text/turtle",
 <https://s11.no/2022/a2a-fair-metrics/28-http-linkset-txt-only/test-apple-data.csv>
  ; anchor="https://s11.no/2022/a2a-fair-metrics/28-http-linkset-txt-only/"
  ; rel="item" 
