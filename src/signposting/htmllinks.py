@@ -117,8 +117,6 @@ def _get_html(uri:AbsoluteURI) -> Union[HTML,XHTML]:
         # so we'll bail out here.
         raise UnrecognizedContentType(ct, uri)
 
-    return (page.content, resolved_url)
-
 def _parse_html(html:Union[HTML,XHTML]) -> Signposting:
     soup = BeautifulSoup(html, 'html.parser', 
         # Ignore any other elements to reduce chance of parse errors
