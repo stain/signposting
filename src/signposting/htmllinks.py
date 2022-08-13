@@ -129,6 +129,7 @@ def _parse_html(html:Union[HTML,XHTML]) -> Signposting:
             # Ensure all filters are in lower case and known
             url = link.get("href")
             if not url:
+                warnings.warn("Invalid <link> element, missing href attribute: %s" % link)
                 continue
             type = link.get("type")
             profiles = link.get("profile")

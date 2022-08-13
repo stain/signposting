@@ -144,7 +144,7 @@ class TestGetHTML(unittest.TestCase):
     def test_get_xhtml(self):
         with requests_mock.Mocker() as m:
             # TODO: Add a XHTML variant of 02-html-full to a2a benchmarks
-            URL=AbsoluteURI("https://w3id.example.com/a2a-fair-metrics/TODO-xhtml/")
+            URL=AbsoluteURI("https://example.com/TODO-xhtml/")
             m.get(URL, 
                 text='<html xmlns="http://www.w3.org/1999/xhtml"><body>Hello</body></html>', 
                 headers={"Content-Type": "application/xml+xhtml",
@@ -154,8 +154,8 @@ class TestGetHTML(unittest.TestCase):
             self.assertIsInstance(html, htmllinks.XHTML)
             self.assertIn("xmlns=", html)
             self.assertEqual("application/xml+xhtml", html.content_type)
-            self.assertEqual("https://w3id.example.com/a2a-fair-metrics/TODO-xhtml/", html.requested_url)
-            self.assertEqual("https://w3id.example.com/a2a-fair-metrics/TODO-xhtml/index.xhtml", html.resolved_url)
+            self.assertEqual("https://example.com/TODO-xhtml/", html.requested_url)
+            self.assertEqual("https://example.com/TODO-xhtml/index.xhtml", html.resolved_url)
 
     def test_get_html_resolved_relative(self):
         with requests_mock.Mocker() as m:
@@ -231,34 +231,60 @@ class TestParseHTML(unittest.TestCase):
 
     def test_parse_html_no_head(self):
         html = htmllinks.HTML('<html><body>Hello</body></html>', "text/html",
-            AbsoluteURI("https://w3id.org/a2a-fair-metrics/TODO-no-head/"),
-            AbsoluteURI("https://w3id.org/a2a-fair-metrics/TODO-no-head/index.html"))
+            AbsoluteURI("https://example.com/TODO-no-head/"),
+            AbsoluteURI("https://example.com/TODO-no-head/index.html"))
         with warnings.catch_warnings(record=True) as w:
             signposts = htmllinks._parse_html(html)
-        self.assertEqual("https://w3id.org/a2a-fair-metrics/TODO-no-head/index.html", signposts.context_url)
+        self.assertEqual("https://example.com/TODO-no-head/index.html", signposts.context_url)
         self.assertEqual(0, len(signposts))
 
         self.assertEqual(1, len(w))
         self.assertEqual(w[0].category, UserWarning)
         self.assertIn("No signposting found", str(w[0].message))
 
-    def test_parse_html_no_signposting(self):
-        html = htmllinks.HTML('<html><head><link rel="canonical" href="http://example.com/"></head></html>', "text/html",
-            AbsoluteURI("https://w3id.org/a2a-fair-metrics/TODO-no-signposting/"),
-            AbsoluteURI("https://w3id.org/a2a-fair-metrics/TODO-no-signposting/index.html"))
+    def test_parse_html_signposting(self):
+        """A variant of test_parse_html_a2a_18, but HTML inline"""
+        html = htmllinks.HTML('<html><head><link rel="cite-as" href="https://example.com/TODO-cite-as-only/"></head></html>', "text/html",
+            AbsoluteURI("https://example.com/TODO-cite-as-only/"),
+            AbsoluteURI("https://example.com/TODO-cite-as-only/index.html"))
         with warnings.catch_warnings(record=True):
             signposts = htmllinks._parse_html(html)
-        self.assertEqual("https://w3id.org/a2a-fair-metrics/TODO-no-signposting/index.html", signposts.context_url)
+        self.assertEqual("https://example.com/TODO-cite-as-only/index.html", signposts.context_url)
+        self.assertEqual(1, len(signposts))
+        self.assertEqual("https://example.com/TODO-cite-as-only/", signposts.citeAs.target)
+
+    def test_parse_html_no_signposting(self):
+        html = htmllinks.HTML('<html><head><link rel="canonical" href="http://example.com/"></head></html>', "text/html",
+            AbsoluteURI("https://example.com/TODO-no-signposting/"),
+            AbsoluteURI("https://example.com/TODO-no-signposting/index.html"))
+        with warnings.catch_warnings(record=True):
+            signposts = htmllinks._parse_html(html)
+        self.assertEqual("https://example.com/TODO-no-signposting/index.html", signposts.context_url)
         self.assertEqual(0, len(signposts))
 
     def test_parse_html_ignore_links_in_body(self):
-        html = htmllinks.HTML('<html><head></head><body><link rel="cite-as" href="http://example.com/"></body></html>', "text/html",
-            AbsoluteURI("https://w3id.org/a2a-fair-metrics/TODO-ignore-links-in-body/"),
-            AbsoluteURI("https://w3id.org/a2a-fair-metrics/TODO-ignore-links-in-body/index.html"))
+        html = htmllinks.HTML('<html><head></head><body><link rel="cite-as" href="https://example.com/TODO-ignore-links-in-body/"></body></html>', "text/html",
+            AbsoluteURI("https://example.com/TODO-ignore-links-in-body/"),
+            AbsoluteURI("https://example.com/TODO-ignore-links-in-body/index.html"))
         with warnings.catch_warnings(record=True):
             signposts = htmllinks._parse_html(html)
-        self.assertEqual("https://w3id.org/a2a-fair-metrics/TODO-ignore-links-in-body/index.html", signposts.context_url)
+        self.assertEqual("https://example.com/TODO-ignore-links-in-body/index.html", signposts.context_url)
         self.assertEqual(0, len(signposts))
 
+    def test_parse_html_missing_href(self):
+        """A variant of test_parse_html_a2a_18, but HTML inline"""
+        html = htmllinks.HTML('<html><head><link rel="describedBy" XXXhref="foo"><link rel="cite-as" href="https://example.com/TODO-ignore-missing-href/"></head></html>', "text/html",
+            AbsoluteURI("https://example.com/TODO-ignore-missing-href/"),
+            AbsoluteURI("https://example.com/TODO-ignore-missing-href/index.html"))
+        with warnings.catch_warnings(record=True) as w:
+            signposts = htmllinks._parse_html(html)
+        self.assertEqual("https://example.com/TODO-ignore-missing-href/index.html", signposts.context_url)
+        self.assertEqual(1, len(signposts))
+        # cite-as should be picked up even if the broken describedBy give warning.
+        self.assertEqual("https://example.com/TODO-ignore-missing-href/", signposts.citeAs.target)
+
+        self.assertEqual(1, len(w))
+        self.assertEqual(w[0].category, UserWarning)
+        self.assertIn("missing href attribute", str(w[0].message))
 
 
