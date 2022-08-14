@@ -91,7 +91,7 @@ As usual in any GitHub based project, raise an `issue`_ if you find any bug or h
 Version
 =======
 
-v0.5.1
+v0.5.2
 
 .. _GitHub Actions: https://github.com/features/actions
 .. _PyPI: https://pypi.org

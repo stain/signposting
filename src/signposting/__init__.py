@@ -30,7 +30,7 @@ FAIR signposting in HTML ``<link>`` annotations and in
 .. _linkset: https://signposting.org/FAIR/#linksetrec
 """
 
-__version__ = '0.5.1'
+__version__ = '0.5.2'
 
 from typing import List
 import warnings
