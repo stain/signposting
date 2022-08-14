@@ -23,8 +23,8 @@ import importlib.resources
 from signposting import linkset
 from signposting.signpost import AbsoluteURI
 
-a2a_27 = importlib.resources.read_text("tests.data.a2a-fair-metrics", "27-http-linkset-json-only.json")
-a2a_28 = importlib.resources.read_text("tests.data.a2a-fair-metrics", "28-http-linkset-txt-only.txt")
+a2a_27 = importlib.resources.read_text("tests.data.a2afairmetrics", "27-http-linkset-json-only.json")
+a2a_28 = importlib.resources.read_text("tests.data.a2afairmetrics", "28-http-linkset-txt-only.txt")
 
 class TestDownloadedText(unittest.TestCase):
     def test_linkset(self):

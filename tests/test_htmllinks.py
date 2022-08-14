@@ -23,9 +23,9 @@ import importlib.resources
 from signposting import htmllinks
 from signposting.signpost import AbsoluteURI
 
-a2a_02 = importlib.resources.read_text("tests.data.a2a-fair-metrics", "02-html-full.html")
-a2a_18 = importlib.resources.read_text("tests.data.a2a-fair-metrics", "18-html-citeas-only.html")
-a2a_19 = importlib.resources.read_text("tests.data.a2a-fair-metrics", "19-html-citeas-multiple-rels.html")
+a2a_02 = importlib.resources.read_text("tests.data.a2afairmetrics", "02-html-full.html")
+a2a_18 = importlib.resources.read_text("tests.data.a2afairmetrics", "18-html-citeas-only.html")
+a2a_19 = importlib.resources.read_text("tests.data.a2afairmetrics", "19-html-citeas-multiple-rels.html")
 
 class TestHtmlLinks(unittest.TestCase):
     def test_find_signposting_html_a2a_18(self):
