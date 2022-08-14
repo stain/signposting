@@ -101,10 +101,9 @@ class TestFindSignpostingLinkset(unittest.TestCase):
 
     def test_parse_linkset_a2a_07(self):
         PID = "https://w3id.org/a2a-fair-metrics/07-http-describedby-citeas-linkset-json/"
-        for (linkset,_) in self._linksets_for_pid(PID):
-            signposts = linkset.find_signposting_linkset(linkset)
-            self.assertEqual("https://s11.no/2022/a2a-fair-metrics/07-http-describedby-citeas-linkset-json/linkset.txt", 
-                signposts.context_url)
+        for (uri,_) in self._linksets_for_pid(PID):
+            signposts = linkset.find_signposting_linkset(uri)
+            self.assertEqual(uri, signposts.context_url)
             
             self.assertEqual("https://w3id.org/a2a-fair-metrics/07-http-describedby-citeas-linkset-json/", 
                 signposts.citeAs.target)
@@ -127,10 +126,9 @@ class TestFindSignpostingLinkset(unittest.TestCase):
 
     def test_parse_linkset_a2a_08(self):
         PID = "https://w3id.org/a2a-fair-metrics/08-http-describedby-citeas-linkset-txt/"
-        for (linkset,_) in self._linksets_for_pid(PID):
-            signposts = linkset.find_signposting_linkset(linkset)
-            self.assertEqual("https://s11.no/2022/a2a-fair-metrics/08-http-describedby-citeas-linkset-txt/linkset.txt", 
-                signposts.context_url)
+        for (uri,_) in self._linksets_for_pid(PID):
+            signposts = linkset.find_signposting_linkset(uri)
+            self.assertEqual(uri, signposts.context_url)
             
             self.assertEqual("https://w3id.org/a2a-fair-metrics/08-http-describedby-citeas-linkset-txt/", 
                 signposts.citeAs.target)
@@ -154,10 +152,10 @@ class TestFindSignpostingLinkset(unittest.TestCase):
     def test_parse_linkset_a2a_09(self):
         PID = "https://w3id.org/a2a-fair-metrics/09-http-describedby-citeas-linkset-json-txt/"
         linksets = self._linksets_for_pid(PID)
-        for (linkset,mediatype) in self._linksets_for_pid(PID):
-            signposts = linkset.find_signposting_linkset(linkset, mediatype)
-            self.assertEqual("https://s11.no/2022/a2a-fair-metrics/09-http-describedby-citeas-linkset-json-txt/linkset.txt", 
-                signposts.context_url)
+        for (uri,mediatype) in self._linksets_for_pid(PID):
+            signposts = linkset.find_signposting_linkset(uri, mediatype)
+
+            self.assertEqual(uri, signposts.context_url)
             
             self.assertEqual("https://w3id.org/a2a-fair-metrics/09-http-describedby-citeas-linkset-json-txt/", 
                 signposts.citeAs.target)
@@ -180,10 +178,10 @@ class TestFindSignpostingLinkset(unittest.TestCase):
 
     def test_parse_linkset_a2a_14(self):
         PID = "https://w3id.org/a2a-fair-metrics/14-http-describedby-citeas-linkset-json-txt-conneg/"
-        for (linkset,mediatype) in self._linksets_for_pid(PID):
-            signposts = linkset.find_signposting_linkset(linkset, mediatype)
+        for (uri,mediatype) in self._linksets_for_pid(PID):
+            signposts = linkset.find_signposting_linkset(uri, mediatype)
             if mediatype == MediaType("application/linkset+json"):
-                # Ensure Content-Location was picked up
+                # Ensure Content-Location was picked up even if "uri" stayed the same
                 self.assertEqual("https://s11.no/2022/a2a-fair-metrics/14-http-describedby-citeas-linkset-json-txt-conneg/linkset.json", 
                     signposts.context_url)
             elif mediatype == MediaType("application/linkset"):
@@ -213,8 +211,8 @@ class TestFindSignpostingLinkset(unittest.TestCase):
 
     def test_parse_linkset_a2a_27(self):        
         PID = "https://w3id.org/a2a-fair-metrics/27-http-linkset-json-only//"
-        for (linkset,_) in self._linksets_for_pid(PID):
-            signposts = linkset.find_signposting_linkset(linkset)
+        for (uri,_) in self._linksets_for_pid(PID):
+            signposts = linkset.find_signposting_linkset(uri)
             self.assertEqual("https://s11.no/2022/a2a-fair-metrics/27-http-linkset-json-only/linkset.json", signposts.context_url)
             
             self.assertEqual("https://w3id.org/a2a-fair-metrics/27-http-linkset-json-only/", signposts.citeAs.target)
@@ -232,12 +230,12 @@ class TestFindSignpostingLinkset(unittest.TestCase):
             self.assertEqual(3, len(signposts))
             # Assert context is picked up from anchor=""
             for s in signposts:
-                self.assertEqual("https://s11.no/2022/a2a-fair-metrics/28-http-linkset-txt-only/", s.context)
+                self.assertEqual("https://s11.no/2022/a2a-fair-metrics/27-http-linkset-json-only/", s.context)
 
     def test_parse_linkset_a2a_28(self):        
         PID = "https://w3id.org/a2a-fair-metrics/28-http-linkset-txt-only/"
-        for (linkset,_) in self._linksets_for_pid(PID):
-            signposts = linkset.find_signposting_linkset(linkset, mediatype)
+        for (uri,_) in self._linksets_for_pid(PID):
+            signposts = linkset.find_signposting_linkset(uri)
             self.assertEqual("https://s11.no/2022/a2a-fair-metrics/28-http-linkset-txt-only/linkset.txt", signposts.context_url)
             
             self.assertEqual("https://w3id.org/a2a-fair-metrics/28-http-linkset-txt-only/", signposts.citeAs.target)
