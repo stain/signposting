@@ -48,11 +48,6 @@ jobs:
         python -m pip install --upgrade pip
         pip install bump2version setuptools wheel twine
 
-    - name: Test with tox
-      env:
-        CI: 
-      run: tox
-
     # If a commit starts with [MAJOR] a new major verion upgrade will be
     # triggered. Use with caution as Major upgrades denote backwards
     # incompatibility. Yet I like it to be integrated in the CI
