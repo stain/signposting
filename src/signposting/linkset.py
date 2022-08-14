@@ -45,7 +45,11 @@ def find_signposting_linkset(uri:Union[AbsoluteURI, str], acceptType:Union[Media
     :throws HTMLParser.HTMLParseError: If the HTML could not be parsed.
     :returns: A parsed `Signposting` object (which may be empty)
     """
-    linkset = _get_linkset(AbsoluteURI(uri), acceptType and MediaType(acceptType))
+    if acceptType:
+        linkset = _get_linkset(AbsoluteURI(uri), MediaType(acceptType))
+    else:
+        linkset = _get_linkset(AbsoluteURI(uri))
+
     if isinstance(linkset, LinksetJSON):
         return _parse_linkset_json(linkset)
     else:
