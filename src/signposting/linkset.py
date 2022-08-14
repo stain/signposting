@@ -23,24 +23,29 @@ import warnings
 import requests
 import json
 import httplink
-from .signpost import SIGNPOSTING,AbsoluteURI,Signpost,Signposting
+from .signpost import SIGNPOSTING,AbsoluteURI,Signpost,Signposting,MediaType
 from .htmllinks import DownloadedText,UnrecognizedContentType
 from .linkheader import find_signposting_http_link
 
-def find_signposting_linkset(uri:Union[AbsoluteURI, str]) -> Signposting:
+def find_signposting_linkset(uri:Union[AbsoluteURI, str], acceptType:Union[MediaType, str]=None) -> Signposting:
     """Parse linkset to find <link> elements for signposting.
     
     HTTP redirects will be followed.
 
     :param uri: An absolute http/https URI, which HTML will be inspected.
+    :param acceptType: A `MediaType` to content-negotiate access for. 
+        The default is to content-negotiate including ``application/linkset`` and 
+        ``application/linkset+json`` with JSON having preference.
     :throws ValueError: If the `uri` is invalid
     :throws IOError: If the network request failed, e.g. connection timeout
     :throws requests.HTTPError: If the HTTP request failed, e.g. 404 Not Found
-    :throws UnrecognizedContentType: If the HTTP resource was not a recognized linkset content type
+    :throws UnrecognizedContentType: If the HTTP resource was not a recognized linkset content type. 
+        This exception is also raised if ``acceptType`` was provided, 
+        but didn't match returned ``Content-Type``.
     :throws HTMLParser.HTMLParseError: If the HTML could not be parsed.
     :returns: A parsed `Signposting` object (which may be empty)
     """
-    linkset = _get_linkset(AbsoluteURI(uri))
+    linkset = _get_linkset(AbsoluteURI(uri), acceptType and MediaType(acceptType))
     if isinstance(linkset, LinksetJSON):
         return _parse_linkset_json(linkset)
     else:
@@ -54,12 +59,13 @@ class Linkset(DownloadedText):
     """Downloaded application/linkset document as a string"""
     pass
 
-def _get_linkset(uri:AbsoluteURI) -> Union[LinksetJSON,Linkset]:
-    HEADERS = {
-        "Accept": "application/linkset+json,application/linkset;q=0.9,application/json;q=0.3,text/plain;q=0.2"
+def _get_linkset(uri:AbsoluteURI, acceptType:MediaType=None) -> Union[LinksetJSON,Linkset]:
+    header = {
+        "Accept": acceptType or 
+            "application/linkset+json,application/linkset;q=0.9,application/json;q=0.3,text/plain;q=0.2"
     }
     # Should ideally throw Not Acceptable error if none of the above
-    page = requests.get(uri, headers=HEADERS)
+    page = requests.get(uri, headers=header)
 
     resolved_url = AbsoluteURI(page.url, uri)
     if "Content-Location" in page.headers:
@@ -73,13 +79,16 @@ def _get_linkset(uri:AbsoluteURI) -> Union[LinksetJSON,Linkset]:
     page.raise_for_status()
     
     ct = page.headers.get("Content-Type", "")
-    if "application/linkset+json" in ct or "json" in ct:
+    if acceptType and not acceptType in ct:
+        # mismatch from what we requested explicitly
+        raise UnrecognizedContentType(ct, uri)    
+    elif "application/linkset+json" in ct or "json" in ct:
         return LinksetJSON(page.text, ct, uri, resolved_url)
     elif "application/linkset" in ct or "text/plain" in ct:
         # NOTE: we covered linkset+json above, which would otherwise also match here
         return Linkset(page.text, ct, uri, resolved_url)
     else:
-        # HTTP server didn't honor our Accept header, we'll bail out here.
+        # HTTP server didn't honor our default Accept header, we'll bail out here.
         raise UnrecognizedContentType(ct, uri)    
 
 def _parse_linkset(linkset:Linkset) -> Signposting:
