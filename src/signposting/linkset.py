@@ -72,7 +72,7 @@ def _get_linkset(uri:AbsoluteURI) -> Union[LinksetJSON,Linkset]:
     # raise requests.HTTPError for any other 4xx/5xx error
     page.raise_for_status()
     
-    ct = page.headers.get("Content-Type")
+    ct = page.headers.get("Content-Type", "")
     if "application/linkset+json" in ct or "json" in ct:
         return LinksetJSON(page.text, ct, uri, resolved_url)
     elif "application/linkset" in ct or "text/plain" in ct:
