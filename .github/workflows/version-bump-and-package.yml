@@ -49,6 +49,8 @@ jobs:
         pip install bump2version setuptools wheel twine
 
     - name: Test with tox
+      env:
+        CI: 
       run: tox
 
     # If a commit starts with [MAJOR] a new major verion upgrade will be
