@@ -2,6 +2,9 @@
 Changelog
 =========
 
+v0.6.0 (2022-08-14)
+------------------------------------------------------------
+
 * Linkset parsing exposed as ``find_signposting_linkset``
 * Optional explicit content-negotiate for linksets
 * Integration tests for linksets using a2a-fair-metrics benchmarks
