@@ -59,10 +59,11 @@ class Linkset(DownloadedText):
     """Downloaded application/linkset document as a string"""
     pass
 
+DEFAULT_ACCEPT = "application/linkset+json,application/linkset;q=0.9,application/json;q=0.3,text/plain;q=0.2"
+
 def _get_linkset(uri:AbsoluteURI, acceptType:MediaType=None) -> Union[LinksetJSON,Linkset]:
     header = {
-        "Accept": acceptType or 
-            "application/linkset+json,application/linkset;q=0.9,application/json;q=0.3,text/plain;q=0.2"
+        "Accept": acceptType and str(acceptType) or DEFAULT_ACCEPT
     }
     # Should ideally throw Not Acceptable error if none of the above
     page = requests.get(uri, headers=header)
