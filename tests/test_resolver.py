@@ -23,8 +23,7 @@ import urllib.error
 import os
 import warnings
 
-
-@unittest.skipIf("CI" in os.environ, "Integration tests requires network access")
+@unittest.skipIf(os.environ.get("CI"), "Integration tests requires network access")
 class TestResolverA2A(unittest.TestCase):
 
     def test_00_404(self):

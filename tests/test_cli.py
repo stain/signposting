@@ -33,7 +33,7 @@ class TestCommandLineToolParsing(unittest.TestCase):
         finally:
             sys.argv = argv
 
-@unittest.skipIf("CI" in os.environ, "Integration tests requires network access")
+@unittest.skipIf(os.environ.get("CI"), "Integration tests requires network access")
 class TestCommandLineTool(unittest.TestCase):
     def test_00_404(self):
         exit = cli.main("https://w3id.org/a2a-fair-metrics/00-404-not-found/")
