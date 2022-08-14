@@ -19,9 +19,10 @@ It is up to the clients of this library to decide how to further
 navigate or retrieve the associated resources, e.g. using a
 RDF library like :mod:`rdflib`.
 
-Future versions of this library may also provide ways to discover
+This library also provide ways to discover
 FAIR signposting in HTML ``<link>`` annotations and in
-`linkset`_ documents.
+`linkset`_ documents.  Future versions may provide ways to 
+discover/merge these concurently.
 
 .. _signposting: https://signposting.org/conventions/
 .. _FAIR: https://signposting.org/FAIR/
@@ -38,6 +39,7 @@ from .signpost import Signposting, Signpost, AbsoluteURI, MediaType, LinkRel
 from .linkheader import find_signposting_http_link
 from .resolver import find_signposting_http
 from .htmllinks import find_signposting_html
+from .linkset import find_signposting_linkset
 
 def find_signposting(headers: List[str], baseurl: str = None) -> Signposting:
     """DEPRECATED: Use meth:`find_signposting_http_link` instead"""
