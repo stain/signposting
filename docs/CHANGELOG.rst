@@ -2,11 +2,18 @@
 Changelog
 =========
 
+* Optional explicit content-negotiate for linksets
+* Integration tests for linksets using a2a-fair-metrics benchmarks
+
 v0.5.2 (2022-08-14)
 ------------------------------------------------------------
 
+* Handle missing Content-Type header
+
 v0.5.1 (2022-08-14)
 ------------------------------------------------------------
+
+* Unit tests compatible with Python 3.7
 
 v0.5.0 (2022-08-13)
 ------------------------------------------------------------
