@@ -11,7 +11,7 @@ v0.4.0 (2022-08-13)
 ------------------------------------------------------------
 
 * Renamed deprecated ``find_signposting``, renamed to ``find_signposting_http_link``
-* More unit tests for ``signposting.htmllinks`
+* More unit tests for ``signposting.htmllinks``
 
 v0.3.3 (2022-08-12)
 ------------------------------------------------------------
