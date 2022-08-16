@@ -379,9 +379,16 @@ class Signposting(Iterable[Signpost], Sized):
     collection: Optional[Signpost]
     """Optional collection this resource is part of"""
 
-    def __init__(self, context_url: Union[AbsoluteURI, str] = None, signposts: List[Signpost] = None):
+    def __init__(self, context_url: Union[AbsoluteURI, str] = None, signposts: Iterable[Signpost] = None):
         """Construct a Signposting from a list of :class:`Signpost`s.
-        The ``context_url` is the resource this is the signposting for.
+
+        :param context_url: the resource to select signposting for, or any signposts if ``None``.
+        :param signposts: The list of :class:`Signpost`s that should be considered for selecting signposting.
+            Signposts are assigned to attributes like :attr:`citeAs` or :attr:`describedBy`
+            depending on their :attr:`Signpost.rel` link relation.
+            Any signposts with a non-empty :attr:`Signpost.context` that does 
+            not match ``context_url`` (if provided) will not be assigned,
+            but still remain part of this signposting object as an iterable object.
         """
         if context_url:
             self.context_url = AbsoluteURI(context_url)
@@ -444,7 +451,7 @@ class Signposting(Iterable[Signpost], Sized):
 
     @property
     def signposts(self) -> AbstractSet[Signpost]:
-        """Return all FAIR Signposts for recognized relation types.
+        """All FAIR Signposts for recognized relation types.
         
         This may include any additional signposts for link relations
         that only expect a single link, like :prop:`citeAs`.
@@ -453,6 +460,26 @@ class Signposting(Iterable[Signpost], Sized):
         :meth:`__iter__`
         """
         return frozenset(self)
+
+    @property
+    def contexts(self) -> AbstractSet[AbsoluteURI]:
+        """All contexts covered by this Signposting collection"""
+        contexts = {s.context for s in self if s.context}
+        if self.context_url:
+            contexts.add(self.context_url)
+        return frozenset(contexts)
+
+    def for_context(self, context_uri:Union[AbsoluteURI, str]):
+        """Return signposting for given context URI.
+        
+        This will select an alternative view of the signposts in this collection.         
+
+        :param context_uri: The context to select signposts from. The URI should be a
+            member of :attr:`contexts`.
+        """
+        if self.context_url == context_uri:
+            return self        
+        return Signposting(context_uri, self)
 
     def __len__(self):
         """Count how many FAIR Signposts were recognized"""
