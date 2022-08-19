@@ -2,6 +2,8 @@
 Changelog
 =========
 
+* `find_signposting_linkset` listed in module
+
 v0.6.0 (2022-08-14)
 ------------------------------------------------------------
 
