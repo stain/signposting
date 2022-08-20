@@ -73,9 +73,14 @@ def _get_linkset(uri:AbsoluteURI, acceptType:MediaType=None) -> Union[LinksetJSO
     page = requests.get(uri, headers=header)
 
     resolved_url = AbsoluteURI(page.url, uri)
-    if "Content-Location" in page.headers:
-        # More specific, e.g. "index.en.html" - parse as relative URI reference
-        resolved_url = AbsoluteURI(page.headers["Content-Location"], resolved_url)
+
+    # Note: According to HTTP/1.1 updates (Appendix B) in 
+    # https://datatracker.ietf.org/doc/html/rfc7231
+    # then Content-Location should NO LONGER be used for 
+    # resolving relative URI references.
+    ##if "Content-Location" in page.headers:
+    ##    # More specific, e.g. "index.en.html" - parse as relative URI reference
+    ##    resolved_url = AbsoluteURI(page.headers["Content-Location"], resolved_url)
 
     if page.status_code == 203:
         warnings.warn("203 Non-Authoritative Information <%s> - Signposting URIs may have been rewritten by proxy" %

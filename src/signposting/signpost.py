@@ -187,7 +187,8 @@ SIGNPOSTING = set(l.value for l in LinkRel)
 class Signpost:
     """An individual link of Signposting, e.g. for ``rel=cite-as``.
 
-    This is a convenience class that may be wrapping a :attr:`link`. 
+    This is a convenience class that may be wrapping a :attr:`link`
+    or otherwise constructed.
 
     In some case the link relation may have additional attributes,
     e.g. ``signpost.link["title"]`` - the purpose of this class is however to
@@ -200,10 +201,9 @@ class Signpost:
     target: AbsoluteURI
     """The URI that is the target of this link, e.g. ``http://example.com/``
     
-    Note that URIs with Unicode characters will be represented as %-escaped URIs.
+    Note that URIs with Unicode characters will be represented as %-escaped URIs rather than as IRIs.
     """
 
-    # TODO: Check RFC if this may also be a URI.
     type: Optional[MediaType]
     """The media type of the target.
 
@@ -224,16 +224,22 @@ class Signpost:
     For instance, a ``rel=describedby`` signpost to a JSON-LD document can have
     ``type=application/ld+json`` and ``profile=http://www.w3.org/ns/json-ld#compacted``
 
-    As there may be multiple profiles, or (more commonly) none,
-    this property is typed as a :class:`FrozenSet`.
+    There may be multiple profiles, or (more commonly) none.
     """
 
     context: Optional[AbsoluteURI]
     """Resource URL this is the signposting for, e.g. a HTML landing page.
+
+    Note that following HTTP redirections means this URI may be different
+    from the one originally requested.
+
+    This attribute is optional (with ``None`` indicating unknown context),
+    however producers of ``Signpost`` instances from are encouraged to 
+
     """
 
     link: Optional[Link]
-    """The Link this signpost came from.
+    """The Link object this signpost was created from.
 
     May contain additional attributes such as ``link["title"]``.
     Note that a single Link may have multiple ``rel``s, therefore it is
@@ -290,6 +296,8 @@ class Signpost:
             self.context = context
         elif context:
             self.context = AbsoluteURI(context)  # may throw ValueError
+        else:
+            self.context = None
 
         self.link = link
 
@@ -335,21 +343,31 @@ class Signposting(Iterable[Signpost], Sized):
     """
 
     context_url: Optional[AbsoluteURI]
-    """Resource URL this is the signposting for, e.g. a HTML landing page.
+    """Resource URI this is the signposting for, e.g. a HTML landing page, hereafter called "this resource".
+    
+    This attribute is optional, `None` indicate
+    no context filtering applies and that
+    individual signposts can have any context.
+    """
+
+    other_contexts: Set[AbsoluteURI]
+    """Other resource URLs which signposting has been provided for. 
+    
+    Use :meth:`for_context` to retrieve their signpostings, or filter the full list of signposts from :prop:`signposts` according to :attr:`Signpost.context`
     """
 
     authors: Set[Signpost]
-    """Author(s) of the resource (and possibly its items)"""
+    """Author(s) of this resource (and possibly its items)"""
 
     describedBy: Set[Signpost]
-    """Metadata resources about the resource and its items, typically in a Linked Data format.
+    """Metadata resources about this resource and its items, typically in a Linked Data format.
 
     Resources may require content negotiation, check `Signpost.type` attribute
     (if present) for content type, e.g. ``text/turtle``.
     """
 
     types: Set[Signpost]
-    """Semantic types of the resource, e.g. from schema.org"""
+    """Semantic types of this resource, e.g. from schema.org"""
 
     items: Set[Signpost]
     """Items contained by this resource, e.g. downloads.
@@ -358,7 +376,7 @@ class Signposting(Iterable[Signpost], Sized):
     """
 
     linksets: Set[Signpost]
-    """Linkset resuorces with further signposting.
+    """Linkset resources with further signposting for this resource (and potentially others).
 
     A `linkset`_ is a JSON or text serialization of Link headers available as a
     separate resource, and may be used to externalize large collection of links, e.g.
@@ -377,16 +395,43 @@ class Signposting(Iterable[Signpost], Sized):
     """Optional license of this resource (and presumably its items)"""
 
     collection: Optional[Signpost]
-    """Optional collection this resource is part of"""
-
-    def __init__(self, context_url: Union[AbsoluteURI, str] = None, signposts: List[Signpost] = None):
+    """Optional collection resource that the selected resource is part of"""
+    
+    def __init__(self, 
+                 context_url: Union[AbsoluteURI, str] = None, 
+                 signposts: Iterable[Signpost] = None,
+                 include_no_context: bool = True):
         """Construct a Signposting from a list of :class:`Signpost`s.
-        The ``context_url` is the resource this is the signposting for.
+
+        Signposts are filtered by the matching `context_url` (if provided), 
+        then assigned to attributes like :attr:`citeAs` or :attr:`describedBy`
+        depending on their :attr:`Signpost.rel` link relation.
+
+        Multiple signposts discovered for singular relations like ``citeAs`` 
+        are ignored in this attribute assignment, however these are included in
+        the `Iterable` interface of this class and thus also in its length.
+
+        A Signposting object is equivalent to boolean `False` in conditional expression 
+        if it is empty, that is ``len(signposting)==0``, indicating no signposts 
+        were discovered for the given context. However the remaining 
+        ``signposts`` will still be available from :attr:`signposts`, as
+        indicated by :attr:`other_contexts`.
+        
+        :param context_url: the resource to select signposting for, or any signposts if ``None``.            
+        :param signposts: An iterable of :class:`Signpost`s that should be considered for selecting signposting.
+        :param include_no_context: If true (default), consider signposts without explicit context, 
+            assuming they are about ``context_url``. 
+            If false, such signposts are ignored for assignment, 
+            but remain available from :attr:`signposts`.
+        :raise ValueError: If ``include_no_context`` is false, but ``context_url`` was not provided or None.
         """
+        if not include_no_context and not context_url:
+            raise ValueError("Can't exclude signposts without context when not providing context_url; try include_no_context=True")
+
         if context_url:
             self.context_url = AbsoluteURI(context_url)
         else:
-            self.context_url = None
+            self.context_url = None # No filtering
 
         # Initialize attributes with empty defaults
         self.citeAs = None
@@ -397,19 +442,26 @@ class Signposting(Iterable[Signpost], Sized):
         self.items = set()
         self.linksets = set()
         self.types = set()
-        self._extras = set() # Any extra signposts, ideally none
+        self.other_contexts = set()
+        self._extras = set() # Any extra signposts, ideally empty
+        self._others = set() # Signposts with a different context
 
         if signposts is None:
-            return
-        # Populate from list of signposts
+            return # We're empty
+        # Populate above attributes from list of signposts
         for s in signposts:
-            # TODO: Replace with match..case requires Python 3.10+ (PEP 634)
-            # match s.rel:
-            #    case LinkRel.cite_as:
-            #        self.citeAs = s
-            #    case LinkRel.license:
-            # ...
-            if s.rel is LinkRel.cite_as:
+            if include_no_context and not s.context:
+                # Pretend it's in our context
+                context = self.context_url
+            else:
+                # Inspect signposts's context
+                context = s.context
+
+            if self.context_url and self.context_url != context:
+                self._others.add(s)
+                if context:
+                    self.other_contexts.add(context)
+            elif s.rel is LinkRel.cite_as:
                 if self.citeAs:
                     warnings.warn("Ignoring additional cite-as signposts")
                     self._extras.add(s)
@@ -444,24 +496,46 @@ class Signposting(Iterable[Signpost], Sized):
 
     @property
     def signposts(self) -> AbstractSet[Signpost]:
-        """Return all FAIR Signposts for recognized relation types.
+        """All FAIR Signposts with recognized relation types.
         
         This may include any additional signposts for link relations
-        that only expect a single link, like :prop:`citeAs`.
+        that only expect a single link, like :prop:`citeAs`, as well
+        as any signposts for other contexts as listed in :prop:`other_contexts`.
 
-        It is also possible to iterate directly over this class, see
-        :meth:`__iter__`
+        For only the signposts that match the given context, use 
+        :meth:`__iter__`, e.g. ``for s in signposting`` or ``matched = set(signposts)``
         """
-        return frozenset(self)
+        return frozenset(itertools.chain(self, self._others))
+
+    def for_context(self, context_uri:Union[AbsoluteURI, str, None]):
+        """Return signposting for given context URI.
+        
+        This will select an alternative view of the signposts from :attr:`signposts`
+        filtered by the given ``context_uri``.
+
+        :param context_uri: The context to select signposts from. 
+            The URI should be a member of :attr:`contexts` or equal to :attr:`context`, 
+            otherwise the returned Signposting will be empty.
+            If the context_uri is `None`, then the :attr:`Signpost.context` is ignored
+            and any signposts will be considered.
+        """
+        if self.context_url == context_uri:
+            return self
+        # Chain in own signposts, in case they want to call for_context() 
+        # back to our context. 
+        return Signposting(context_uri, 
+                           itertools.chain(self, self._others),
+                           # If context_uri is None, then include signposts w/ no context
+                           include_no_context=context_uri is None)
 
     def __len__(self):
-        """Count how many FAIR Signposts were recognized"""
+        """Count how many FAIR Signposts were recognized for the given context"""
         return len(self.signposts)
     
     def __iter__(self) -> Iterator[Signpost]:
-        """Iterate over all recognized FAIR signposts.
+        """Iterate over all FAIR signposts recognized for the given context.
 
-        See also the property :prop:`signposts`
+        See also the property :prop:`signposts` for signposts of any context.
         """
         if self.citeAs:
             yield self.citeAs
@@ -479,6 +553,7 @@ class Signposting(Iterable[Signpost], Sized):
             yield t
         for e in self._extras:
             yield e
+        # NOTE: self._others are NOT included as they have a different context
 
     def _repr_signposts(self, signposts):
         return " ".join(set(d.target for d in signposts))
@@ -503,6 +578,8 @@ class Signposting(Iterable[Signpost], Sized):
             repr.append("linksets=%s" % self._repr_signposts(self.linksets))
         if self.types:
             repr.append("types=%s" % self._repr_signposts(self.types))
+        if self.other_contexts:
+            repr.append("other_contexts=%s" % " ".join(self.other_contexts))
 
         return "<Signposting %s>" % "\n ".join(repr)
 
@@ -510,7 +587,7 @@ class Signposting(Iterable[Signpost], Sized):
         """Represent signposts as HTTP Link headers.
         
         Note that these are reconstructed from the recognized link relations only,
-        and do not include unparsed additional link attributes.
+        and do not include unparsed additional link attributes or links with different contexts.
 
         See also `Signpost.link`
         """
