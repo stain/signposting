@@ -2,6 +2,9 @@
 Changelog
 =========
 
+v0.7.0 (2022-08-20)
+------------------------------------------------------------
+
 * Support multiple context in ``Signposting`` -- users of ``find_signposting_linkset`` should take particularly care to look up using ``for_context``
 * RFC7231 update: Don't resolve context according to ``Content-Location`` header
 
