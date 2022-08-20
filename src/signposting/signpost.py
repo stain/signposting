@@ -230,8 +230,8 @@ class Signpost:
     context: Optional[AbsoluteURI]
     """Resource URL this is the signposting for, e.g. a HTML landing page.
 
-    Note that following HTTP redirections and ``Content-Location`` headers
-    means this URI
+    Note that following HTTP redirections means this URI may be different
+    from the one originally requested.
 
     This attribute is optional (with ``None`` indicating unknown context),
     however producers of ``Signpost`` instances from are encouraged to 
@@ -425,6 +425,9 @@ class Signposting(Iterable[Signpost], Sized):
             but remain available from :attr:`signposts`.
         :raise ValueError: If ``include_no_context`` is false, but ``context_url`` was not provided or None.
         """
+        if not include_no_context and not context_url:
+            raise ValueError("Can't exclude signposts without context when not providing context_url; try include_no_context=True")
+
         if context_url:
             self.context_url = AbsoluteURI(context_url)
         else:
@@ -447,10 +450,17 @@ class Signposting(Iterable[Signpost], Sized):
             return # We're empty
         # Populate above attributes from list of signposts
         for s in signposts:
-            if self.context_url and self.context_url != s.context:
+            if include_no_context and not s.context:
+                # Pretend it's in our context
+                context = self.context_url
+            else:
+                # Inspect signposts's context
+                context = s.context
+
+            if self.context_url and self.context_url != context:
                 self._others.add(s)
-                if s.context:
-                    self.other_contexts.add(s.context)
+                if context:
+                    self.other_contexts.add(context)
             elif s.rel is LinkRel.cite_as:
                 if self.citeAs:
                     warnings.warn("Ignoring additional cite-as signposts")
@@ -513,7 +523,10 @@ class Signposting(Iterable[Signpost], Sized):
             return self
         # Chain in own signposts, in case they want to call for_context() 
         # back to our context. 
-        return Signposting(context_uri, itertools.chain(self, self._others), include_no_context=False)
+        return Signposting(context_uri, 
+                           itertools.chain(self, self._others),
+                           # If context_uri is None, then include signposts w/ no context
+                           include_no_context=context_uri is None)
 
     def __len__(self):
         """Count how many FAIR Signposts were recognized for the given context"""

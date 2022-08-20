@@ -180,15 +180,9 @@ class TestFindSignpostingLinkset(unittest.TestCase):
         PID = "https://w3id.org/a2a-fair-metrics/14-http-describedby-citeas-linkset-json-txt-conneg/"
         for (uri,mediatype) in self._linksets_for_pid(PID):
             signposts = linkset.find_signposting_linkset(uri, mediatype)
-            if mediatype == MediaType("application/linkset+json"):
-                # Ensure Content-Location was picked up even if "uri" stayed the same
-                self.assertEqual("https://s11.no/2022/a2a-fair-metrics/14-http-describedby-citeas-linkset-json-txt-conneg/linkset.json", 
-                    signposts.context_url)
-            elif mediatype == MediaType("application/linkset"):
-                self.assertEqual("https://s11.no/2022/a2a-fair-metrics/14-http-describedby-citeas-linkset-json-txt-conneg/linkset.txt", 
-                    signposts.context_url)
-            else:
-                raise Exception("Unknown media type %s" % mediatype)
+            # Ensure Content-Location was NOT picked up to linkset.json/linkset.txt
+            self.assertEqual("https://s11.no/2022/a2a-fair-metrics/14-http-describedby-citeas-linkset-json-txt-conneg/linkset", 
+                signposts.context_url)
             
             self.assertEqual("https://w3id.org/a2a-fair-metrics/14-http-describedby-citeas-linkset-json-txt-conneg/", 
                 signposts.citeAs.target)
@@ -204,13 +198,13 @@ class TestFindSignpostingLinkset(unittest.TestCase):
                 {i.type for i in signposts.items})
 
             self.assertEqual(3, len(signposts))
-            # Assert context is picked up from anchor="" and not Content-Location
+            # Assert context is picked up from anchor="" and not redirected URL
             for s in signposts:
                 self.assertEqual("https://s11.no/2022/a2a-fair-metrics/14-http-describedby-citeas-linkset-json-txt-conneg/",
                 s.context)
 
     def test_parse_linkset_a2a_27(self):        
-        PID = "https://w3id.org/a2a-fair-metrics/27-http-linkset-json-only//"
+        PID = "https://w3id.org/a2a-fair-metrics/27-http-linkset-json-only/"
         for (uri,_) in self._linksets_for_pid(PID):
             signposts = linkset.find_signposting_linkset(uri)
             self.assertEqual("https://s11.no/2022/a2a-fair-metrics/27-http-linkset-json-only/linkset.json", signposts.context_url)

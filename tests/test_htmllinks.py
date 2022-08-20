@@ -169,7 +169,7 @@ class TestGetHTML(unittest.TestCase):
             self.assertIn("18-html-citeas-only", html)
             self.assertEqual("text/html;charset=UTF-8", html.content_type)
             self.assertEqual("https://w3id.example.org/a2a-fair-metrics/18-html-citeas-only/", html.requested_url)
-            self.assertEqual("https://w3id.example.org/a2a-fair-metrics/18-html-citeas-only/index.html", html.resolved_url)
+            self.assertEqual("https://w3id.example.org/a2a-fair-metrics/18-html-citeas-only/", html.resolved_url)
 
     def test_get_html_404(self):
         with requests_mock.Mocker() as m:
@@ -222,16 +222,16 @@ class TestParseHTML(unittest.TestCase):
     def test_parse_html_a2a_18(self):
         html = htmllinks.HTML(a2a_18, "text/html", 
             AbsoluteURI("https://w3id.org/a2a-fair-metrics/18-html-citeas-only/"),
-            AbsoluteURI("https://w3id.org/a2a-fair-metrics/18-html-citeas-only/index.html"))
+            AbsoluteURI("https://example.org/a2a-fair-metrics/18-html-citeas-only/"))
         signposts = htmllinks._parse_html(html)
-        self.assertEqual("https://w3id.org/a2a-fair-metrics/18-html-citeas-only/index.html", signposts.context_url)
+        self.assertEqual("https://example.org/a2a-fair-metrics/18-html-citeas-only/", signposts.context_url)
         self.assertEqual("https://w3id.org/a2a-fair-metrics/18-html-citeas-only/", signposts.citeAs.target)
-        self.assertEqual("https://w3id.org/a2a-fair-metrics/18-html-citeas-only/index.html", signposts.citeAs.context)
+        self.assertEqual("https://example.org/a2a-fair-metrics/18-html-citeas-only/", signposts.citeAs.context)
         self.assertEqual(1, len(signposts))
 
     def test_parse_html_no_head(self):
         html = htmllinks.HTML('<html><body>Hello</body></html>', "text/html",
-            AbsoluteURI("https://example.com/TODO-no-head/"),
+            AbsoluteURI("http://example.com/TODO-no-head/"),
             AbsoluteURI("https://example.com/TODO-no-head/index.html"))
         with warnings.catch_warnings(record=True) as w:
             signposts = htmllinks._parse_html(html)
