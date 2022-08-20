@@ -31,7 +31,7 @@ discover/merge these concurently.
 .. _linkset: https://signposting.org/FAIR/#linksetrec
 """
 
-__version__ = '0.5.2'
+__version__ = '0.6.1'
 
 from typing import List
 import warnings
@@ -46,5 +46,5 @@ def find_signposting(headers: List[str], baseurl: str = None) -> Signposting:
     warnings.warn("find_signposting() is deprecated, use find_signposting_http_link()")
     return find_signposting_http_link(headers, baseurl)
 
-__all__ = """find_signposting_http_link find_signposting_http find_signposting_html
+__all__ = """find_signposting_http_link find_signposting_http find_signposting_html find_signposting_linkset
 Signposting Signpost AbsoluteURI MediaType LinkRel""".split()
