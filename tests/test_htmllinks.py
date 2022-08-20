@@ -155,7 +155,7 @@ class TestGetHTML(unittest.TestCase):
             self.assertIn("xmlns=", html)
             self.assertEqual("application/xml+xhtml", html.content_type)
             self.assertEqual("https://example.com/TODO-xhtml/", html.requested_url)
-            self.assertEqual("https://example.com/TODO-xhtml/index.xhtml", html.resolved_url)
+            self.assertEqual("https://example.com/TODO-xhtml/", html.resolved_url)
 
     def test_get_html_resolved_relative(self):
         with requests_mock.Mocker() as m:
