@@ -2,6 +2,8 @@
 Changelog
 =========
 
+* Support multiple context in ``Signposting``
+* RFC7231 update: Don't resolve context according to ``Content-Location``
 * Linkset parsing exposed as ``find_signposting_linkset``
 * Optional explicit content-negotiate for linksets
 * Integration tests for linksets using a2a-fair-metrics benchmarks
