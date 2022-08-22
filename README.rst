@@ -3,6 +3,18 @@ Signposting link parser library
 ===============================
 *Finding signposting in FAIR resources*
 
+.. image:: https://img.shields.io/pypi/v/signposting
+    :target: https://pypi.org/project/signposting/
+    :alt: pypi install signposting
+
+.. image:: https://img.shields.io/pypi/pyversions/signposting
+    :target: https://pypi.org/project/signposting/
+    :alt: Python
+
+.. image:: https://img.shields.io/github/license/stain/signposting
+    :target: https://www.apache.org/licenses/LICENSE-2.0
+    :alt: Apache License v.2.0
+
 .. image:: https://github.com/stain/signposting/workflows/Tests/badge.svg?branch=main
     :target: https://github.com/stain/signposting/actions?workflow=Tests
     :alt: Test Status
@@ -18,6 +30,11 @@ Signposting link parser library
 .. image:: https://img.shields.io/readthedocs/signposting/latest?label=Read%20the%20Docs
     :target: https://signposting.readthedocs.io/en/latest/index.html
     :alt: Read the Docs
+
+.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.6815412.svg
+   :target: https://doi.org/10.5281/zenodo.6815412
+   :alt: DOI 10.5281/zenodo.6815412
+
 
 
 Summary
