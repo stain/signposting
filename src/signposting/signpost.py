@@ -34,7 +34,7 @@ about type safety.
 import itertools
 from multiprocessing import AuthenticationError
 import re
-from typing import Collection, Iterable, Iterator, List, Optional, Set, Sized, Union, AbstractSet, FrozenSet
+from typing import Collection, Iterable, Iterator, List, Optional, Set, Sized, Tuple, Union, AbstractSet, FrozenSet
 from enum import Enum, auto, unique
 import warnings
 
@@ -310,7 +310,7 @@ class Signpost:
         if self.type:
             repr.append("type=%s" % self.type)
         if self.profiles:
-            repr.append("profiles=%s" % self.profiles)
+            repr.append("profiles=%s" % " ".join(self.profiles))
 
         return "<Signpost %s>" % " ".join(repr)
 
@@ -325,6 +325,42 @@ class Signpost:
         if self.context:
             strs.append('context="%s"' % self.context)
         return "; ".join(strs)
+
+    def _eq_attribs(self) -> Iterable[object]:
+        """Attributes of the Signpost important for equality testing,
+        returned in a predictable (but undefined) order.
+        
+        This method is used by __eq__ and __hash__ internally.
+        
+        Subclasses are encouraged to overwrite and add additional attributes
+        in a consistent order at the end."""
+        yield self.context
+        yield self.rel
+        yield self.target
+        yield self.type
+        # NOTE: do NOT yield each profile of set separately, as order is not consistent
+        # As self.profiles is a frozenset it is elligble for hash()
+        yield self.profiles
+
+    def __eq__(self, o: object) -> bool:
+        if not isinstance(o, Signpost):
+            return False
+        # Assume _eq_attribs has consistent ordering.
+        for a,b in zip(self._eq_attribs(), o._eq_attribs()):
+            if a != b:
+                return False
+        return True
+    
+    def __hash__(self) -> int:
+        h = hash(self.__class__.__qualname__)
+        for e in self._eq_attribs():
+            # Classic XOR would mean order does not matter, but
+            # links may have URIs swapped around. As that is unlikely
+            # for real-life signposts, we don't need to include 
+            # a positional hashing like in hash(tuple)
+            h ^= hash(e)
+        return h
+
 
 class Signposting(Iterable[Signpost], Sized):
     """Signposting links for a given resource.

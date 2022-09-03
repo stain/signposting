@@ -234,7 +234,7 @@ class TestMediaType(unittest.TestCase):
             MediaType("http://example.com")
 
 
-class TestSignPost(unittest.TestCase):
+class TestSignpost(unittest.TestCase):
     def testConstructorFromObjects(self):
         s = Signpost(
             LinkRel.cite_as,
@@ -328,6 +328,156 @@ class TestSignPost(unittest.TestCase):
                 "http://example.com/download/1.pdf",
                 profiles="https:/example.org/first-ok second-not-absolute"
                 )
+
+    def testRepr(self):
+        s = Signpost(
+            LinkRel.cite_as,
+            AbsoluteURI("http://example.com/pid/1"),
+            MediaType("text/plain"),
+            {AbsoluteURI("http://example.org/profileA"),
+            AbsoluteURI("http://example.org/profileB")},
+            AbsoluteURI("http://example.com/resource/1.html"))
+        r = repr(s)
+        self.assertIn("context=http://example.com/resource/1.html", r)
+        self.assertIn("rel=cite-as", r)
+        self.assertIn("target=http://example.com/pid/1", r)
+        self.assertIn("type=text/plain", r)
+        self.assertIn("profiles=http://example.org", r) # common URI prefix in this case
+        self.assertIn("profileB", r) 
+        self.assertIn("profileA", r) # any order, as it's a set
+
+
+    def testReprDefaults(self):
+        s = Signpost(
+            "cite-as",
+            "http://example.com/pid/1")
+        r = repr(s)
+        self.assertIn("rel=cite-as", r)
+        self.assertIn("target=http://example.com/pid/1", r)
+        # Optional attributes hidden from repr()
+        self.assertNotIn("context", r)
+        self.assertNotIn("type", r)
+        self.assertNotIn("profiles", r)
+
+    def testEquals(self):
+        s1 = Signpost(
+            "cite-as",
+            "http://example.com/pid/1")
+        self.assertEqual(s1, Signpost("cite-as","http://example.com/pid/1"))
+        self.assertEqual(s1, Signpost(LinkRel.cite_as, AbsoluteURI("http://example.com/pid/1")))
+        self.assertNotEqual(s1, Signpost(LinkRel.author, AbsoluteURI("http://example.com/pid/1")))
+        self.assertNotEqual(s1, Signpost(LinkRel.cite_as, AbsoluteURI("http://example.com/pid/2")))
+
+        # For simplicity, any additional attributes make it unequal
+        self.assertNotEqual(s1, Signpost("cite-as","http://example.com/pid/1", media_type="text/plain"))
+        self.assertNotEqual(s1, Signpost("cite-as","http://example.com/pid/1", context="http://example.com/1.html"))
+        self.assertNotEqual(s1, Signpost("cite-as","http://example.com/pid/1", profiles="http://example.com/profile/p1"))
+        s2 = Signpost(
+            "cite-as",
+            "http://example.com/pid/1",
+            "text/plain",
+            "http://example.org/profileA http://example.org/profileB",
+            "http://example.com/resource/1.html")
+        self.assertNotEqual(s1, s2)
+        # signposts can also equal if all attributes equal
+        self.assertEqual(s2, 
+            Signpost("cite-as","http://example.com/pid/1","text/plain",
+                "http://example.org/profileA http://example.org/profileB",
+                "http://example.com/resource/1.html"))
+        # but if any of those attributes differ, they are also unequal.
+        self.assertNotEqual(s2,  # rel
+            Signpost("author","http://example.com/pid/1","text/plain",
+                "http://example.org/profileA http://example.org/profileB",
+                "http://example.com/resource/1.html"))
+        self.assertNotEqual(s2, # target
+            Signpost("cite-as","http://example.com/pid/2","text/plain",
+                "http://example.org/profileA http://example.org/profileB",
+                "http://example.com/resource/1.html"))
+        self.assertNotEqual(s2, # media_type
+            Signpost("cite-as","http://example.com/pid/1","text/html",
+                "http://example.org/profileA http://example.org/profileB",
+                "http://example.com/resource/1.html"))
+        self.assertNotEqual(s2, # profiles
+            Signpost("cite-as","http://example.com/pid/1","text/html",
+                "http://example.org/profileC",
+                "http://example.com/resource/1.html"))
+        self.assertNotEqual(s2, # context
+            Signpost("cite-as","http://example.com/pid/1","text/html",
+                "http://example.org/profileA http://example.org/profileB",
+                "http://example.com/resource/2.html"))
+        # Note that profiles are a set, so this is still equal
+        self.assertEqual(s2, 
+            Signpost("cite-as","http://example.com/pid/1","text/plain",
+                "http://example.org/profileB http://example.org/profileA",
+                "http://example.com/resource/1.html"))
+
+    def testHash(self):
+        """Basically same as testEquals, but using hash() of the signpost"""
+        s1 = Signpost(
+            "cite-as",
+            "http://example.com/pid/1")
+
+        self.assertEqual(hash(s1), hash(Signpost("cite-as","http://example.com/pid/1")))
+        self.assertEqual(hash(s1), hash(Signpost(LinkRel.cite_as, AbsoluteURI("http://example.com/pid/1"))))
+        self.assertNotEqual(hash(s1), hash(Signpost(LinkRel.author, AbsoluteURI("http://example.com/pid/1"))))
+        self.assertNotEqual(hash(s1), hash(Signpost(LinkRel.cite_as, AbsoluteURI("http://example.com/pid/2"))))
+
+        # For simplicity, any additional attributes make it unequal
+        self.assertNotEqual(hash(s1), hash(Signpost("cite-as","http://example.com/pid/1", media_type="text/plain")))
+        self.assertNotEqual(hash(s1), hash(Signpost("cite-as","http://example.com/pid/1", context="http://example.com/1.html")))
+        self.assertNotEqual(hash(s1), hash(Signpost("cite-as","http://example.com/pid/1", profiles="http://example.com/profile/p1")))
+        s2 = Signpost(
+            "cite-as",
+            "http://example.com/pid/1",
+            "text/plain",
+            "http://example.org/profileA http://example.org/profileB",
+            "http://example.com/resource/1.html")
+        self.assertNotEqual(hash(s1), hash(s2))
+        # signposts can also equal if all attributes equal
+        self.assertEqual(hash(s2), 
+            hash(Signpost("cite-as","http://example.com/pid/1","text/plain",
+                "http://example.org/profileA http://example.org/profileB",
+                "http://example.com/resource/1.html")))
+        # but if any of those attributes differ, they are also unequal.
+        self.assertNotEqual(hash(s2),  # rel
+            hash(Signpost("author","http://example.com/pid/1","text/plain",
+                "http://example.org/profileA http://example.org/profileB",
+                "http://example.com/resource/1.html")))
+        self.assertNotEqual(hash(s2), # target
+            hash(Signpost("cite-as","http://example.com/pid/2","text/plain",
+                "http://example.org/profileA http://example.org/profileB",
+                "http://example.com/resource/1.html")))
+        self.assertNotEqual(hash(s2), # media_type
+            hash(Signpost("cite-as","http://example.com/pid/1","text/html",
+                "http://example.org/profileA http://example.org/profileB",
+                "http://example.com/resource/1.html")))
+        self.assertNotEqual(hash(s2), # profiles
+            hash(Signpost("cite-as","http://example.com/pid/1","text/html",
+                "http://example.org/profileC",
+                "http://example.com/resource/1.html")))
+        self.assertNotEqual(hash(s2), # context
+            hash(Signpost("cite-as","http://example.com/pid/1","text/html",
+                "http://example.org/profileA http://example.org/profileB",
+                "http://example.com/resource/2.html")))
+        # Note that profiles are a set, so this is still equal
+        self.assertEqual(hash(s2), 
+            hash(Signpost("cite-as","http://example.com/pid/1","text/plain",
+                "http://example.org/profileB http://example.org/profileA",
+                "http://example.com/resource/1.html")))
+
+        # We'll knowingly permit hashes to ignore ordering of attributes, 
+        # as they are unlikely to overlap in actual signposts. Here we deliberately make two "opposing" 
+        # signposts and see if they get the same hash as they'll have swapped
+        # target/context URIs. Implementation of Signpost are allowed
+        # to break this optimization, in which case the below test should be removed.
+        s2a = Signpost("cite-as","http://example.com/resource/1.html","text/plain",
+                "http://example.org/profileB http://example.org/profileA",
+                "http://example.com/pid/1")
+        self.assertEqual(hash(s2), hash(s2a))
+        # However these signposts are still unequal,
+        # even if they have same hash. Hashes do not need to be
+        # unique, just unlikely to be so for different objects
+        self.assertNotEqual(s2, s2a)
 
 
 class TestSignposting(unittest.TestCase):
@@ -431,3 +581,4 @@ class TestSignposting(unittest.TestCase):
             self.assertEqual(
                 "http://example.com/collection/1", s.collection.target)
             
+
