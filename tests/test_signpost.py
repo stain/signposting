@@ -15,8 +15,10 @@
 
 import unittest
 import warnings
+import uuid
 
 from httplink import Link
+
 
 from signposting.signpost import Signpost, AbsoluteURI, MediaType, LinkRel, Signposting, SIGNPOSTING
 
@@ -635,3 +637,55 @@ class TestSignposting(unittest.TestCase):
         self.assertEqual("http://example.com/pid/3", s5.citeAs.target)
         self.assertEqual(1, len(s5))
 
+    def testForContext(self):
+        s = Signposting("http://example.com/page1", [
+            Signpost(LinkRel.author, "http://example.com/author/1"),
+            Signpost(LinkRel.author, "http://example.com/author/2", context="http://example.com/page2"),
+            Signpost(LinkRel.author, "http://example.com/author/3", context="http://example.com/page3"),
+            ])
+        self.assertEqual(1, len(s)) # Ignores page2, page3
+        self.assertEqual({"http://example.com/page2", "http://example.com/page3"},
+            s.other_contexts
+        )
+        s2 = s.for_context("http://example.com/page2")
+        s3 = s.for_context("http://example.com/page3")
+        s4 = s.for_context("http://example.com/page4")
+        self.assertTrue(s2)
+        self.assertTrue(s3)
+        self.assertFalse(s4)
+        self.assertEqual({"http://example.com/author/2"}, {a.target for a in s2.authors})
+        self.assertEqual({"http://example.com/author/3"}, {a.target for a in s3.authors})
+        
+        # The other contexts are carried on
+        self.assertTrue(s3.for_context("http://example.com/page2"))
+        self.assertTrue(s2.for_context("http://example.com/page3"))
+        # But in this case we can't get back page1's signposts with default contexts.
+        # FIXME: should it stay like this?? We've now 'lost' the author/1 link
+        self.assertFalse(s2.for_context("http://example.com/page1"))
+
+        # We can get them all in one go, including the 'lost' default signpost
+        sAll = s2.for_context(None)
+        self.assertEqual({"http://example.com/author/1", "http://example.com/author/2", "http://example.com/author/3"}, 
+            {a.target for a in sAll.authors})
+        # Or we can find it here:
+        sNone = {sign for sign in s2.signposts if not sign.context}
+        self.assertTrue(sNone)
+        self.assertEqual({"http://example.com/author/1"}, {a.target for a in sNone})
+            
+        # Tip, here's another way we can get ONLY the Defaults:
+        # use a brand new context
+        defaultsOnly = Signposting(uuid.uuid4().urn, s2.signposts)
+        self.assertTrue(defaultsOnly)
+        self.assertEqual({"http://example.com/author/1"}, {a.target for a in defaultsOnly.authors})
+
+
+    def testLengthIgnoresWrongContext(self):
+        s = Signposting("http://example.com/page3", [
+            Signpost(LinkRel.author, "http://example.com/author/1"),
+            Signpost(LinkRel.author, "http://example.com/author/2", context="http://example.com/page2"),
+            Signpost(LinkRel.author, "http://example.com/author/3", context="http://example.com/page3"),
+            ])
+        self.assertEqual(2, len(s)) # Ignores page2
+        # The remaining signpost is under another context, which would ignore 
+        # author/1 (assigned to default context page3)
+        self.assertEqual(1, len(s.for_context("http://example.com/page2")))
