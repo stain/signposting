@@ -334,6 +334,9 @@ class Signpost:
         
         Subclasses are encouraged to overwrite and add additional attributes
         in a consistent order at the end."""
+        # NOTE: context **is** included in equality so that multiple Signpost
+        # objects can be in the set of Signposting. For instance, there can be
+        # multiple documents that share the same metadata resource.
         yield self.context
         yield self.rel
         yield self.target
@@ -591,7 +594,43 @@ class Signposting(Iterable[Signpost], Sized):
             yield e
         # NOTE: self._others are NOT included as they have a different context
 
+    def __eq__(self, o) -> bool:
+        """A Signposting instance is equal to another Signposting, 
+        if and only if it has the same `Signpost`s for their respective
+        current contexts.
+        
+        Note that their :attr:`Signposting.context_url` are _not_ compared for equality,
+        although each :attr:`Signpost.context` are included when comparing list of signposts. 
+        This distinction becomes significant when comparing signposts without explicit
+        context, loaded from two different contexts.
+        """
+        if not isinstance(o, Signposting):
+            return False
+        for (a,b) in zip(self, o):
+            if a != b:
+                return False
+        return True
+
+    def __hash__(self) -> int:
+        """Calculate a hash of this Signposting instance based on its equality.
+        
+        The result of this hash method is consistent with :meth:`__eq__` in that
+        only each signpost of the current context are part of the calculation.
+        """
+        h = hash(self.__class__.__qualname__)
+        # NOTE context is NOT included in equality checks, see __eq__
+        ## h ^= self.context_url
+        for e in self:
+            h ^= hash(e)
+        # Signposts in other contexts are ignored
+        ##for e in self._others:
+        ##    h ^= hash(e)
+        return h
+
+
     def _repr_signposts(self, signposts):
+        """String representation of a list of signposts"""
+        # This is usually a short list, so no need for max-trimming and ...
         return " ".join(set(d.target for d in signposts))
 
     def __repr__(self):
