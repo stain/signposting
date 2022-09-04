@@ -496,6 +496,17 @@ class TestSignposting(unittest.TestCase):
         self.assertEqual(set(), s.linksets)
         self.assertEqual(set(), s.types)
 
+    def testReprDefault(self):
+        s = Signposting("http://example.com/page1")
+        r = repr(s)
+        self.assertIn("context=http://example.com/page1", r)
+        # Defaults hidden in repr()
+        self.assertNotIn("None", r)
+
+    def testStrDefault(self):
+        s = Signposting("http://example.com/page1")
+        self.assertEqual("", str(s)) # no Link headers
+
     def testConstructorEmpty(self):
         s = Signposting("http://example.com/page1", [])
         self.assertEqual("http://example.com/page1", s.context_url)
@@ -509,6 +520,20 @@ class TestSignposting(unittest.TestCase):
         self.assertEqual("http://example.com/page1", s.context_url)
         self.assertEqual(AbsoluteURI(
             "http://example.com/pid/1"), s.citeAs.target)
+
+    def testReprCiteAs(self):
+        r = repr(Signposting("http://example.com/page1",
+                 [Signpost(LinkRel.cite_as, "http://example.com/pid/1")]))
+        self.assertIn("citeAs=http://example.com/pid/1", r) 
+            # Matches camel-case attribute name, not link relation or LinkRel enum..
+            # FIXME: Avoid 3 variations!
+        self.assertIn("context=http://example.com/page1", r)
+
+    def testStrCiteAs(self):
+        s = str(Signposting("http://example.com/page1",
+                 [Signpost(LinkRel.cite_as, "http://example.com/pid/1")]))
+        self.assertEqual("Link: <http://example.com/pid/1>; rel=cite-as", s)
+
 
     def testConstructorItems(self):
         s = Signposting("http://example.com/page1", [
