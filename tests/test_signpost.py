@@ -589,6 +589,44 @@ class TestSignposting(unittest.TestCase):
             "http://example.org/type/B"},
             set(i.target for i in s.types))
 
+    def testReprComplete(self):
+        s = Signposting("http://example.com/page1", [
+            Signpost(LinkRel.item, "http://example.com/item/1.pdf"),
+            Signpost(LinkRel.cite_as, "http://example.com/pid/1"),
+            # tip: order does not matter
+            Signpost(LinkRel.item, "http://example.com/item/2.txt"),
+            Signpost(LinkRel.license, "http://spdx.org/licenses/CC0-1.0"),
+            Signpost(LinkRel.collection, "http://example.com/collection/1"),
+            Signpost(LinkRel.author, "http://example.com/author/1"),
+            Signpost(LinkRel.author, "http://example.com/author/2"),
+            Signpost(LinkRel.describedby, "http://example.com/metadata/1.ttl"),
+            Signpost(LinkRel.describedby,
+                     "http://example.com/metadata/2.jsonld"),
+            Signpost(LinkRel.linkset, "http://example.com/linkset/1.json"),
+            Signpost(LinkRel.linkset, "http://example.com/linkset/2.txt"),
+            Signpost(LinkRel.type, "http://example.org/type/A"),
+            Signpost(LinkRel.type, "http://example.org/type/B")
+            ])
+        r = repr(s)
+        self.assertIn("context=http://example.com/page1", r)
+        self.assertIn("item=http://example.com/item/1.pdf", r)
+        self.assertIn("license=http://spdx.org/licenses/CC0-1.0", r)
+        self.assertIn("collection=http://example.com/collection/1", r)
+        self.assertIn("author=http://example.com/author/", r)
+        self.assertIn("/author/1", r) # Order may not be preserved (?)
+        self.assertIn("/author/2", r)
+        self.assertIn("describedBy=http://example.com/metadata", r)
+        self.assertIn("metadata/1.ttl",r)
+        self.assertIn("metadata/2.jsonld", r)
+        self.assertIn("linkset=http://example.com/linkset", r)
+        self.assertIn("linkset/1.json",r)
+        self.assertIn("linkset/2.txt", r)
+        self.assertIn("type=http://example.com/type", r)
+        self.assertIn("type/A",r)
+        self.assertIn("type/B", r)
+
+
+
     def testConstructorWarnDuplicate(self):
         with warnings.catch_warnings(record=True) as w:
             s = Signposting("http://example.com/page1", [
