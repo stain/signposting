@@ -363,6 +363,7 @@ class TestSignpost(unittest.TestCase):
         s1 = Signpost(
             "cite-as",
             "http://example.com/pid/1")
+        self.assertNotEqual(s1, 123) # Different type
         self.assertEqual(s1, Signpost("cite-as","http://example.com/pid/1"))
         self.assertEqual(s1, Signpost(LinkRel.cite_as, AbsoluteURI("http://example.com/pid/1")))
         self.assertNotEqual(s1, Signpost(LinkRel.author, AbsoluteURI("http://example.com/pid/1")))
@@ -581,4 +582,56 @@ class TestSignposting(unittest.TestCase):
             self.assertEqual(
                 "http://example.com/collection/1", s.collection.target)
             
+
+    def testNoneContextWarns(self):
+        with warnings.catch_warnings(record=True) as w:
+            s = Signposting(None, [
+                Signpost(LinkRel.cite_as, "http://example.com/pid/2", context="http://example.com/page2"),
+                Signpost(LinkRel.cite_as, "http://example.com/pid/1", context="http://example.com/page1"),
+                ])
+        # First cite_as is picked, ignoring context or not
+        self.assertEqual("http://example.com/pid/2", s.citeAs.target)
+        self.assertEqual(1, len(w))
+        self.assertTrue(issubclass(w[0].category, UserWarning))
+        self.assertIn("cite-as", str(w[0].message))
+
+    def testNoneContextMixed(self):
+        with warnings.catch_warnings(record=True) as w2:
+            s2 = Signposting(None, [
+                Signpost(LinkRel.cite_as, "http://example.com/pid/2", context="http://example.com/page2"),
+                Signpost(LinkRel.cite_as, "http://example.com/pid/1"),
+                ])
+        # Even here, as "None" context means any signposts. 
+        # They are not ordered in any priority, first one wins.
+        self.assertEqual("http://example.com/pid/2", s2.citeAs.target)
+        self.assertEqual(1, len(w2))
+        self.assertTrue(issubclass(w2[0].category, UserWarning))
+        self.assertIn("cite-as", str(w2[0].message))
+
+    def testContextMixed(self):
+        # However, in this case we have a known context, which will be
+        # assigned to pid/1, pid/2 is ignored as it has a different context
+        s3 = Signposting("http://example.com/page1", [
+            Signpost(LinkRel.cite_as, "http://example.com/pid/2", context="http://example.com/page2"),
+            Signpost(LinkRel.cite_as, "http://example.com/pid/1"),
+            ])
+        self.assertEqual("http://example.com/pid/1", s3.citeAs.target)
+
+    def testIncludeNoContextNoMatch(self):
+        # ..unlexs we override to ignore signposts with no context
+        s4 = Signposting("http://example.com/page1", [
+            Signpost(LinkRel.cite_as, "http://example.com/pid/2", context="http://example.com/page2"),
+            Signpost(LinkRel.cite_as, "http://example.com/pid/1"),
+            ], include_no_context=False)
+        self.assertIsNone(s4.citeAs)
+
+    def testIncludeNoContextMatch(self):
+        s5 = Signposting("http://example.com/page3", [
+            Signpost(LinkRel.cite_as, "http://example.com/pid/2", context="http://example.com/page2"),
+            Signpost(LinkRel.cite_as, "http://example.com/pid/1"),
+            Signpost(LinkRel.cite_as, "http://example.com/pid/3", context="http://example.com/page3"),
+            ], include_no_context=False)
+        # In this case, context must match for every signpost
+        self.assertEqual("http://example.com/pid/3", s5.citeAs.target)
+        self.assertEqual(1, len(s5))
 
