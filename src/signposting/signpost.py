@@ -364,7 +364,6 @@ class Signpost:
             h ^= hash(e)
         return h
 
-
 class Signposting(Iterable[Signpost], Sized):
     """Signposting links for a given resource.
 
@@ -569,7 +568,10 @@ class Signposting(Iterable[Signpost], Sized):
 
     def __len__(self):
         """Count how many FAIR Signposts were recognized for the given context"""
-        return len(self.signposts)
+        # Note: tuple(self) fails here, as tuple will call our __len__ to pre-allocate
+        #return len(tuple(self))
+        # Instead we'll do it with a nice generator
+        return sum(1 for _ in self)
     
     def __iter__(self) -> Iterator[Signpost]:
         """Iterate over all FAIR signposts recognized for the given context.
