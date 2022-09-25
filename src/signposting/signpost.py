@@ -560,6 +560,10 @@ class Signposting(Iterable[Signpost], Sized):
         This will select an alternative view of the signposts from :attr:`signposts`
         filtered by the given ``context_uri``.
 
+        The remaining signposts and their contexts will be included under 
+        :attr:`Signpost.signposts` -- any signposts with implicit context will
+        be replaced with having an explicit context :attr:`self.context_url`.
+
         :param context_uri: The context to select signposts from. 
             The URI should be a member of :attr:`contexts` or equal to :attr:`context`, 
             otherwise the returned Signposting will be empty.
@@ -567,13 +571,22 @@ class Signposting(Iterable[Signpost], Sized):
             and any signposts will be considered.
         """
         if self.context_url == context_uri:
-            return self
-        # Chain in own signposts, in case they want to call for_context() 
-        # back to our context. 
+            return self # done!
+
+        include_no_context = context_uri is None
+        if include_no_context:
+            # If context_uri is None, then include any implicit contexts as-is
+            our_signposts = self
+        else:
+            # ensure explicit contexts, so they don't get lost
+            our_signposts = (s.with_context(self.context_url) for s in self)
+
         return Signposting(context_uri, 
-                           itertools.chain(self, self._others),
-                           # If context_uri is None, then include signposts w/ no context
-                           include_no_context=context_uri is None)
+                           # Chain in own signposts, 
+                           # in case they want to call for_context() 
+                           # back to our context.  
+                           itertools.chain(our_signposts, self._others),
+                           include_no_context=include_no_context)
 
     def __len__(self):
         """Count how many FAIR Signposts were recognized for the given context"""

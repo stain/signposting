@@ -746,22 +746,31 @@ class TestSignposting(unittest.TestCase):
         # The other contexts are carried on
         self.assertTrue(s3.for_context("http://example.com/page2"))
         self.assertTrue(s2.for_context("http://example.com/page3"))
-        # But in this case we can't get back page1's signposts with default contexts.
-        # FIXME: should it stay like this?? We've now 'lost' the author/1 link
-        self.assertFalse(s2.for_context("http://example.com/page1"))
+        # Ensure we have not lost the author/1 link with implicit context of page1
+        sAgain = s2.for_context("http://example.com/page1")
+        self.assertTrue(sAgain)
+        self.assertEquals({"http://example.com/author/1"}, 
+            {a.target for a in sAgain.authors})
+        # But now with explicit context
+        self.assertEquals({"http://example.com/page1"}, 
+            {a.context for a in sAgain.authors})
 
-        # We can get them all in one go, including the 'lost' default signpost
-        sAll = s2.for_context(None)
+        # We can get them all in one go
+        sAll = s.for_context(None)
         self.assertEqual({"http://example.com/author/1", "http://example.com/author/2", "http://example.com/author/3"}, 
             {a.target for a in sAll.authors})
-        # Or we can find it here:
-        sNone = {sign for sign in s2.signposts if not sign.context}
-        self.assertTrue(sNone)
-        self.assertEqual({"http://example.com/author/1"}, {a.target for a in sNone})
-            
+        # author/1 should be in here
+        sNoContext = {sign for sign in s.signposts if not sign.context}
+        self.assertTrue(sNoContext)
+        self.assertEqual({"http://example.com/author/1"}, {a.target for a in sNoContext})
+        # However in s2 it has been given an explicit context, so 
+        # no signposts remains without context
+        s2NoContext = {sign for sign in sAgain.signposts if not sign.context}
+        self.assertFalse(s2NoContext)
+
         # Tip, here's another way we can get ONLY the Defaults:
         # use a brand new context
-        defaultsOnly = Signposting(uuid.uuid4().urn, s2.signposts)
+        defaultsOnly = Signposting(uuid.uuid4().urn, s.signposts)
         self.assertTrue(defaultsOnly)
         self.assertEqual({"http://example.com/author/1"}, {a.target for a in defaultsOnly.authors})
 
