@@ -34,6 +34,7 @@ about type safety.
 import itertools
 from multiprocessing import AuthenticationError
 import re
+from types import NoneType
 from typing import Collection, Iterable, Iterator, List, Optional, Set, Sized, Tuple, Union, AbstractSet, FrozenSet
 from enum import Enum, auto, unique
 import warnings
@@ -363,6 +364,14 @@ class Signpost:
             # a positional hashing like in hash(tuple)
             h ^= hash(e)
         return h
+
+    def with_context(self, context: Union[AbsoluteURI, str, None]):
+        """Create a copy of this signpost, but with the specified context.
+        
+        If the context is None, it means the copy will not have a context.
+        """
+        return Signpost(self.rel, self.target, self.type, self.profiles, context, self.link)
+
 
 class Signposting(Iterable[Signpost], Sized):
     """Signposting links for a given resource.

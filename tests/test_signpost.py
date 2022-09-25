@@ -482,6 +482,28 @@ class TestSignpost(unittest.TestCase):
         # unique, just unlikely to be so for different objects
         self.assertNotEqual(s2, s2a)
 
+    def testWithContext(self):
+        s1 = Signpost(
+            "cite-as",
+            "http://example.com/pid/1",
+            "text/plain",
+            "http://example.org/profileA http://example.org/profileB",
+            "http://example.com/resource/1.html")
+        s1Same = s1.with_context(s1.context)
+        self.assertEqual(s1, s1Same)
+        self.assertEqual(s1.context, s1Same.context)
+
+        s2 = s1.with_context("http://example.com/resource/1.rdf")
+        self.assertIsInstance(s2.context, AbsoluteURI)
+        self.assertEqual(AbsoluteURI("http://example.com/resource/1.rdf"), s2.context)
+        self.assertNotEqual(s1, s2) # as context is different
+        self.assertEqual(s1, s2.with_context(s1.context)) ## but if we change back 100% same
+
+        s3 = s1.with_context(None)
+        self.assertNotEqual(s1, s3)
+        self.assertIsNone(s3.context)
+        self.assertEqual(s1, s3.with_context(s1.context))
+
 
 class TestSignposting(unittest.TestCase):
     def testConstructorDefault(self):
@@ -609,7 +631,9 @@ class TestSignposting(unittest.TestCase):
             ])
         r = repr(s)
         self.assertIn("context=http://example.com/page1", r)
-        self.assertIn("items=http://example.com/item/1.pdf", r)
+        self.assertIn("items=http://example.com/item/", r)
+        self.assertIn("item/1.pdf", r)
+        self.assertIn("item/2.txt", r)
         self.assertIn("license=http://spdx.org/licenses/CC0-1.0", r)
         self.assertIn("collection=http://example.com/collection/1", r)
         self.assertIn("authors=http://example.com/author/", r)
@@ -820,7 +844,7 @@ class TestSignposting(unittest.TestCase):
         )
     def testEqualsCiteAsImplicitContext(self):
         self.assertEqual( # equal as signposts are effectively same context
-            Signposting(signposts=[ # any context
+            Signposting("http://example.com/page3", [
                 Signpost(LinkRel.cite_as, "http://example.com/pid/2", 
                 context="http://example.com/page3")
             ]),
@@ -840,10 +864,10 @@ class TestSignposting(unittest.TestCase):
         )
     def testNotEqualsCiteAsMissingContext(self):
         self.assertNotEqual( # single signpost differs because second is missing context
-            Signposting("http://example.com/page3", [
+            Signposting(signposts=[
                 Signpost(LinkRel.cite_as, "http://example.com/pid/2", context="http://example.com/page4")
             ]),
-            Signposting("http://example.com/page3", [ 
+            Signposting(signposts=[ 
                 # FIXME: This should inherit the above context, but the above had explicit page4
                 Signpost(LinkRel.cite_as, "http://example.com/pid/2")
             ])
