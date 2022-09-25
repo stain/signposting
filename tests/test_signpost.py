@@ -752,3 +752,101 @@ class TestSignposting(unittest.TestCase):
         # The remaining signpost is under another context, which would ignore 
         # author/1 (assigned to default context page3)
         self.assertEqual(1, len(s.for_context("http://example.com/page2")))
+
+    def testEqualsEmptySignposts(self):
+        self.assertEqual( # empty list of signposts
+            Signposting("http://example.com/page3", []),
+            Signposting("http://example.com/page3", [])
+        )
+    def testEqualsEmptyDifferentContext(self):        
+        self.assertEqual( # empty list of signposts, but we're different context
+            Signposting("http://example.com/page3", []),
+            Signposting("http://example.com/OTHER", [])
+        )
+    def testEqualsCiteAs(self):        
+        self.assertEqual( # single signpost equals
+            Signposting("http://example.com/page3", [
+                Signpost(LinkRel.cite_as, "http://example.com/pid/2")
+            ]),
+            Signposting("http://example.com/page3", [
+                Signpost(LinkRel.cite_as, "http://example.com/pid/2")
+            ])
+        )
+
+    def testEqualsAnyOrder(self):        
+        self.assertEqual( # multiple signpost in any order
+            Signposting("http://example.com/page3", [
+                Signpost(LinkRel.cite_as, "http://example.com/pid/2"),
+                Signpost(LinkRel.author, "http://example.com/author/1"),
+                Signpost(LinkRel.author, "http://example.com/author/2"),
+            ]),
+            Signposting("http://example.com/page3", [
+                Signpost(LinkRel.author, "http://example.com/author/2"),
+                Signpost(LinkRel.cite_as, "http://example.com/pid/2"),
+                Signpost(LinkRel.author, "http://example.com/author/1"),
+            ])
+        )
+
+    def testNotEqualsMissingAuthor(self):        
+        self.assertNotEqual( 
+            Signposting("http://example.com/page3", [
+                Signpost(LinkRel.author, "http://example.com/author/1"),
+                Signpost(LinkRel.author, "http://example.com/author/2"),
+                Signpost(LinkRel.author, "http://example.com/author/3"),
+            ]),
+            Signposting("http://example.com/page3", [
+                Signpost(LinkRel.author, "http://example.com/author/1"),
+                Signpost(LinkRel.author, "http://example.com/author/2"),
+            ])
+        )
+
+    def testNotEqualsCiteAsDiffers(self):
+        self.assertNotEqual( # single signpost differs
+            Signposting("http://example.com/page3", [
+                Signpost(LinkRel.cite_as, "http://example.com/pid/2")
+            ]),
+            Signposting("http://example.com/page3", [
+                Signpost(LinkRel.cite_as, "http://example.com/pid/OTHER")
+            ])
+        )
+    def testEqualsCiteAsExplicitContext(self):
+        self.assertEqual( # single signpost differs with same context
+            Signposting("http://example.com/page3", [
+                Signpost(LinkRel.cite_as, "http://example.com/pid/2", context="http://example.com/page3")
+            ]),
+            Signposting("http://example.com/page3", [
+                Signpost(LinkRel.cite_as, "http://example.com/pid/2", context="http://example.com/page3")
+            ])
+        )
+    def testEqualsCiteAsImplicitContext(self):
+        self.assertEqual( # equal as signposts are effectively same context
+            Signposting(signposts=[ # any context
+                Signpost(LinkRel.cite_as, "http://example.com/pid/2", 
+                context="http://example.com/page3")
+            ]),
+            Signposting("http://example.com/page3", [
+                # Implicit context, inherited
+                Signpost(LinkRel.cite_as, "http://example.com/pid/2")
+            ])
+        )
+    def testNotEqualsCiteAsDifferentContext(self):
+        self.assertNotEqual( # single signpost differs because different context
+            Signposting(signposts=[
+                Signpost(LinkRel.cite_as, "http://example.com/pid/2", context="http://example.com/page3")
+            ]),
+            Signposting(signposts=[
+                Signpost(LinkRel.cite_as, "http://example.com/pid/2", context="http://example.com/OTHER")
+            ])
+        )
+    def testNotEqualsCiteAsMissingContext(self):
+        self.assertNotEqual( # single signpost differs because second is missing context
+            Signposting("http://example.com/page3", [
+                Signpost(LinkRel.cite_as, "http://example.com/pid/2", context="http://example.com/page4")
+            ]),
+            Signposting("http://example.com/page3", [ 
+                # FIXME: This should inherit the above context, but the above had explicit page4
+                Signpost(LinkRel.cite_as, "http://example.com/pid/2")
+            ])
+        )
+
+
