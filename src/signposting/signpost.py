@@ -35,7 +35,7 @@ import itertools
 from multiprocessing import AuthenticationError
 import re
 from types import NoneType
-from typing import Collection, Iterable, Iterator, List, Optional, Set, Sized, Tuple, Union, AbstractSet, FrozenSet
+from typing import Collection, Iterable, Iterator, List, Optional, Set, Sized, Tuple, TypeVar, Union, AbstractSet, FrozenSet
 from enum import Enum, auto, unique
 import warnings
 
@@ -185,6 +185,7 @@ class LinkRel(str, Enum):
 """Signposting link relations as strings"""
 SIGNPOSTING = set(l.value for l in LinkRel)
 
+Signpost = TypeVar("Signpost")
 class Signpost:
     """An individual link of Signposting, e.g. for ``rel=cite-as``.
 
@@ -365,14 +366,14 @@ class Signpost:
             h ^= hash(e)
         return h
 
-    def with_context(self, context: Union[AbsoluteURI, str, None]):
+    def with_context(self, context: Union[AbsoluteURI, str, None]) -> Signpost:
         """Create a copy of this signpost, but with the specified context.
         
         If the context is None, it means the copy will not have a context.
         """
         return Signpost(self.rel, self.target, self.type, self.profiles, context, self.link)
 
-
+Signposting = TypeVar("Signposting")
 class Signposting(Iterable[Signpost], Sized):
     """Signposting links for a given resource.
 
@@ -509,19 +510,19 @@ class Signposting(Iterable[Signpost], Sized):
                 if context:
                     self.other_contexts.add(context)
             elif s.rel is LinkRel.cite_as:
-                if self.citeAs:
+                if self.citeAs and self.citeAs.target != s.target:
                     warnings.warn("Ignoring additional cite-as signposts")
                     self._extras.add(s)
                 else:
                     self.citeAs = s
             elif s.rel is LinkRel.license:
-                if self.license:
+                if self.license and self.license.target != s.target:
                     warnings.warn("Ignoring additional license signposts")
                     self._extras.add(s)
                 else:
                     self.license = s
             elif s.rel is LinkRel.collection:
-                if self.collection:
+                if self.collection and self.collection.target != s.target:
                     warnings.warn("Ignoring additional collection signposts")
                     self._extras.add(s)
                 else:
@@ -548,13 +549,23 @@ class Signposting(Iterable[Signpost], Sized):
         This may include any additional signposts for link relations
         that only expect a single link, like :prop:`citeAs`, as well
         as any signposts for other contexts as listed in :prop:`other_contexts`.
-
-        For only the signposts that match the given context, use 
-        :meth:`__iter__`, e.g. ``for s in signposting`` or ``matched = set(signposts)``
         """
         return frozenset(itertools.chain(self, self._others))
 
-    def for_context(self, context_uri:Union[AbsoluteURI, str, None]):
+    def _signposts_with_explicit_context(self) -> Iterable[Signpost]:
+        for s in self:
+            if not s.context and self.context_url:
+                # Clone to make implicit context explicit
+                yield s.with_context(self.context_url)
+            else:
+                yield s
+        for o in self._others:
+            if not o.context:
+                warnings.warn("Ignoring signpost with unknown context: " % o)
+                continue
+            yield o
+
+    def for_context(self, context_uri:Union[AbsoluteURI, str, None]) -> Signposting:
         """Return signposting for given context URI.
         
         This will select an alternative view of the signposts from :attr:`signposts`
@@ -575,20 +586,16 @@ class Signposting(Iterable[Signpost], Sized):
         """
         include_no_context = context_uri is None
         if include_no_context:
-            # If context_uri is None, then include any implicit contexts as-is
-            our_signposts = self
+            # include any implicit contexts as-is
+            our_signposts = itertools.chain(our_signposts, self._others)
         else:
             # ensure explicit contexts, so they don't get lost
-            our_signposts = (s.with_context(self.context_url) for s in self)
-
+            our_signposts = self._signposts_with_explicit_context()
         return Signposting(context_uri, 
-                           # Chain in own signposts, 
-                           # in case they want to call for_context() 
-                           # back to our context.  
-                           itertools.chain(our_signposts, self._others),
+                           our_signposts,
                            include_no_context=include_no_context)
 
-    def __len__(self):
+    def __len__(self) -> int:
         """Count how many FAIR Signposts were recognized for the given context"""
         # Note: tuple(self) fails here, as tuple will call our __len__ to pre-allocate
         #return len(tuple(self))
@@ -649,13 +656,12 @@ class Signposting(Iterable[Signpost], Sized):
         ##    h ^= hash(e)
         return h
 
-
-    def _repr_signposts(self, signposts):
+    def _repr_signposts(self, signposts) -> str:
         """String representation of a list of signposts"""
         # This is usually a short list, so no need for max-trimming and ...
         return " ".join(set(d.target for d in signposts))
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         repr = []
         if self.context_url:
             repr.append("context=%s" % self.context_url)
@@ -680,7 +686,7 @@ class Signposting(Iterable[Signpost], Sized):
 
         return "<Signposting %s>" % "\n ".join(repr)
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Represent signposts as HTTP Link headers.
         
         Note that these are reconstructed from the recognized link relations only,
@@ -690,7 +696,117 @@ class Signposting(Iterable[Signpost], Sized):
         """
         return "\n".join(map(str, self))
 
-    def __or__(self, other):
-        if not isinstance(other, Signposting):
-            raise ValueError("Can only merge with Signposting instances, not: " % type(other))
+    def __or__(self, other: Signposting) -> Signposting:
+        """Merge two Signposting instances.
         
+        The context of the new Signposting is determined as:  
+        
+        a) The context of the left-hand Signposting, if explicit; or
+        b) The context of the right-hand Signposting, if explicit; or
+        c) No context
+        
+        When merging Signpost, any implicit contexts are made explicit
+        from their original Signposting's context, if specified. 
+        
+        Duplicate Signpost (as determined by ::meth::``Signpost.__eq__``) will be ignored, 
+        it is unspecified which Signpost will be rejected 
+        (this should only affects attr::``Signpost.link``).
+
+        If neither Signposting has a context, then the new Signposting 
+        is constructed with ``include_no_context=True`` meaning that only
+        signposts _without_ context are considered. Otherwise only
+        signpost _with_ the determined context are considered.
+
+        If multiple signposts match singular properties like ::attr::``citeAs`` but with 
+        different targets, it is undefined which Signpost will be selected after merging,
+        however all signposts will be included in the iteration over the returned
+        ``Signposting``.
+
+        As an example, if the left-hand Signpost ``a`` with context ``http://example.com/doc/1`` had::
+
+            Link <http://example.com/pid/A>;rel=cite-as
+            Link <http://example.com/author/1>;rel=author``
+            
+        and the right-hand ``b`` with context ``http://example.com/doc/2`` had::
+
+            Link <http://example.com/pid/B>;rel=cite-as"
+            Link <http://example.com/author/2>;rel=author;context="http://example.com/doc/1`
+
+        then the resulting Signposting ``a|b`` would contain::
+
+            Link <http://example.com/pid/A;rel=cite-as;context="http://example.com/doc/1"
+            Link <http://example.com/author/1>;rel=author;context="http://example.com/doc/1"
+            Link <http://example.com/author/2>;rel=author;context="http://example.com/doc/1"
+
+        In this case ``pid/B`` is ignored in the merged signposting as it relates to ``doc/2` 
+        and not the determined context ``http://example.com/doc/1``, which on the other hand
+        has been made explicit in all its direct signposts.
+
+        The complete set of merged signposts (regardless of their context) 
+        is available in :attr::``Signposting.signposts`` in the returned instance.
+
+        :raise TypeError: If ``other`` is not an instance of ``Signposting``
+        """
+        if not isinstance(other, Signposting):
+            raise TypeError("Can only merge with Signposting instances, not: " % type(other))
+        # Decide if the merged Signposting will have a context. 
+        # Left hand has preference.
+        newContext = self.context_url or other.context_url or None
+        if newContext:
+            # Merge with explicit contexts so that Signposts can be compared
+            merged = set(itertools.chain(self._signposts_with_explicit_context(), 
+                    other._signposts_with_explicit_context()))
+        else:
+            # Both are context-free, merge them as-is
+            merged = self.signposts | other.signposts
+        return Signposting(newContext, merged,                            
+                           include_no_context=not newContext)
+
+    def __add__(self, other: Union[Signposting, Iterable[Signpost]]) -> Signposting:
+        """Create a merged Signposting by overriding new Signposts from another.
+
+        The returned Signposting instance will have the same context as this instance.
+
+        ``other`` is considered an iterable of ``Signpost``s -- if it is a ``Signposting`` instance,
+        this method will iterate over its direct signposts only if its context is ``None`` or matches
+        the current context, otherwise it will select the current context using ``Signposting.for_context``.
+        
+        If the Signpost's context is ``None`` or match the current ::attr:``context_uri``, 
+        they will replace or append the existing signposts from this instance. 
+        
+        For instance, if the left-hand Signpost ``a`` had::
+
+            Link <http://example.com/pid/A>;rel=cite-as
+            Link <http://example.com/author/1>;rel=author``
+            
+        and the right-hand ``b`` had::
+
+            Link <http://example.com/pid/B>;rel=cite-as
+            Link <http://example.com/author/2>;rel=author
+
+        then the resulting Signposting ``a+b`` would contain::
+
+            Link <http://example.com/pid/B>;rel=cite-as
+            Link <http://example.com/author/1>;rel=author``
+            Link <http://example.com/author/2>;rel=author
+
+        (Note: iterating over the returned ``Signposting`` would include the relegated ``pid/A``. 
+        Take care of operatand order if adding multiple Signpostings).
+        
+        Added signposts with other contexts will be ignored and
+        __not__ added to the resulting ``signposts``, however existing 
+        signposts from other contexts in this instance are preserved.
+
+        To do a full merge across contexts, use instead ``a | b``, see ::meth::__or__
+
+        :raise TypeError: If ``other`` is not an instance of ``Signposting`` or an iterable of Signposts.
+        """
+        if (isinstance(other, Signposting) and 
+                self.context_url and other.context_url and 
+                other.context_url != self.context_url):
+            to_add = other.for_context(self.context_url)
+        else:
+            to_add = (s for s in other if s.context == self.context_url or not s.context)
+        return Signposting(self, itertools.chain(to_add, self.signposts), 
+            # NOTE: We chain the added ones first so they can override the singular properties like citeAs
+                include_no_context=True)
