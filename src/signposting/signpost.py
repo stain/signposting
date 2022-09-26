@@ -34,7 +34,8 @@ about type safety.
 import itertools
 from multiprocessing import AuthenticationError
 import re
-from typing import Collection, Iterable, Iterator, List, Optional, Set, Sized, Union, AbstractSet, FrozenSet
+from types import NoneType
+from typing import Collection, Iterable, Iterator, List, Optional, Set, Sized, Tuple, Union, AbstractSet, FrozenSet
 from enum import Enum, auto, unique
 import warnings
 
@@ -310,7 +311,7 @@ class Signpost:
         if self.type:
             repr.append("type=%s" % self.type)
         if self.profiles:
-            repr.append("profiles=%s" % self.profiles)
+            repr.append("profiles=%s" % " ".join(self.profiles))
 
         return "<Signpost %s>" % " ".join(repr)
 
@@ -325,6 +326,52 @@ class Signpost:
         if self.context:
             strs.append('context="%s"' % self.context)
         return "; ".join(strs)
+
+    def _eq_attribs(self) -> Iterable[object]:
+        """Attributes of the Signpost important for equality testing,
+        returned in a predictable (but undefined) order.
+        
+        This method is used by __eq__ and __hash__ internally.
+        
+        Subclasses are encouraged to overwrite and add additional attributes
+        in a consistent order at the end."""
+        # NOTE: context **is** included in equality so that multiple Signpost
+        # objects can be in the set of Signposting. For instance, there can be
+        # multiple documents that share the same metadata resource.
+        yield self.context
+        yield self.rel
+        yield self.target
+        yield self.type
+        # NOTE: do NOT yield each profile of set separately, as order is not consistent
+        # As self.profiles is a frozenset it is elligble for hash()
+        yield self.profiles
+
+    def __eq__(self, o: object) -> bool:
+        if not isinstance(o, Signpost):
+            return False
+        # Assume _eq_attribs has consistent ordering.
+        for a,b in zip(self._eq_attribs(), o._eq_attribs()):
+            if a != b:
+                return False
+        return True
+    
+    def __hash__(self) -> int:
+        h = hash(self.__class__.__qualname__)
+        for e in self._eq_attribs():
+            # Classic XOR would mean order does not matter, but
+            # links may have URIs swapped around. As that is unlikely
+            # for real-life signposts, we don't need to include 
+            # a positional hashing like in hash(tuple)
+            h ^= hash(e)
+        return h
+
+    def with_context(self, context: Union[AbsoluteURI, str, None]):
+        """Create a copy of this signpost, but with the specified context.
+        
+        If the context is None, it means the copy will not have a context.
+        """
+        return Signpost(self.rel, self.target, self.type, self.profiles, context, self.link)
+
 
 class Signposting(Iterable[Signpost], Sized):
     """Signposting links for a given resource.
@@ -513,24 +560,40 @@ class Signposting(Iterable[Signpost], Sized):
         This will select an alternative view of the signposts from :attr:`signposts`
         filtered by the given ``context_uri``.
 
+        The remaining signposts and their contexts will be included under 
+        :attr:`Signpost.signposts` -- any signposts with implicit context will
+        be replaced with having an explicit context :attr:`self.context_url`.
+
+        Tip: To ensure all signposts have explicit context, use 
+        ``s.for_context(s.context_uri)``
+
         :param context_uri: The context to select signposts from. 
             The URI should be a member of :attr:`contexts` or equal to :attr:`context`, 
             otherwise the returned Signposting will be empty.
             If the context_uri is `None`, then the :attr:`Signpost.context` is ignored
             and any signposts will be considered.
         """
-        if self.context_url == context_uri:
-            return self
-        # Chain in own signposts, in case they want to call for_context() 
-        # back to our context. 
+        include_no_context = context_uri is None
+        if include_no_context:
+            # If context_uri is None, then include any implicit contexts as-is
+            our_signposts = self
+        else:
+            # ensure explicit contexts, so they don't get lost
+            our_signposts = (s.with_context(self.context_url) for s in self)
+
         return Signposting(context_uri, 
-                           itertools.chain(self, self._others),
-                           # If context_uri is None, then include signposts w/ no context
-                           include_no_context=context_uri is None)
+                           # Chain in own signposts, 
+                           # in case they want to call for_context() 
+                           # back to our context.  
+                           itertools.chain(our_signposts, self._others),
+                           include_no_context=include_no_context)
 
     def __len__(self):
         """Count how many FAIR Signposts were recognized for the given context"""
-        return len(self.signposts)
+        # Note: tuple(self) fails here, as tuple will call our __len__ to pre-allocate
+        #return len(tuple(self))
+        # Instead we'll do it with a nice generator
+        return sum(1 for _ in self)
     
     def __iter__(self) -> Iterator[Signpost]:
         """Iterate over all FAIR signposts recognized for the given context.
@@ -555,7 +618,41 @@ class Signposting(Iterable[Signpost], Sized):
             yield e
         # NOTE: self._others are NOT included as they have a different context
 
+    def __eq__(self, o) -> bool:
+        """A Signposting instance is equal to another Signposting, 
+        if and only if it has the same `Signpost`s for their respective
+        current contexts.
+        
+        Note that their :attr:`Signposting.context_url` are _not_ compared for equality,
+        although each :attr:`Signpost.context` are included when comparing list of signposts. 
+        This distinction becomes significant when comparing signposts without explicit
+        context, loaded from two different contexts.
+        """
+        if not isinstance(o, Signposting):
+            return False
+        return set(self) == set(o)
+
+    def __hash__(self) -> int:
+        """Calculate a hash of this Signposting instance based on its equality.
+        
+        The result of this hash method is consistent with :meth:`__eq__` in that
+        only each signpost of the current context are part of the calculation.
+        """
+        h = hash(self.__class__.__qualname__)
+        # NOTE context is NOT included in equality checks, see __eq__
+        ## h ^= self.context_url
+        for e in self:
+            # We use a naive XOR here as order should NOT matter
+            h ^= hash(e)
+        # Signposts in other contexts are ignored
+        ##for e in self._others:
+        ##    h ^= hash(e)
+        return h
+
+
     def _repr_signposts(self, signposts):
+        """String representation of a list of signposts"""
+        # This is usually a short list, so no need for max-trimming and ...
         return " ".join(set(d.target for d in signposts))
 
     def __repr__(self):
