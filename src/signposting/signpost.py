@@ -564,15 +564,15 @@ class Signposting(Iterable[Signpost], Sized):
         :attr:`Signpost.signposts` -- any signposts with implicit context will
         be replaced with having an explicit context :attr:`self.context_url`.
 
+        Tip: To ensure all signposts have explicit context, use 
+        ``s.for_context(s.context_uri)``
+
         :param context_uri: The context to select signposts from. 
             The URI should be a member of :attr:`contexts` or equal to :attr:`context`, 
             otherwise the returned Signposting will be empty.
             If the context_uri is `None`, then the :attr:`Signpost.context` is ignored
             and any signposts will be considered.
         """
-        if self.context_url == context_uri:
-            return self # done!
-
         include_no_context = context_uri is None
         if include_no_context:
             # If context_uri is None, then include any implicit contexts as-is

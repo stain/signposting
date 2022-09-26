@@ -851,8 +851,10 @@ class TestSignposting(unittest.TestCase):
                 Signpost(LinkRel.cite_as, "http://example.com/pid/2", context="http://example.com/page3")
             ])
         )
-    def testEqualsCiteAsImplicitContext(self):
-        self.assertEqual( # equal as signposts are effectively same context
+    def testNotEqualsCiteAsImplicitContext(self):
+        # signposts are effectively same context, however
+        # Signposting.__eq__ is defined to always take s.context into consideration
+        self.assertNotEqual( 
             Signposting("http://example.com/page3", [
                 Signpost(LinkRel.cite_as, "http://example.com/pid/2", 
                 context="http://example.com/page3")
@@ -862,6 +864,20 @@ class TestSignposting(unittest.TestCase):
                 Signpost(LinkRel.cite_as, "http://example.com/pid/2")
             ])
         )
+    def testEqualsCiteAsContextMadeExplicit(self):
+        # Force them to be equal
+        self.assertEqual( 
+            Signposting("http://example.com/page3", [
+                Signpost(LinkRel.cite_as, "http://example.com/pid/2", 
+                context="http://example.com/page3")
+            ]),
+            Signposting("http://example.com/page3", [
+                # Implicit context, inherited
+                Signpost(LinkRel.cite_as, "http://example.com/pid/2")
+            ]).for_context("http://example.com/page3") # made explicit
+        )
+
+
     def testNotEqualsCiteAsDifferentContext(self):
         self.assertNotEqual( # single signpost differs because different context
             Signposting(signposts=[
