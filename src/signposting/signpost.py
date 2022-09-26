@@ -630,10 +630,7 @@ class Signposting(Iterable[Signpost], Sized):
         """
         if not isinstance(o, Signposting):
             return False
-        for (a,b) in zip(self, o):
-            if a != b:
-                return False
-        return True
+        return set(self) == set(o)
 
     def __hash__(self) -> int:
         """Calculate a hash of this Signposting instance based on its equality.
@@ -645,6 +642,7 @@ class Signposting(Iterable[Signpost], Sized):
         # NOTE context is NOT included in equality checks, see __eq__
         ## h ^= self.context_url
         for e in self:
+            # We use a naive XOR here as order should NOT matter
             h ^= hash(e)
         # Signposts in other contexts are ignored
         ##for e in self._others:

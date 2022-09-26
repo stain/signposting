@@ -749,10 +749,10 @@ class TestSignposting(unittest.TestCase):
         # Ensure we have not lost the author/1 link with implicit context of page1
         sAgain = s2.for_context("http://example.com/page1")
         self.assertTrue(sAgain)
-        self.assertEquals({"http://example.com/author/1"}, 
+        self.assertEqual({"http://example.com/author/1"}, 
             {a.target for a in sAgain.authors})
         # But now with explicit context
-        self.assertEquals({"http://example.com/page1"}, 
+        self.assertEqual({"http://example.com/page1"}, 
             {a.context for a in sAgain.authors})
 
         # We can get them all in one go
@@ -814,9 +814,9 @@ class TestSignposting(unittest.TestCase):
                 Signpost(LinkRel.author, "http://example.com/author/2"),
             ]),
             Signposting("http://example.com/page3", [
-                Signpost(LinkRel.author, "http://example.com/author/2"),
-                Signpost(LinkRel.cite_as, "http://example.com/pid/2"),
                 Signpost(LinkRel.author, "http://example.com/author/1"),
+                Signpost(LinkRel.cite_as, "http://example.com/pid/2"),
+                Signpost(LinkRel.author, "http://example.com/author/2"),
             ])
         )
 
