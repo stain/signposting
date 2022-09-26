@@ -689,3 +689,8 @@ class Signposting(Iterable[Signpost], Sized):
         See also `Signpost.link`
         """
         return "\n".join(map(str, self))
+
+    def __or__(self, other):
+        if not isinstance(other, Signposting):
+            raise ValueError("Can only merge with Signposting instances, not: " % type(other))
+        
