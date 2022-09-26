@@ -2,6 +2,9 @@
 Changelog
 =========
 
+v0.7.2 (2022-09-26)
+------------------------------------------------------------
+
 * Signpost/Signposting support for ``==`` and ``hash()``
 * Added ``Signpost.with_context`` to change a signpost's for_context
 
