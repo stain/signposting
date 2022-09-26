@@ -2,10 +2,12 @@
 Changelog
 =========
 
-* Signpost objects support for ``==`` and ``hash()``
+* Signpost/Signposting support for ``==`` and ``hash()``
+* Added ``Signpost.with_context`` to change a signpost's for_context
 
 v0.7.1 (2022-08-22)
 ------------------------------------------------------------
+* README updates
 
 v0.7.0 (2022-08-20)
 ------------------------------------------------------------
