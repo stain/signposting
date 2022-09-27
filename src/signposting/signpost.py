@@ -559,7 +559,7 @@ class Signposting(Iterable[Signpost], Sized):
                 yield s
         for o in self._others:
             if not o.context:
-                warn("Ignoring signpost with unknown context: " % o)
+                warn("Ignoring signpost with unknown context: %s" % o)
                 continue
             yield o
 
@@ -585,7 +585,7 @@ class Signposting(Iterable[Signpost], Sized):
         include_no_context = context_uri is None
         if include_no_context:
             # include any implicit contexts as-is
-            our_signposts = self.signposts
+            our_signposts: Iterable[Signpost] = self.signposts
         else:
             # ensure explicit contexts, so they don't get lost
             our_signposts = self._signposts_with_explicit_context()
@@ -752,7 +752,7 @@ class Signposting(Iterable[Signpost], Sized):
         newContext = self.context_url or other.context_url or None
         if newContext:
             # Merge with explicit contexts so that Signposts can be compared
-            merged = set(itertools.chain(self._signposts_with_explicit_context(), 
+            merged: Iterable[Signpost] = set(itertools.chain(self._signposts_with_explicit_context(), 
                     other._signposts_with_explicit_context()))
         else:
             # Both are context-free, merge them as-is
@@ -802,9 +802,9 @@ class Signposting(Iterable[Signpost], Sized):
         if (isinstance(other, Signposting) and 
                 self.context_url and other.context_url and 
                 other.context_url != self.context_url):
-            to_add = other.for_context(self.context_url)
+            to_add: Iterable[Signpost] = other.for_context(self.context_url)
         else:
             to_add = (s for s in other if s.context == self.context_url or not s.context)
-        return Signposting(self, itertools.chain(to_add, self.signposts), 
+        return Signposting(self.context_url, itertools.chain(to_add, self.signposts), 
             # NOTE: We chain the added ones first so they can override the singular properties like citeAs
                 include_no_context=True)
