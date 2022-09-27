@@ -31,20 +31,20 @@ validity at construction time, so that consumers of
 about type safety.
 """
 
+# PEP-563 support self-references of types in class definitions
+from __future__ import annotations
+
 import itertools
-from multiprocessing import AuthenticationError
 import re
 from types import NoneType
-from typing import Collection, Iterable, Iterator, List, Optional, Set, Sized, Tuple, TypeVar, Union, AbstractSet, FrozenSet
+from typing import Collection, Iterable, Iterator, List, Optional, Set, Sized, Tuple, Union, AbstractSet, FrozenSet
 from enum import Enum, auto, unique
-import warnings
+from warnings import warn
 
 import rfc3987
 import urllib.parse
 from urllib.parse import urljoin
 from httplink import Link
-from warnings import warn
-
 
 class AbsoluteURI(str):
     """An absolute URI, e.g. "http://example.com/" """
@@ -185,7 +185,6 @@ class LinkRel(str, Enum):
 """Signposting link relations as strings"""
 SIGNPOSTING = set(l.value for l in LinkRel)
 
-Signpost = TypeVar("Signpost")
 class Signpost:
     """An individual link of Signposting, e.g. for ``rel=cite-as``.
 
@@ -373,7 +372,6 @@ class Signpost:
         """
         return Signpost(self.rel, self.target, self.type, self.profiles, context, self.link)
 
-Signposting = TypeVar("Signposting")
 class Signposting(Iterable[Signpost], Sized):
     """Signposting links for a given resource.
 
@@ -511,19 +509,19 @@ class Signposting(Iterable[Signpost], Sized):
                     self.other_contexts.add(context)
             elif s.rel is LinkRel.cite_as:
                 if self.citeAs and self.citeAs.target != s.target:
-                    warnings.warn("Ignoring additional cite-as signposts")
+                    warn("Ignoring additional cite-as signposts")
                     self._extras.add(s)
                 else:
                     self.citeAs = s
             elif s.rel is LinkRel.license:
                 if self.license and self.license.target != s.target:
-                    warnings.warn("Ignoring additional license signposts")
+                    warn("Ignoring additional license signposts")
                     self._extras.add(s)
                 else:
                     self.license = s
             elif s.rel is LinkRel.collection:
                 if self.collection and self.collection.target != s.target:
-                    warnings.warn("Ignoring additional collection signposts")
+                    warn("Ignoring additional collection signposts")
                     self._extras.add(s)
                 else:
                     self.collection = s
@@ -538,7 +536,7 @@ class Signposting(Iterable[Signpost], Sized):
             elif s.rel is LinkRel.type:
                 self.types.add(s)
             else:
-                warnings.warn("Unrecognized link relation: %s" % s.rel)
+                warn("Unrecognized link relation: %s" % s.rel)
                 # NOTE: This means a new enum member in LinkRel that we should handle above
                 self._extras.add(s)
 
@@ -561,7 +559,7 @@ class Signposting(Iterable[Signpost], Sized):
                 yield s
         for o in self._others:
             if not o.context:
-                warnings.warn("Ignoring signpost with unknown context: " % o)
+                warn("Ignoring signpost with unknown context: " % o)
                 continue
             yield o
 
@@ -587,7 +585,7 @@ class Signposting(Iterable[Signpost], Sized):
         include_no_context = context_uri is None
         if include_no_context:
             # include any implicit contexts as-is
-            our_signposts = itertools.chain(our_signposts, self._others)
+            our_signposts = self.signposts
         else:
             # ensure explicit contexts, so they don't get lost
             our_signposts = self._signposts_with_explicit_context()
