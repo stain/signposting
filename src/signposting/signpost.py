@@ -713,21 +713,22 @@ class Signposting(Iterable[Signpost], Sized):
         c) No context
         
         When merging Signpost, any implicit contexts are made explicit
-        from their original Signposting's context, if specified. 
+        from their original :attr:`Signposting.context_url` if specified. 
         
-        Duplicate Signpost (as determined by ::meth::``Signpost.__eq__``) will be ignored, 
-        it is unspecified which Signpost will be rejected 
-        (this should primarily affects attr::``Signpost.link``).
-
-        If neither Signposting has a context, then the new Signposting 
+        If neither Signposting has a context, then the new `Signposting`
         is constructed with ``include_no_context=True`` meaning that only
         signposts _without_ context are considered. Otherwise only
-        signpost _with_ the determined context are considered.
+        signpost _with_ the determined context are considered. 
+        (Tip: To adapt signposts without context, use :meth:`Signposting.__add__` instead)
 
-        If multiple signposts match singular properties like ::attr::``citeAs`` but with 
-        different targets, it is undefined which Signpost will be selected after merging,
-        however all signposts will be included in the iteration over the returned
-        ``Signposting``.
+        If multiple signposts match singular properties like :attr:`citeAs` but with 
+        different targets, Signpost from this instance (left-hand) 
+        will be preferred after merging, however all signposts will be 
+        included in the iteration over the returned ``Signposting``. 
+
+        Duplicate Signpost (as determined by :meth:`Signpost.__eq__`) 
+        will be ignored, it is unspecified which Signpost will be rejected 
+        (this should primarily affects :attr:`Signpost.link`).
 
         As an example, if the left-hand Signpost ``a`` with context ``http://example.com/doc/1`` had::
 
@@ -745,14 +746,16 @@ class Signposting(Iterable[Signpost], Sized):
             Link <http://example.com/author/1>;rel=author;context="http://example.com/doc/1"
             Link <http://example.com/author/2>;rel=author;context="http://example.com/doc/1"
 
-        In this case ``pid/B`` is ignored in the merged signposting as it relates to ``doc/2` 
+        In this case ``…pid/B`` is ignored in the merged signposting as it relates to ``…doc/2`` 
         and not the determined context ``http://example.com/doc/1``, which on the other hand
         has been made explicit in all its direct signposts.
 
         The complete set of merged signposts (regardless of their context) 
-        is available in :attr::``Signposting.signposts`` in the returned instance.
+        is available in :attr:`Signposting.signposts` in the returned instance.
 
-        :raise TypeError: If ``other`` is not an instance of ``Signposting``
+        :param other: Another `Signposting` instance which signposts are to be merged with ours
+        :return: A new `Signposting` instance from the merged list of signposts. 
+        :raise TypeError: If `other` is not an instance of `Signposting`
         """
         if not isinstance(other, Signposting):
             raise TypeError("Can only merge with Signposting instances, not: " % type(other))
@@ -775,12 +778,12 @@ class Signposting(Iterable[Signpost], Sized):
 
         The returned Signposting instance will have the same context as this instance.
 
-        ``other`` is considered an iterable of ``Signpost``s -- if it is a ``Signposting`` instance,
+        `other` is considered an iterable of `Signpost`s -- if it is a `Signposting` instance,
         this method will iterate over its direct signposts only if its context is ``None`` or matches
-        the current context, otherwise it will select the current context using ``Signposting.for_context``.
+        the current context, otherwise it will select the current context using :meth:`Signposting.for_context`.
         
-        If the Signpost's context is ``None`` or match the current ::attr:``context_uri``, 
-        they will replace or append the existing signposts from this instance. 
+        If the added Signpost's context is `None` or match the current :attr:`context_uri`` 
+        they will __replace__ or append the existing signposts from this instance. 
         
         For instance, if the left-hand Signpost ``a`` had::
 
@@ -798,16 +801,20 @@ class Signposting(Iterable[Signpost], Sized):
             Link <http://example.com/author/1>;rel=author``
             Link <http://example.com/author/2>;rel=author
 
-        (Note: iterating over the returned ``Signposting`` would include the relegated ``pid/A``. 
+        (Note: iterating over the returned `Signposting` would include the relegated ``…pid/A``. 
         Take care of operatand order if adding multiple Signpostings).
         
         Added signposts with other contexts will be ignored and
-        __not__ added to the resulting ``signposts``, however existing 
+        __not__ added to the resulting `signposts`, however existing 
         signposts from other contexts in this instance are preserved.
 
-        To do a full merge across contexts, use instead ``a | b``, see ::meth::__or__
+        To do a full merge across contexts, use instead ``a | b``, see :meth:`__or__`
 
-        :raise TypeError: If ``other`` is not an instance of ``Signposting`` or an iterable of Signposts.
+        :param other: Either an `Iterable` (`Set`, `List`, etc) of `Signpost` instances, or another `Signposting` instance.
+            The signposts are to be added to our signposts, if matching the determined context.
+        :return: A new `Signposting` instance from the summed list of signposts. 
+            Signposts from `other` may overridde signposts from this instance.
+        :raise TypeError: If `other` is not an instance of `Signposting` or an iterable of Signposts.
         """
         if (isinstance(other, Signposting) and 
                 self.context_url and other.context_url and 
