@@ -446,7 +446,8 @@ class Signposting(Iterable[Signpost], Sized):
     def __init__(self, 
                  context_url: Union[AbsoluteURI, str] = None, 
                  signposts: Iterable[Signpost] = None,
-                 include_no_context: bool = True):
+                 include_no_context: bool = True,
+                 warn_duplicate=True):
         """Construct a Signposting from a list of :class:`Signpost`s.
 
         Signposts are filtered by the matching `context_url` (if provided), 
@@ -469,6 +470,7 @@ class Signposting(Iterable[Signpost], Sized):
             assuming they are about ``context_url``. 
             If false, such signposts are ignored for assignment, 
             but remain available from :attr:`signposts`.
+        :param warn_duplicate: If true (default), warn of duplicate signposts that can't be assigned.
         :raise ValueError: If ``include_no_context`` is false, but ``context_url`` was not provided or None.
         """
         if not include_no_context and not context_url:
@@ -509,19 +511,19 @@ class Signposting(Iterable[Signpost], Sized):
                     self.other_contexts.add(context)
             elif s.rel is LinkRel.cite_as:
                 if self.citeAs and self.citeAs.target != s.target:
-                    warn("Ignoring additional cite-as signposts")
+                    warn("Ignoring additional cite-as signposts") if warn_duplicate else None
                     self._extras.add(s)
                 else:
                     self.citeAs = s
             elif s.rel is LinkRel.license:
                 if self.license and self.license.target != s.target:
-                    warn("Ignoring additional license signposts")
+                    warn("Ignoring additional license signposts") if warn_duplicate else None
                     self._extras.add(s)
                 else:
                     self.license = s
             elif s.rel is LinkRel.collection:
                 if self.collection and self.collection.target != s.target:
-                    warn("Ignoring additional collection signposts")
+                    warn("Ignoring additional collection signposts") if warn_duplicate else None
                     self._extras.add(s)
                 else:
                     self.collection = s
@@ -807,4 +809,4 @@ class Signposting(Iterable[Signpost], Sized):
             to_add = (s for s in other if s.context == self.context_url or not s.context)
         return Signposting(self.context_url, itertools.chain(to_add, self.signposts), 
             # NOTE: We chain the added ones first so they can override the singular properties like citeAs
-                include_no_context=True)
+                include_no_context=True, warn_duplicate=False)
