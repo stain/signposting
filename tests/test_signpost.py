@@ -556,6 +556,11 @@ class TestSignposting(unittest.TestCase):
                  [Signpost(LinkRel.cite_as, "http://example.com/pid/1")]))
         self.assertEqual("Link: <http://example.com/pid/1>; rel=cite-as", s)
 
+    def testStrItemType(self):
+        s = str(Signposting("http://example.com/page1",
+                 [Signpost(LinkRel.item, "http://example.com/file/2.txt", media_type=MediaType("text/plain"))]))
+        self.assertEqual('Link: <http://example.com/file/2.txt>; rel=item; type="text/plain"', s)
+
 
     def testConstructorItems(self):
         s = Signposting("http://example.com/page1", [
@@ -898,4 +903,108 @@ class TestSignposting(unittest.TestCase):
             ])
         )
 
+    def testAddIterable(self):        
+        a = Signposting(signposts=[
+            Signpost(LinkRel.cite_as, "http://example.com/pid/A"),
+            Signpost(LinkRel.author, "http://example.com/author/1"),
+        ])
+        b = {
+            Signpost(LinkRel.cite_as, "http://example.com/pid/B"),
+            Signpost(LinkRel.author, "http://example.com/author/2"),
+        } # order does not matter
+        c = a+b
+        self.assertEqual({"http://example.com/author/1", "http://example.com/author/2"},
+            {a.target for a in c.authors})
+        self.assertEqual("http://example.com/pid/B", c.citeAs.target)
+        self.assertEqual(4, len(c)) # including relegated pid/A
+        self.assertIn("http://example.com/pid/A", {s.target for s in c})
 
+    def testAddNoContext(self):        
+        a = Signposting(signposts=[
+            Signpost(LinkRel.cite_as, "http://example.com/pid/A"),
+            Signpost(LinkRel.author, "http://example.com/author/1"),
+        ])
+        b = Signposting(signposts=[
+            Signpost(LinkRel.cite_as, "http://example.com/pid/B"),
+            Signpost(LinkRel.author, "http://example.com/author/2"),
+        ])
+        c = a+b
+        self.assertEqual({"http://example.com/author/1", "http://example.com/author/2"},
+            {a.target for a in c.authors})
+        self.assertEqual("http://example.com/pid/B", c.citeAs.target)
+        self.assertEqual(4, len(c)) # including relegated pid/A
+        self.assertIn("http://example.com/pid/A", {s.target for s in c})
+
+    def testAddOldContext(self):        
+        a = Signposting(context_url="http://example.com/doc1", signposts=[
+            Signpost(LinkRel.cite_as, "http://example.com/pid/A"),
+            Signpost(LinkRel.author, "http://example.com/author/1"),
+        ])
+        b = Signposting(signposts=[
+            Signpost(LinkRel.cite_as, "http://example.com/pid/B"),
+            Signpost(LinkRel.author, "http://example.com/author/2"),
+        ])
+        c = a+b
+        self.assertEqual(a.context_url, c.context_url)
+        self.assertEqual({"http://example.com/author/1", "http://example.com/author/2"},
+            {a.target for a in c.authors})
+        self.assertEqual("http://example.com/pid/B", c.citeAs.target)
+        self.assertEqual(4, len(c)) # including relegated pid/A
+        self.assertIn("http://example.com/pid/A", {s.target for s in c})
+    
+    def testAddNewContext(self):        
+        a = Signposting(signposts=[
+            Signpost(LinkRel.cite_as, "http://example.com/pid/A"),
+            Signpost(LinkRel.author, "http://example.com/author/1"),
+        ])
+        b = Signposting(context_url="http://example.com/doc1", signposts=[
+            Signpost(LinkRel.cite_as, "http://example.com/pid/B"),
+            Signpost(LinkRel.author, "http://example.com/author/2"),
+        ])
+        c = a+b
+        self.assertEqual(b.context_url, c.context_url)
+        self.assertEqual({"http://example.com/author/1", "http://example.com/author/2"},
+            {a.target for a in c.authors})
+        self.assertEqual("http://example.com/pid/B", c.citeAs.target)
+        self.assertEqual(4, len(c)) # including relegated pid/A
+        self.assertIn("http://example.com/pid/A", {s.target for s in c})
+
+    def testAddSameContext(self):        
+        a = Signposting(context_url="http://example.com/doc1", signposts=[
+            Signpost(LinkRel.cite_as, "http://example.com/pid/A"),
+            Signpost(LinkRel.author, "http://example.com/author/1"),
+        ])
+        b = Signposting(context_url="http://example.com/doc1", signposts=[
+            Signpost(LinkRel.cite_as, "http://example.com/pid/B"),
+            Signpost(LinkRel.author, "http://example.com/author/2"),
+            Signpost(LinkRel.author, "http://example.com/author/3", context="http://example.com/doc3"),
+        ])
+        c = a+b
+        self.assertEqual(a.context_url, c.context_url)
+        self.assertEqual({"http://example.com/author/1", "http://example.com/author/2"},
+            {a.target for a in c.authors})
+        self.assertEqual("http://example.com/pid/B", c.citeAs.target)
+        self.assertEqual(4, len(c)) # including relegated pid/A
+        self.assertIn("http://example.com/pid/A", {s.target for s in c})
+        # NOT added as it was in wrong context
+        self.assertNotIn("http://example.com/author/3", {s.target for s in c.signposts})
+
+    def testAddDifferentContext(self):        
+        a = Signposting(context_url="http://example.com/doc1", signposts=[
+            Signpost(LinkRel.cite_as, "http://example.com/pid/A"),
+            Signpost(LinkRel.author, "http://example.com/author/1"),
+        ])
+        b = Signposting(context_url="http://example.com/doc2", signposts=[
+            Signpost(LinkRel.cite_as, "http://example.com/pid/B"),
+            Signpost(LinkRel.author, "http://example.com/author/2", context="http://example.com/doc1"),
+            Signpost(LinkRel.author, "http://example.com/author/3")
+        ])
+        c = a+b
+        self.assertEqual(a.context_url, c.context_url)
+        self.assertEqual({"http://example.com/author/1", "http://example.com/author/2"},
+            {a.target for a in c.authors})
+        self.assertEqual("http://example.com/pid/A", c.citeAs.target)
+        self.assertEqual(3, len(c)) # IGNORING pid/B as it's got wrong context       
+        # These were NOT added as they were not in the current context
+        self.assertNotIn("http://example.com/pid/B", {s.target for s in c.signposts})
+        self.assertNotIn("http://example.com/author/3", {s.target for s in c.signposts})
