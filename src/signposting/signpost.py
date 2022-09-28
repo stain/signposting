@@ -243,7 +243,7 @@ class Signpost:
 
     May contain additional attributes such as ``link["title"]``.
     Note that a single Link may have multiple ``rel``s, therefore it is
-    possible that multiple :class:`Signpost`s refer to the same link.
+    possible that multiple :class:`Signpost` refer to the same link.
     """
 
     def __init__(self,
@@ -398,7 +398,7 @@ class Signposting(Iterable[Signpost], Sized):
     other_contexts: Set[AbsoluteURI]
     """Other resource URLs which signposting has been provided for. 
     
-    Use :meth:`for_context` to retrieve their signpostings, or filter the full list of signposts from :prop:`signposts` according to :attr:`Signpost.context`
+    Use :meth:`for_context` to retrieve their signpostings, or filter the full list of signposts from :attr:`signposts` according to :attr:`Signpost.context`
     """
 
     authors: Set[Signpost]
@@ -423,14 +423,14 @@ class Signposting(Iterable[Signpost], Sized):
     linksets: Set[Signpost]
     """Linkset resources with further signposting for this resource (and potentially others).
 
-    A `linkset`_ is a JSON or text serialization of Link headers available as a
+    A `Linkset`_ is a JSON or text serialization of Link headers available as a
     separate resource, and may be used to externalize large collection of links, e.g.
     thousands of "item" relations.
 
     Resources may require content negotiation, check ``Link["type"]`` attribute
     (if present)  for content types ``application/linkset`` or ``application/linkset+json``.
 
-    .. _linkset: https://datatracker.ietf.org/doc/draft-ietf-httpapi-linkset/
+    .. _Linkset: https://datatracker.ietf.org/doc/draft-ietf-httpapi-linkset/
     """
 
     citeAs: Optional[Signpost]
