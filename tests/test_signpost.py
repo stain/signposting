@@ -527,7 +527,7 @@ class TestSignposting(unittest.TestCase):
 
     def testStrDefault(self):
         s = Signposting("http://example.com/page1")
-        self.assertEqual("", str(s)) # no Link headers
+        self.assertEqual("", str(s)) # empty, no Link headers
 
     def testConstructorEmpty(self):
         s = Signposting("http://example.com/page1", [])
@@ -561,6 +561,16 @@ class TestSignposting(unittest.TestCase):
                  [Signpost(LinkRel.item, "http://example.com/file/2.txt", media_type=MediaType("text/plain"))]))
         self.assertEqual('Link: <http://example.com/file/2.txt>; rel=item; type="text/plain"', s)
 
+    def testStrItemContext(self):
+        s = str(Signposting("http://example.com/page1",
+                 [Signpost(LinkRel.item, "http://example.com/file/2.txt", context="http://example.com/page1")]))
+        self.assertEqual('Link: <http://example.com/file/2.txt>; rel=item; context="http://example.com/page1"', s)
+
+    def testStrItemOtherContext(self):
+        s = str(Signposting("http://example.com/page1",
+                 [Signpost(LinkRel.item, "http://example.com/file/2.txt", context="http://example.com/page2")]))
+        # NOTE: All signposts are included in str()
+        self.assertEqual('Link: <http://example.com/file/2.txt>; rel=item; context="http://example.com/page2"', s)
 
     def testConstructorItems(self):
         s = Signposting("http://example.com/page1", [

@@ -697,14 +697,16 @@ class Signposting(Iterable[Signpost], Sized):
         return "<Signposting %s>" % "\n ".join(repr)
 
     def __str__(self) -> str:
-        """Represent signposts as HTTP Link headers.
+        """Represent all :atttr:`signposts` as HTTP Link headers.
         
         Note that these are reconstructed from the recognized link relations only,
-        and do not include unparsed additional link attributes or links with different contexts.
+        and do not include unparsed additional link attributes.
+        
+        Signposts with other contexts are included in this listing.
 
         See also `Signpost.link`
         """
-        return "\n".join(map(str, self))
+        return "\n".join(map(str, self.signposts))
 
     def __or__(self, other: Signposting) -> Signposting:
         """Merge two Signposting instances.
