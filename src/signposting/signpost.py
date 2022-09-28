@@ -36,7 +36,6 @@ from __future__ import annotations
 
 import itertools
 import re
-from types import NoneType
 from typing import Collection, Iterable, Iterator, List, Optional, Set, Sized, Tuple, Union, AbstractSet, FrozenSet
 from enum import Enum, auto, unique
 from warnings import warn
