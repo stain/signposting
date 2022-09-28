@@ -582,7 +582,7 @@ class Signposting(Iterable[Signpost], Sized):
         :attr:`Signpost.signposts` -- any signposts with implicit context will
         be replaced with having an explicit context :attr:`self.context_url`.
 
-        Tip: To ensure all signposts have explicit context, use 
+        **Tip**: To ensure all signposts have explicit context, use 
         ``s.for_context(s.context_uri)``
 
         :param context_uri: The context to select signposts from. 
@@ -641,6 +641,9 @@ class Signposting(Iterable[Signpost], Sized):
         although each :attr:`Signpost.context` are included when comparing list of signposts. 
         This distinction becomes significant when comparing signposts without explicit
         context, loaded from two different contexts.
+
+        **Tip**: To compare two Signposting's using only explicit ``Signpost.context``s, use
+        ``a.for_context(a.context_uri) == b.for_context(b.context_uri)``
         """
         if not isinstance(o, Signposting):
             return False
@@ -719,7 +722,8 @@ class Signposting(Iterable[Signpost], Sized):
         is constructed with ``include_no_context=True`` meaning that only
         signposts _without_ context are considered. Otherwise only
         signpost _with_ the determined context are considered. 
-        (Tip: To adapt signposts without context, use :meth:`Signposting.__add__` instead)
+        
+        **Tip**: To adapt signposts without context, use :meth:`Signposting.__add__` instead
 
         If multiple signposts match singular properties like :attr:`citeAs` but with 
         different targets, Signpost from this instance (left-hand) 
