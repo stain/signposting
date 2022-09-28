@@ -944,12 +944,46 @@ class TestSignposting(unittest.TestCase):
         # Now with explicit context
         self.assertEqual("http://example.com/doc1", c.citeAs.context)        
         self.assertEqual(2, len(c)) # as only doc1 is focus by the determined context
+        # They didn't match context
+        self.assertNotIn("http://example.com/pid/A", {s.target for s in c})
+        self.assertNotIn("http://example.com/author/1", {s.target for s in c})
+        # But they survive here
+        self.assertIn("http://example.com/pid/A", {s.target for s in c.signposts})
+        self.assertIn("http://example.com/author/1", {s.target for s in c.signposts})
+        # Their context was NOT rewritten as there was nothing to assign
+        self.assertEqual({None}, {s.context for s in c.signposts if s.target=="http://example.com/pid/A"})
+        self.assertEqual({None}, {s.context for s in c.signposts if s.target=="http://example.com/author/1"})
 
+    def testMergeOtherContext(self):
+        a = Signposting(signposts=[
+            Signpost(LinkRel.cite_as, "http://example.com/pid/A"),
+            Signpost(LinkRel.author, "http://example.com/author/1"),
+        ])
+        b = Signposting(context_url="http://example.com/doc1", signposts=[
+            Signpost(LinkRel.cite_as, "http://example.com/pid/B"),
+            Signpost(LinkRel.author, "http://example.com/author/2"),
+        ])
+        c = a|b
+        # as A didn't have a context
+        self.assertEqual(b.context_url, c.context_url)
+        self.assertEqual({"http://example.com/author/2"},
+            {a.target for a in c.authors})
+                    
+        # as that is the PID of the existing context
+        self.assertEqual("http://example.com/pid/B", c.citeAs.target)
+        # Now with explicit context
+        self.assertEqual("http://example.com/doc1", c.citeAs.context)        
+        self.assertEqual(2, len(c)) # as only doc1 is focus by the determined context
+        # They didn't match context
         self.assertNotIn("http://example.com/pid/A", {s.target for s in c})
         self.assertNotIn("http://example.com/author/1", {s.target for s in c})
         # But they survive here:
         self.assertIn("http://example.com/pid/A", {s.target for s in c.signposts})
         self.assertIn("http://example.com/author/1", {s.target for s in c.signposts})
+        # Their context was NOT rewritten as there was nothing to assign
+        self.assertEqual({None}, {s.context for s in c.signposts if s.target=="http://example.com/pid/A"})
+        self.assertEqual({None}, {s.context for s in c.signposts if s.target=="http://example.com/author/1"})
+
 
     def testMergeDefaultContext(self):        
         a = Signposting(context_url="http://example.com/doc1", signposts=[
@@ -971,7 +1005,7 @@ class TestSignposting(unittest.TestCase):
         # Now with explicit context
         self.assertEqual("http://example.com/doc1", c.citeAs.context)        
         self.assertEqual(2, len(c)) # as only doc1 is focus by the determined context
-
+        # They didn't match context
         self.assertNotIn("http://example.com/pid/B", {s.target for s in c})
         self.assertNotIn("http://example.com/author/2", {s.target for s in c})
         # But they survive here:
