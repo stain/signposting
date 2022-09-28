@@ -553,6 +553,13 @@ class Signposting(Iterable[Signpost], Sized):
         return frozenset(itertools.chain(self, self._others))
 
     def _signposts_with_explicit_context(self) -> Iterable[Signpost]:
+        """Iterate over all our signposts, making context explicit if possible.
+
+        Variant of ::attr:signposts, gives a generator.
+
+        If ::attr:`context_url` is set, then signposts without a context will be
+        excluded (to avoid them leaking across contexts). 
+        """
         for s in self:
             if not s.context and self.context_url:
                 # Clone to make implicit context explicit
@@ -560,7 +567,7 @@ class Signposting(Iterable[Signpost], Sized):
             else:
                 yield s
         for o in self._others:
-            if not o.context:
+            if not o.context and self.context_url: 
                 warn("Ignoring signpost with unknown context: %s" % o)
                 continue
             yield o
@@ -710,7 +717,7 @@ class Signposting(Iterable[Signpost], Sized):
         
         Duplicate Signpost (as determined by ::meth::``Signpost.__eq__``) will be ignored, 
         it is unspecified which Signpost will be rejected 
-        (this should only affects attr::``Signpost.link``).
+        (this should primarily affects attr::``Signpost.link``).
 
         If neither Signposting has a context, then the new Signposting 
         is constructed with ``include_no_context=True`` meaning that only
@@ -754,13 +761,14 @@ class Signposting(Iterable[Signpost], Sized):
         newContext = self.context_url or other.context_url or None
         if newContext:
             # Merge with explicit contexts so that Signposts can be compared
-            merged: Iterable[Signpost] = set(itertools.chain(self._signposts_with_explicit_context(), 
-                    other._signposts_with_explicit_context()))
+            merged: Iterable[Signpost] = itertools.chain(self._signposts_with_explicit_context(), 
+                    other._signposts_with_explicit_context())
         else:
-            # Both are context-free, merge them as-is
-            merged = self.signposts | other.signposts
+            # Both are context-free, merge them as-is, but prefer self
+            merged = itertools.chain(self.signposts,other.signposts)
         return Signposting(newContext, merged,                            
-                           include_no_context=not newContext)
+                           include_no_context=not newContext,
+                           warn_duplicate=False)
 
     def __add__(self, other: Union[Signposting, Iterable[Signpost]]) -> Signposting:
         """Create a merged Signposting by overriding new Signposts from another.
