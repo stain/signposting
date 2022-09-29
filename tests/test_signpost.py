@@ -13,13 +13,16 @@
 #   limitations under the License.
 """Test Signpost classes"""
 
+import itertools
+from multiprocessing.sharedctypes import Value
 import unittest
 import warnings
 import uuid
 
 from httplink import Link
+from enum import Enum
 
-
+import signposting.signpost
 from signposting.signpost import Signpost, AbsoluteURI, MediaType, LinkRel, Signposting, SIGNPOSTING
 
 
@@ -535,6 +538,43 @@ class TestSignposting(unittest.TestCase):
         self.assertIsNone(s.citeAs)
         self.assertEqual(set(), s.types)
 
+    def testConstructorValueError(self):
+        with self.assertRaises(ValueError):
+            Signposting(signposts=[
+                Signpost(LinkRel.cite_as, "http://example.com/pid/1")
+            ], include_no_context=False)
+
+    def testConstructorUnrecognizedRel(self):
+        # Evil hack to pretend LinkRel has a new relation
+        FakeLinkRel = Enum("LinkRel", 
+            itertools.chain(
+                [("fake", "fake")], 
+                [(a,a) for a in LinkRel.__members__]
+            ),
+            type=str)
+        try: 
+            # Fake-inject of new enum class
+            signposting.signpost.LinkRel = FakeLinkRel
+            with warnings.catch_warnings(record=True) as w:
+                unrecognized = Signposting(signposts=[
+                    Signpost("fake", "http://example.com/fake"),
+                    Signpost("type", "http://example.com/type/Example"),
+                ])
+        finally:
+            # Restore the proper enum
+            signposting.signpost.LinkRel = LinkRel
+
+        # Ensure that raised a warning!
+        self.assertEqual(1, len(w))
+        self.assertTrue(issubclass(w[0].category, UserWarning))
+        self.assertIn("fake", str(w[0].message))
+        # And that "fake" was not thrown away
+        self.assertTrue(unrecognized.types)
+        self.assertEqual({"http://example.com/type/Example"}, 
+                          {s.target for s in unrecognized.types})
+        self.assertEqual({"http://example.com/fake", "http://example.com/type/Example"}, 
+                          {s.target for s in unrecognized})
+
     def testConstructorCiteAs(self):
         s = Signposting("http://example.com/page1",
                         [Signpost(LinkRel.cite_as, "http://example.com/pid/1")]
@@ -560,6 +600,14 @@ class TestSignposting(unittest.TestCase):
         s = str(Signposting("http://example.com/page1",
                  [Signpost(LinkRel.item, "http://example.com/file/2.txt", media_type=MediaType("text/plain"))]))
         self.assertEqual('Link: <http://example.com/file/2.txt>; rel=item; type="text/plain"', s)
+
+    def testStrDescribedbyProfile(self):
+        s = str(Signposting("http://example.com/page1",
+                 [Signpost(LinkRel.describedby, "http://example.com/file/meta.ttl", 
+                    media_type=MediaType("text/turtle"), 
+                    profiles="http://example.com/profile/1")]))
+        self.assertEqual('Link: <http://example.com/file/meta.ttl>; rel=describedby; '
+            'type="text/turtle"; profile="http://example.com/profile/1"', s)
 
     def testStrItemContext(self):
         s = str(Signposting("http://example.com/page1",
@@ -672,6 +720,36 @@ class TestSignposting(unittest.TestCase):
         self.assertIn("page4", r)
         self.assertNotIn("item/3.jpeg", r)
         self.assertNotIn("item/4.jpeg", r)
+
+    def testIterComplete(self):
+        signposts = {
+            Signpost(LinkRel.item, "http://example.com/item/1.pdf"),
+            Signpost(LinkRel.cite_as, "http://example.com/pid/1"),
+            Signpost(LinkRel.item, "http://example.com/item/2.txt"),
+            Signpost(LinkRel.license, "http://spdx.org/licenses/CC0-1.0"),
+            Signpost(LinkRel.collection, "http://example.com/collection/1"),
+            Signpost(LinkRel.author, "http://example.com/author/1"),
+            Signpost(LinkRel.author, "http://example.com/author/2"),
+            Signpost(LinkRel.describedby, "http://example.com/metadata/1.ttl"),
+            Signpost(LinkRel.describedby,
+                     "http://example.com/metadata/2.jsonld"),
+            Signpost(LinkRel.linkset, "http://example.com/linkset/1.json"),
+            Signpost(LinkRel.linkset, "http://example.com/linkset/2.txt"),
+            Signpost(LinkRel.type, "http://example.org/type/A"),
+            Signpost(LinkRel.type, "http://example.org/type/B"),
+        }
+        # Ensure THIS test has tested every type of LinkRel!
+        self.assertEqual(set(LinkRel), {s.rel for s in signposts})
+
+        others = { 
+            Signpost(LinkRel.item, "http://example.com/item/3.jpeg", context="http://example.com/page3"),
+            Signpost(LinkRel.item, "http://example.com/item/4.jpeg", context="http://example.com/page4"),
+        }
+        signposting = Signposting("http://example.com/page1", signposts|others)
+        iterated = {s for s in signposting}
+        self.assertEqual(signposts, iterated) # Excluding others
+        # here they all are!
+        self.assertEqual(signposts|others, signposting.signposts)
 
     def testReprSimple(self):
         s = Signposting(signposts=[            
@@ -1173,3 +1251,39 @@ class TestSignposting(unittest.TestCase):
         # These were NOT added as they were not in the current context
         self.assertNotIn("http://example.com/pid/B", {s.target for s in c.signposts})
         self.assertNotIn("http://example.com/author/3", {s.target for s in c.signposts})
+
+    def test_signposts_with_explicit_context(self):
+        a = Signposting(context_url="http://example.com/doc1", signposts=[
+            Signpost(LinkRel.cite_as, "http://example.com/pid/A"),
+            Signpost(LinkRel.author, "http://example.com/author/1", context="http://example.com/doc2"),
+        ])
+        explicitA = set(a._signposts_with_explicit_context())
+        self.assertEqual({"http://example.com/pid/A", "http://example.com/author/1"}, 
+            {s.target for s in explicitA})
+        # All signposts now have explicit context
+        self.assertEqual({"http://example.com/doc1", "http://example.com/doc2"}, {s.context for s in explicitA})
+
+    def test_signposts_with_explicit_context_warning_implicit(self):
+        a = Signposting(signposts=[
+            Signpost(LinkRel.cite_as, "http://example.com/pid/A"),
+            Signpost(LinkRel.author, "http://example.com/author/1", context="http://example.com/doc2"),
+        ])
+        explicitA = set(a._signposts_with_explicit_context())
+        self.assertEqual({"http://example.com/pid/A", "http://example.com/author/1"}, 
+            {s.target for s in explicitA})
+        # In this case we still had to keep the empty context
+        self.assertEqual({None, "http://example.com/doc2"}, {s.context for s in explicitA})
+
+    def test_signposts_with_explicit_context_warning(self):
+        b = Signposting(context_url="http://example.com/doc1", 
+            signposts=[
+                Signpost(LinkRel.cite_as, "http://example.com/pid/A", context="http://example.com/doc1"),
+                Signpost(LinkRel.author, "http://example.com/author/1"),
+            ], 
+            include_no_context=False) # author moved to self._others
+
+        with warnings.catch_warnings(record=True) as warningsRaised:
+            explicitB = set(b._signposts_with_explicit_context())
+        self.assertEqual({"http://example.com/pid/A"}, 
+            {s.target for s in explicitB}) # author/1 IGNORED
+        self.assertTrue(warningsRaised)
