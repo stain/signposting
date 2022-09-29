@@ -21,14 +21,14 @@ RDF library like :mod:`rdflib`.
 
 This library also provide ways to discover
 FAIR signposting in HTML ``<link>`` annotations and in
-`linkset`_ documents.  Future versions may provide ways to 
+`Link set`_ documents.  Future versions may provide ways to 
 discover/merge these concurently.
 
 .. _signposting: https://signposting.org/conventions/
 .. _FAIR: https://signposting.org/FAIR/
 .. _Link Relation: https://www.iana.org/assignments/link-relations/
 .. _rdflib: https://rdflib.readthedocs.io/en/stable/
-.. _linkset: https://signposting.org/FAIR/#linksetrec
+.. _Link set: <https://signposting.org/FAIR/#linksetrec>
 """
 
 __version__ = '0.7.2'

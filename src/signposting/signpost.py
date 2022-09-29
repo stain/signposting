@@ -48,16 +48,13 @@ from httplink import Link
 class AbsoluteURI(str):
     """An absolute URI, e.g. "http://example.com/" """
     def __new__(cls, value: str, base: Optional[str] = None):
-        """Create an absolute URI reference.
+        """Create and validate an absolute URI reference.
 
-        If the base parameter is given, it is used to resolve the
-        potentially relative URI reference, otherwise the first argument
-        must be an absolute URI.
+        Note that IRIs are not supported unless ``%``-encoded.
 
-        This constructor will throw `ValueError` if the
-        final URI reference is invalid or not absolute.
-
-        Note that IRIs are not supported.
+        :param value: URI string to validate as Absolute URI. May be a relative URI reference if `base` is provided.
+        :param base: (Optional) URI used to resolve the potentially relative URI reference, otherwise `value` must be an absolute URI.
+        :raise ValueError: if the final URI reference is invalid or not absolute.
         """
         if isinstance(value, cls):
             return value # Already AbsoluteURI, no need to check again
@@ -80,15 +77,15 @@ class AbsoluteURI(str):
 
 
 class MediaType(str):
-    """An IANA media type, e.g. text/plain.
+    """An IANA media type, e.g. ``text/plain``.
 
     This class ensures the type string is valid according to `RFC6838`_
     and for convenience converts it to lowercase.
 
     While the constructor do check that the main type is an offical IANA subtree
-    (see `MediaType.MAIN`), it does not enforce the individual subtype to be registered.
+    (see :attr:`MAIN`), it does not enforce the individual subtype to be registered.
     In particular RFC6838 permits unregistered subtypes
-    starting with `vnd.`, `prs.` and `x.`
+    starting with ``vnd.``, ``prs.`` and ``x.``
 
     Extra content type parameters such as ``;profile=http://example.com/`` are
     **not** supported by this class, as they do not form part of the
@@ -114,10 +111,10 @@ class MediaType(str):
     """
 
     main: str
-    """The main type, e.g. image"""
+    """The main type, e.g. ``image``"""
 
     sub: str
-    """The sub-type, e.g. jpeg"""
+    """The sub-type, e.g. ``jpeg``"""
 
     def __new__(cls, value=str):
         """Construct a MediaType.
@@ -156,8 +153,8 @@ class LinkRel(str, Enum):
     only link relations listed in `FAIR`_ and `signposting`_
     conventions are included in this enumerator.
 
-    A link relation enum can be looked up from its RFC8288 _value_
-    by calling ``LinkRel("cite-as")`` - note that this particular
+    A link relation enum can be looked up from its RFC8288 *value*
+    by calling ``LinkRel("cite-as")`` -- note that this particular
     example has a different Python-compatible spelling in it's
     enum *name* (``LinkRel.cite_as``).
 
@@ -191,7 +188,7 @@ class Signpost:
     or otherwise constructed.
 
     In some case the link relation may have additional attributes,
-    e.g. ``signpost.link["title"]`` - the purpose of this class is however to
+    e.g. ``signpost.link["title"]`` -- the purpose of this class is however to
     lift only the navigational attributes for FAIR Signposting.
     """
 
@@ -262,7 +259,6 @@ class Signpost:
         :param link: Optional origin :class:`Link` header (not parsed further) for further attributes
 
         :raise ValueError: If a plain string value is invalid for the corresponding type-checked classes :class:`LinkRel`, :class:`AbsoluteURI` or :class:`MediaType`,
-
         """
 
         if isinstance(rel, LinkRel):
@@ -397,7 +393,7 @@ class Signposting(Iterable[Signpost], Sized):
 
     other_contexts: Set[AbsoluteURI]
     """Other resource URLs which signposting has been provided for. 
-    
+
     Use :meth:`for_context` to retrieve their signpostings, or filter the full list of signposts from :attr:`signposts` according to :attr:`Signpost.context`
     """
 
