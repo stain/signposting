@@ -2,10 +2,18 @@
 Changelog
 =========
 
+* Added ``warn_duplicate`` option to ``Signposting`` constructor
+* str() on ``Signposting`` now includes ``Link`` from other contexts
+* ``Signposting`` added support for ```+``` (add) and ``|`` (merge) operations
+* Added ``Signpost`` and ``Signposting`` support for ``==`` and ``hash()``
+* str() on ``Signpost`` correctly shows context as ``anchor=``
+* Documentation improvement
+* Further code coverage by tests
+
 v0.7.2 (2022-09-26)
 ------------------------------------------------------------
 
-* Signpost/Signposting support for ``==`` and ``hash()``
+* Prototyped Signpost/Signposting support for ``==`` and ``hash()``
 * Added ``Signpost.with_context`` to change a signpost's for_context
 
 v0.7.1 (2022-08-22)

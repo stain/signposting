@@ -27,7 +27,7 @@ A convenience command line tool ``signposting`` will be installed::
 	CiteAs: <https://w3id.org/a2a-fair-metrics/05-http-describedby-citeas/>
 	DescribedBy: <https://s11.no/2022/a2a-fair-metrics/05-http-describedby-citeas/index.ttl> text/turtle
 
-A benchmark set of signposted resources (`a2a-fair-matrics`_) is provided for testing purposes. Note that the library currently only 
+A benchmark set of signposted resources (`a2a-fair-metrics`_) is provided for testing purposes. Note that the library currently only 
 support the ``"-http-"`` tests.
 
 .. _a2a-fair-metrics: https://w3id.org/a2a-fair-metrics/

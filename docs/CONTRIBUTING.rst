@@ -112,8 +112,6 @@ With *Tox*, the testing setup can be defined in a configuration file, the `tox.i
     conda install tox -c conda-forge
 
 
-One of the greatest advantages of using Tox together with the :ref:`src layout<The src layout>` is that unittest actually perform on the installed source (our package) inside an isolated deployment environment. In order words, tests are performed in an environment simulating a post-installation state instead of a pre-deploy/development environment. Under this setup, there is no need, in general cases, to distribute test scripts along with the actual source, in my honest opinion - see `MANIFEST.in`_.
-
 Before creating a Pull Request from your branch, certify that all the tests pass correctly by running:
 
 ::
@@ -121,9 +119,10 @@ Before creating a Pull Request from your branch, certify that all the tests pass
     tox
 
 These are the same tests that will be performed online in the Github Actions. 
-In addition, the above will run the integration tests, using a benchmark set of signposted resources (`a2a-fair-matrics`_) available over https. To disable these, try::
+In addition, the above will run the integration tests, using a benchmark set of signposted resources (`a2a-fair-metrics`_) available over https. To disable these, try::
 
 ::
+
     tox -e py310
 
 (replace with ``-e py37`` etc if you are running older Python versions).

@@ -38,7 +38,8 @@ _http_opener = urllib.request.build_opener(_HTTPErrorHandler)
 def find_signposting_http(url: str) -> Signposting:
     """Find signposting from HTTP headers.
 
-    Return a parsed `Signposting` object of the discovered signposting.
+    :param url: The URL to request HTTP ``Link`` headers from using HTTP ``HEAD``
+    :return: A parsed :class:`Signposting` object of the discovered signposting
     """
     req = urllib.request.Request(url, method="HEAD")
     link_headers: List[str] = []  # Fall-back: No links
