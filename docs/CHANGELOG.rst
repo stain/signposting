@@ -4,7 +4,7 @@ Changelog
 
 * Added ``warn_duplicate`` option to ``Signposting`` constructor
 * str() on ``Signposting`` now includes ``Link`` from other contexts
-* ``Signposting`` added support for ```+``` (add) and ``|`` (merge) operations
+* ``Signposting`` added support for ``+`` (add) and ``|`` (merge) operations
 * Added ``Signpost`` and ``Signposting`` support for ``==`` and ``hash()``
 * str() on ``Signpost`` correctly shows context as ``anchor=``
 * Added ``Signpost.with_context`` to change a signpost's for_context
