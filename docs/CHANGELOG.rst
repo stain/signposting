@@ -2,6 +2,9 @@
 Changelog
 =========
 
+v0.8.2 (2022-09-29)
+------------------------------------------------------------
+
 * Improved code coverage
 * Signposting.linksets now included in iteration
 
