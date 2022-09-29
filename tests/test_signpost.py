@@ -564,13 +564,14 @@ class TestSignposting(unittest.TestCase):
     def testStrItemContext(self):
         s = str(Signposting("http://example.com/page1",
                  [Signpost(LinkRel.item, "http://example.com/file/2.txt", context="http://example.com/page1")]))
-        self.assertEqual('Link: <http://example.com/file/2.txt>; rel=item; context="http://example.com/page1"', s)
+        # Notice context is called anchor
+        self.assertEqual('Link: <http://example.com/file/2.txt>; rel=item; anchor="http://example.com/page1"', s)
 
     def testStrItemOtherContext(self):
         s = str(Signposting("http://example.com/page1",
                  [Signpost(LinkRel.item, "http://example.com/file/2.txt", context="http://example.com/page2")]))
         # NOTE: All signposts are included in str()
-        self.assertEqual('Link: <http://example.com/file/2.txt>; rel=item; context="http://example.com/page2"', s)
+        self.assertEqual('Link: <http://example.com/file/2.txt>; rel=item; anchor="http://example.com/page2"', s)
 
     def testConstructorItems(self):
         s = Signposting("http://example.com/page1", [

@@ -6,6 +6,7 @@ Changelog
 * str() on ``Signposting`` now includes ``Link`` from other contexts
 * ``Signposting`` added support for ```+``` (add) and ``|`` (merge) operations
 * Added ``Signpost`` and ``Signposting`` support for ``==`` and ``hash()``
+* str() on ``Signpost`` correctly shows context as ``anchor=``
 * Documentation improvement
 * Further code coverage by tests
 

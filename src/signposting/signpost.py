@@ -323,7 +323,7 @@ class Signpost:
         if self.profiles:
             strs.append('profile="%s"' % " ".join(self.profiles))
         if self.context:
-            strs.append('context="%s"' % self.context)
+            strs.append('anchor="%s"' % self.context)
         return "; ".join(strs)
 
     def _eq_attribs(self) -> Iterable[object]:
