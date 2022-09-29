@@ -52,7 +52,7 @@ setup(
     classifiers=[
         # complete classifier list:
         # http://pypi.python.org/pypi?%3Aaction=list_classifiers
-        'Development Status :: 1 - Planning',
+        'Development Status :: 3 - Alpha',
         'Environment :: Web Environment',
         'License :: OSI Approved :: Apache Software License',
         'Intended Audience :: Science/Research',
@@ -60,7 +60,8 @@ setup(
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
-        'Topic :: Internet :: WWW/HTTP'
+        'Topic :: Internet :: WWW/HTTP',
+        'Topic :: Scientific/Engineering',
         ],
     project_urls={
         'webpage': 'https://github.com/stain/signposting',
