@@ -2,6 +2,9 @@
 Changelog
 =========
 
+v0.7.3 (2022-09-29)
+------------------------------------------------------------
+
 * Added ``warn_duplicate`` option to ``Signposting`` constructor
 * str() on ``Signposting`` now includes ``Link`` from other contexts
 * ``Signposting`` added support for ```+``` (add) and ``|`` (merge) operations

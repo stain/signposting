@@ -31,7 +31,7 @@ discover/merge these concurently.
 .. _Link set: <https://signposting.org/FAIR/#linksetrec>
 """
 
-__version__ = '0.7.2'
+__version__ = '0.7.3'
 
 from typing import List
 import warnings
