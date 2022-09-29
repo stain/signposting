@@ -28,7 +28,9 @@ def _filter_links_by_rel(parsedLinks: ParsedLinks, *rels: str) -> List[Link]:
 
     The relations must be valid Signposting relation listed in `SIGNPOSTING`.
 
-    Return a list of ``Link``s which ``rel`` match the given ``rels``.
+    :param parsedLinks: The :class:`ParsedLinks` to filter from
+    :param rels: One or more link relations to filter by, e.g. ``item``
+    :return: A list of :class:`Link` which ``rel`` match the given `rels`.
 
     """
     if rels:
@@ -51,7 +53,9 @@ def _optional_link(parsedLinks: ParsedLinks, rel: str) -> Optional[Link]:
     It is undefined which relation is returned if multiple links of the same
     relation are found.
 
-    Return the ``Link`` or ``None`` if not found.
+    :param parsedLinks: The :class:`ParsedLinks` to look up from
+    :param rel: The link relation to look up by, e.g. ``author``
+    :return: The found ``Link``, or ``None`` if not found.
     """
     if not rel.lower() in SIGNPOSTING:
         raise ValueError("Unknown FAIR Signposting relation: %s" % rel)
@@ -62,15 +66,24 @@ def _optional_link(parsedLinks: ParsedLinks, rel: str) -> Optional[Link]:
 def _link_attr(link: Link, key: str) -> Optional[str]:
     """Look up an optional link attribute with given `key` from a `Link`.
 
-    Return the attribute value, or ``None`` if the link attribute was not found.
+    This is a workaround as :class:`Link` exposes ``__getitem__`` and ``__contains__`` but not ``Dict.get()``
 
-    This is a workaround as `Link` exposes ``__getitem__`` and ``__contains__`` but not ``Dict.get()``
+    :param link: :class:`Link` to look up attribute of
+    :param key: Link attribute key to look up
+    :return: The attribute value, or ``None`` if the link attribute was not found.
     """
     if key in link:
         return link[key]
     return None
 
 def linkToSignpost(link: Link, rel: LinkRel, context_url: str = None) -> Signpost:
+    """Convert from a :class:`Link` to a :class:`Signpost` 
+    object for a given link relation.
+
+    :param link: The :class:`Link` to convert
+    :param rel: The link relation to create a signpost for
+    :return: The converted :class:`Signpost` object
+    """
     context = _link_attr(link, "anchor") or context_url
     return Signpost(rel, link.target,
         _link_attr(link, "type"),
@@ -80,6 +93,10 @@ def linkToSignpost(link: Link, rel: LinkRel, context_url: str = None) -> Signpos
 def linksToSignposting(links: List[Link], context_url: str = None) -> Signposting:
         """Initialize Signposting object for a given `ParsedLinks`
         as discovered from the (optional) `context_url` base URL.
+
+        :param links: A list of :class:`Link` to convert
+        :param context_url: Optional, the context URL these link describe (unless specifying ``anchor``)
+        :return: The :class:`Signposting` of the converted :class:`Signpost` objects
         """
         signposts: List[Signpost] = []
         for l in links:
@@ -105,11 +122,13 @@ def _absolute_attribute(k: str, v: str, baseurl: str) -> Tuple[str, str]:
 def find_signposting_http_link(headers: List[str], baseurl: str = None) -> Signposting:
     """Find signposting among HTTP Link headers.
 
-    Optionally make the links absolute according to the base URL.
-
-    The link headers should be valid according to `RFC8288`_, excluding the "Link:" prefix.
-
     Links are discovered according to defined `FAIR`_ `signposting`_ relations.
+
+    :param headers: A list of individual HTTP ``Link`` headers. 
+        The headers should be valid according to `RFC8288`_, 
+        excluding the ``"Link:"`` prefix.
+    :param baseurl: Optional base URL to make relative link targets absolute from
+    :return: A :class:`Signposting` of the collected signposts.
 
     .. _signposting: https://signposting.org/conventions/
     .. _FAIR: https://signposting.org/FAIR/

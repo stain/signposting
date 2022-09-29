@@ -208,7 +208,7 @@ class Signpost:
     retrieving the target URI.
 
     This property is optional, and should only be expected
-    if `rel` is :const:`LinkRel.describedby` or :const:`LinkRel.item`
+    if ``rel`` is :const:`LinkRel.describedby` or :const:`LinkRel.item`
     """
 
     # FIXME: Correct JSON-LD profile
@@ -231,16 +231,16 @@ class Signpost:
     from the one originally requested.
 
     This attribute is optional (with ``None`` indicating unknown context),
-    however producers of ``Signpost`` instances from are encouraged to 
-
+    context may be implied from the resource, e.g. as indicated by 
+    :attr:`Signposting.context_url`
     """
 
     link: Optional[Link]
-    """The Link object this signpost was created from.
+    """The :class:`Link` object this signpost was created from.
 
     May contain additional attributes such as ``link["title"]``.
-    Note that a single Link may have multiple ``rel``s, therefore it is
-    possible that multiple :class:`Signpost` refer to the same link.
+    Note that a single Link may have multiple ``rel`` relations, therefore it is
+    possible that multiple :class:`Signpost` instances refer to the same link.
     """
 
     def __init__(self,
@@ -363,7 +363,7 @@ class Signpost:
     def with_context(self, context: Union[AbsoluteURI, str, None]) -> Signpost:
         """Create a copy of this signpost, but with the specified context.
         
-        If the context is None, it means the copy will not have a context.
+        If the context is ``None``, it means the copy will not have a context.
         """
         return Signpost(self.rel, self.target, self.type, self.profiles, context, self.link)
 
@@ -371,10 +371,10 @@ class Signposting(Iterable[Signpost], Sized):
     """Signposting links for a given resource.
 
     Links are categorized according to `FAIR`_ `signposting`_ conventions and 
-    split into different attributes like `citeAs` or `describedBy`.
+    split into different attributes like :attr:`citeAs` or :attr:`describedBy`.
 
-    It is possible to iterate over this class or use the `signposts` property to
-    find all recognized signposts.
+    It is possible to iterate over this class or use the :attr:`signposts` 
+    property to find all recognized signposts.
 
     Note that in the case of a resource not having any signposts, instances
     of this class are considered false.
@@ -403,7 +403,7 @@ class Signposting(Iterable[Signpost], Sized):
     describedBy: Set[Signpost]
     """Metadata resources about this resource and its items, typically in a Linked Data format.
 
-    Resources may require content negotiation, check `Signpost.type` attribute
+    Resources may require content negotiation, check :attr:`Signpost.type` attribute
     (if present) for content type, e.g. ``text/turtle``.
     """
 
@@ -413,7 +413,7 @@ class Signposting(Iterable[Signpost], Sized):
     items: Set[Signpost]
     """Items contained by this resource, e.g. downloads.
 
-    The content type of the download may be available as `Signpost.type` attribute.
+    The content type of the download may be available as :attr:`Signpost.type` attribute.
     """
 
     linksets: Set[Signpost]
@@ -421,7 +421,7 @@ class Signposting(Iterable[Signpost], Sized):
 
     A `Linkset`_ is a JSON or text serialization of Link headers available as a
     separate resource, and may be used to externalize large collection of links, e.g.
-    thousands of "item" relations.
+    thousands of ``item`` relations.
 
     Resources may require content negotiation, check ``Link["type"]`` attribute
     (if present)  for content types ``application/linkset`` or ``application/linkset+json``.
@@ -443,7 +443,7 @@ class Signposting(Iterable[Signpost], Sized):
                  signposts: Iterable[Signpost] = None,
                  include_no_context: bool = True,
                  warn_duplicate=True):
-        """Construct a Signposting from a list of :class:`Signpost`s.
+        """The constructor takes a an iterable of :class:`Signpost`.
 
         Signposts are filtered by the matching `context_url` (if provided), 
         then assigned to attributes like :attr:`citeAs` or :attr:`describedBy`
@@ -456,17 +456,17 @@ class Signposting(Iterable[Signpost], Sized):
         A Signposting object is equivalent to boolean `False` in conditional expression 
         if it is empty, that is ``len(signposting)==0``, indicating no signposts 
         were discovered for the given context. However the remaining 
-        ``signposts`` will still be available from :attr:`signposts`, as
-        indicated by :attr:`other_contexts`.
+        signposts will still be available from :attr:`signposts`, as
+        indicated by :attr:`other_contexts` and retrievable with :meth:`for_context`.
         
         :param context_url: the resource to select signposting for, or any signposts if ``None``.            
-        :param signposts: An iterable of :class:`Signpost`s that should be considered for selecting signposting.
-        :param include_no_context: If true (default), consider signposts without explicit context, 
+        :param signposts: An iterable of :class:`Signpost` that should be considered for selecting signposting.
+        :param include_no_context: If `True` (default), consider signposts without explicit context, 
             assuming they are about ``context_url``. 
-            If false, such signposts are ignored for assignment, 
+            If `False`, such signposts are ignored for assignment, 
             but remain available from :attr:`signposts`.
-        :param warn_duplicate: If true (default), warn of duplicate signposts that can't be assigned.
-        :raise ValueError: If ``include_no_context`` is false, but ``context_url`` was not provided or None.
+        :param warn_duplicate: If `True` (default), warn of duplicate signposts that can't be assigned.
+        :raise ValueError: If ``include_no_context`` is false, but ``context_url`` was not provided or `None`.
         """
         if not include_no_context and not context_url:
             raise ValueError("Can't exclude signposts without context when not providing context_url; try include_no_context=True")
@@ -542,8 +542,8 @@ class Signposting(Iterable[Signpost], Sized):
         """All FAIR Signposts with recognized relation types.
         
         This may include any additional signposts for link relations
-        that only expect a single link, like :prop:`citeAs`, as well
-        as any signposts for other contexts as listed in :prop:`other_contexts`.
+        that only expect a single link, like :attr:`citeAs`, as well
+        as any signposts for other contexts as listed in :attr:`other_contexts`.
         """
         return frozenset(itertools.chain(self, self._others))
 
@@ -567,33 +567,34 @@ class Signposting(Iterable[Signpost], Sized):
                 continue
             yield o
 
-    def for_context(self, context_uri:Union[AbsoluteURI, str, None]) -> Signposting:
+    def for_context(self, context_url:Union[AbsoluteURI, str, None]) -> Signposting:
         """Return signposting for given context URI.
         
-        This will select an alternative view of the signposts from :attr:`signposts`
-        filtered by the given ``context_uri``.
+        This will select an alternative view of the :attr:`signposts`
+        filtered by the given ``context_url``.
 
         The remaining signposts and their contexts will be included under 
-        :attr:`Signpost.signposts` -- any signposts with implicit context will
-        be replaced with having an explicit context :attr:`self.context_url`.
+        :attr:`signposts` -- any signposts with implicit context will
+        be replaced with having an explicit context from :attr:`context_url`.
 
         **Tip**: To ensure all signposts have explicit context, use 
-        ``s.for_context(s.context_uri)``
+        ``s.for_context(s.context_url)``
 
-        :param context_uri: The context to select signposts from. 
-            The URI should be a member of :attr:`contexts` or equal to :attr:`context`, 
+        :param context_url: The context to select signposts from. 
+            The URI should be a member of :attr:`other_contexts` or equal to :attr:`context_url`, 
             otherwise the returned Signposting will be empty.
-            If the context_uri is `None`, then the :attr:`Signpost.context` is ignored
-            and any signposts will be considered.
+
+            If this parameter is `None`, then the individual :attr:`Signpost.context` 
+            values are ignored and any signposts will be considered.
         """
-        include_no_context = context_uri is None
+        include_no_context = context_url is None
         if include_no_context:
             # include any implicit contexts as-is
             our_signposts: Iterable[Signpost] = self.signposts
         else:
             # ensure explicit contexts, so they don't get lost
             our_signposts = self._signposts_with_explicit_context()
-        return Signposting(context_uri, 
+        return Signposting(context_url, 
                            our_signposts,
                            include_no_context=include_no_context)
 
@@ -638,7 +639,7 @@ class Signposting(Iterable[Signpost], Sized):
         context, loaded from two different contexts.
 
         **Tip**: To compare two Signposting's using only explicit ``Signpost.context``s, use
-        ``a.for_context(a.context_uri) == b.for_context(b.context_uri)``
+        ``a.for_context(a.context_url) == b.for_context(b.context_url)``
         """
         if not isinstance(o, Signposting):
             return False
@@ -783,7 +784,7 @@ class Signposting(Iterable[Signpost], Sized):
         this method will iterate over its direct signposts only if its context is ``None`` or matches
         the current context, otherwise it will select the current context using :meth:`Signposting.for_context`.
         
-        If the added Signpost's context is `None` or match the current :attr:`context_uri`` 
+        If the added Signpost's context is `None` or match the current :attr:`context_url`` 
         they will __replace__ or append the existing signposts from this instance. 
         
         For instance, if the left-hand Signpost ``a`` had::
