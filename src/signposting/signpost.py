@@ -622,6 +622,8 @@ class Signposting(Iterable[Signpost], Sized):
             yield d
         for i in self.items:
             yield i
+        for l in self.linksets:
+            yield l
         for t in self.types:
             yield t
         for e in self._extras:
