@@ -13,17 +13,13 @@
 #   limitations under the License.
 """Test linkset parsing according to RFC9264."""
 
-import warnings
 import unittest
-from urllib.error import HTTPError
-import requests
-import requests_mock
 import importlib.resources
 import os
 
 from signposting import linkset
 from signposting.resolver import find_signposting_http
-from signposting.signpost import AbsoluteURI, MediaType
+from signposting.signpost import AbsoluteURI
 
 a2a_27 = importlib.resources.read_text("tests.data.a2afairmetrics", "27-http-linkset-json-only.json")
 a2a_28 = importlib.resources.read_text("tests.data.a2afairmetrics", "28-http-linkset-txt-only.txt")
@@ -164,7 +160,7 @@ class TestFindSignpostingLinkset(unittest.TestCase):
     def test_parse_linkset_a2a_09(self):
         PID = "https://w3id.org/a2a-fair-metrics/09-http-describedby-citeas-linkset-json-txt/"
         linksets = self._linksets_for_pid(PID)
-        for (uri,mediatype) in self._linksets_for_pid(PID):
+        for (uri,mediatype) in linksets:
             metasignposts = linkset.find_signposting_linkset(uri, mediatype)
             self.assertEqual(uri, metasignposts.context_url)
             self.assertEqual({"https://s11.no/2022/a2a-fair-metrics/09-http-describedby-citeas-linkset-json-txt/"}, metasignposts.other_contexts)

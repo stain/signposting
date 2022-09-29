@@ -15,11 +15,9 @@
 Parse HTTP headers to find Signposting links
 """
 
-from typing import Dict, List, Set, Tuple, Optional, Collection, Set
-import httplink
+from typing import List, Tuple, Optional
 from httplink import ParsedLinks, Link, parse_link_header
 from urllib.parse import urljoin
-from . import signpost
 from .signpost import SIGNPOSTING, Signpost, Signposting, LinkRel
 
 
@@ -82,6 +80,7 @@ def linkToSignpost(link: Link, rel: LinkRel, context_url: str = None) -> Signpos
 
     :param link: The :class:`Link` to convert
     :param rel: The link relation to create a signpost for
+    :param context_url: Optional, the context URL these link describe (unless specifying ``anchor``)
     :return: The converted :class:`Signpost` object
     """
     context = _link_attr(link, "anchor") or context_url

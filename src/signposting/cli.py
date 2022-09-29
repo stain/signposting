@@ -5,13 +5,13 @@ USAGE:
     signposting
 """
 
-from typing import Dict, List, Set, Tuple, Optional, Collection, Set
+from typing import Collection
 import argparse
 import sys
 import enum
 from urllib.error import HTTPError, URLError
 
-from . import find_signposting, find_signposting_http, Signpost, Signposting
+from . import find_signposting_http, Signpost
 
 def _multiline(header: str, lines: Collection[str]):
     """Format header, with subsequent lines indented correspondingly"""

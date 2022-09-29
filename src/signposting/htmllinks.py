@@ -16,9 +16,7 @@
 Parse HTML to find <link> elements for signposting.
 """
 
-from html.parser import HTMLParser
-from io import FileIO
-from typing import Tuple, Union
+from typing import Union
 import warnings
 import requests
 from bs4 import BeautifulSoup,SoupStrainer

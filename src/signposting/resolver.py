@@ -19,9 +19,9 @@ import urllib.request
 import warnings
 
 from . import linkheader
-from .signpost import Signposting,Signpost
+from .signpost import Signposting
 
-from typing import Dict, List, Set, Tuple, Optional, Collection, Set
+from typing import List
 
 
 class _HTTPErrorHandler(urllib.request.HTTPDefaultErrorHandler):

@@ -18,11 +18,10 @@ Parse linkset documents (`RFC9264`_) for signposting.
 .. _RFC9264: https://www.rfc-editor.org/rfc/rfc9264.html
 """
 
-from typing import List, Tuple, Union
+from typing import List, Union
 import warnings
 import requests
 import json
-import httplink
 from .signpost import SIGNPOSTING,AbsoluteURI,Signpost,Signposting,MediaType
 from .htmllinks import DownloadedText,UnrecognizedContentType
 from .linkheader import find_signposting_http_link

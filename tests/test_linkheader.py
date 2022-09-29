@@ -110,7 +110,7 @@ class TestFindSignposting(unittest.TestCase):
     absolute_headers = [
         '<http://example.com/author1>;rel=author',
         '<http://example.com/author2>;rel=author',
-        '<http://example.com/alternate>;rel=alternate;type="appliation/pdf"',
+        '<http://example.com/alternate>;rel=alternate;type="application/pdf"',
         '<http://example.com/metadata1>;rel=describedby;type="text/turtle"',
         '<http://example.com/license>;rel=license',
         '<http://example.com/type1>;rel=type',
@@ -139,7 +139,7 @@ class TestFindSignposting(unittest.TestCase):
     relative_headers = [
         '<author1>;rel=author',
         '</author2>;rel=author',
-        '<http://example.com/alternate>;rel=alternate;type="appliation/pdf"',  # ignored
+        '<http://example.com/alternate>;rel=alternate;type="application/pdf"',  # ignored
         '<./metadata1>;rel=describedby;type="text/turtle"',
         '</license>;rel=license',
         '<http://example.com/type1>;rel=type',

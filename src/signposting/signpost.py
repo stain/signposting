@@ -36,12 +36,11 @@ from __future__ import annotations
 
 import itertools
 import re
-from typing import Collection, Iterable, Iterator, List, Optional, Set, Sized, Tuple, Union, AbstractSet, FrozenSet
-from enum import Enum, auto, unique
+from typing import Iterable, Iterator, Optional, Set, Sized, Union, AbstractSet, FrozenSet
+from enum import Enum, unique
 from warnings import warn
 
 import rfc3987
-import urllib.parse
 from urllib.parse import urljoin
 from httplink import Link
 
@@ -82,7 +81,7 @@ class MediaType(str):
     This class ensures the type string is valid according to `RFC6838`_
     and for convenience converts it to lowercase.
 
-    While the constructor do check that the main type is an offical IANA subtree
+    While the constructor do check that the main type is an official IANA subtree
     (see :attr:`MAIN`), it does not enforce the individual subtype to be registered.
     In particular RFC6838 permits unregistered subtypes
     starting with ``vnd.``, ``prs.`` and ``x.``
@@ -338,7 +337,7 @@ class Signpost:
         yield self.target
         yield self.type
         # NOTE: do NOT yield each profile of set separately, as order is not consistent
-        # As self.profiles is a frozenset it is elligble for hash()
+        # As self.profiles is a frozenset it is eligible for hash()
         yield self.profiles
 
     def __eq__(self, o: object) -> bool:
@@ -760,7 +759,7 @@ class Signposting(Iterable[Signpost], Sized):
         :raise TypeError: If `other` is not an instance of `Signposting`
         """
         if not isinstance(other, Signposting):
-            raise TypeError("Can only merge with Signposting instances, not: " % type(other))
+            raise TypeError("Can only merge with Signposting instances, not: %s" % type(other))
         # Decide if the merged Signposting will have a context. 
         # Left hand has preference.
         newContext = self.context_url or other.context_url or None
@@ -804,7 +803,7 @@ class Signposting(Iterable[Signpost], Sized):
             Link <http://example.com/author/2>;rel=author
 
         (Note: iterating over the returned `Signposting` would include the relegated ``…pid/A``. 
-        Take care of operatand order if adding multiple Signpostings).
+        Take care of operator order if adding multiple Signpostings).
         
         Added signposts with other contexts will be ignored and
         __not__ added to the resulting `signposts`, however existing 
@@ -815,7 +814,7 @@ class Signposting(Iterable[Signpost], Sized):
         :param other: Either an `Iterable` (`Set`, `List`, etc) of `Signpost` instances, or another `Signposting` instance.
             The signposts are to be added to our signposts, if matching the determined context.
         :return: A new `Signposting` instance from the summed list of signposts. 
-            Signposts from `other` may overridde signposts from this instance.
+            Signposts from `other` may override signposts from this instance.
         :raise TypeError: If `other` is not an instance of `Signposting` or an iterable of Signposts.
         """
         if (isinstance(other, Signposting) and 
