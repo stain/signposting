@@ -14,7 +14,6 @@
 """Test the resolver"""
 
 import unittest
-from unittest.mock import Mock, MagicMock, patch
 
 from signposting.resolver import find_signposting_http
 from signposting.signpost import LinkRel

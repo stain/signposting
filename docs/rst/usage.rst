@@ -11,7 +11,7 @@ To use ``signposting`` from Python::
 	print(s.citeAs.target)
 	for d in s.describedBy:
 		print(d.target)
-                print(d.type)
+		print(d.type)
 
 The :class:`signposting.Signposting` object returned points to
 :class:`signposting.Link` instances which have attributes matching the FAIR

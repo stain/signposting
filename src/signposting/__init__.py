@@ -22,7 +22,7 @@ RDF library like :mod:`rdflib`.
 This library also provide ways to discover
 FAIR signposting in HTML ``<link>`` annotations and in
 `Link set`_ documents.  Future versions may provide ways to 
-discover/merge these concurently.
+discover/merge these concurrently.
 
 .. _signposting: https://signposting.org/conventions/
 .. _FAIR: https://signposting.org/FAIR/

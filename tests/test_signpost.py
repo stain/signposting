@@ -206,7 +206,7 @@ class TestMediaType(unittest.TestCase):
             # Maximum on either side
             MediaType("example/" + x127)
             MediaType(x127 + "/example")
-            # This is the maximum permissable
+            # This is the maximum permissible
             MediaType(x127 + "/" + x127)
 
             # Total length is over - should ideally

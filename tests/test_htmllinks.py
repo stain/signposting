@@ -15,7 +15,6 @@
 
 import warnings
 import unittest
-from urllib.error import HTTPError
 import requests
 import requests_mock
 import importlib.resources
@@ -30,7 +29,7 @@ a2a_19 = importlib.resources.read_text("tests.data.a2afairmetrics", "19-html-cit
 class TestHtmlLinks(unittest.TestCase):
     def test_find_signposting_html_a2a_18(self):
         with requests_mock.Mocker() as m:
-            # This example.org URL will deliberaly only work through mocker
+            # This example.org URL will deliberately only work through mocker
             URL="https://w3id.example.org/a2a-fair-metrics/18-html-citeas-only/"
             m.get(URL, 
                 text=a2a_18, 
@@ -128,7 +127,7 @@ class TestUnrecognizedContentType(unittest.TestCase):
 class TestGetHTML(unittest.TestCase):
     def test_get_html(self):
         with requests_mock.Mocker() as m:
-            # This example.org URL will deliberaly only work through mocker
+            # This example.org URL will deliberately only work through mocker
             URL=AbsoluteURI("https://w3id.example.org/a2a-fair-metrics/18-html-citeas-only/")
             m.get(URL, 
                 text=a2a_18, 
