@@ -41,10 +41,5 @@ from .resolver import find_signposting_http
 from .htmllinks import find_signposting_html
 from .linkset import find_signposting_linkset
 
-def find_signposting(headers: List[str], baseurl: str = None) -> Signposting:
-    """DEPRECATED: Use meth:`find_signposting_http_link` instead"""
-    warnings.warn("find_signposting() is deprecated, use find_signposting_http_link()")
-    return find_signposting_http_link(headers, baseurl)
-
 __all__ = """find_signposting_http_link find_signposting_http find_signposting_html find_signposting_linkset
 Signposting Signpost AbsoluteURI MediaType LinkRel""".split()

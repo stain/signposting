@@ -2,17 +2,23 @@
 Changelog
 =========
 
+* Deprecated ``Signposting.context_url``, use ``Signposting.context`` instead
+* Removed deprecated ``find_signposting`` method, use ``find_signposting_http_link``
+
 v0.8.3 (2022-10-02)
 ------------------------------------------------------------
+* Fix typos, unused imports, missing docstring, and other small issues (contributed by Bruno P. Kinoshita)
 
 v0.8.2 (2022-09-29)
 ------------------------------------------------------------
 
 * Improved code coverage
-* Signposting.linksets now included in iteration
+* ``Signposting.linksets`` now included in iteration
 
 v0.8.1 (2022-09-29)
 ------------------------------------------------------------
+* Documentation markup fixes. 
+* Indicated Development Status raised to Alpha
 
 v0.8.0 (2022-09-29)
 ------------------------------------------------------------

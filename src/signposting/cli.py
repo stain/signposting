@@ -71,7 +71,7 @@ def main(*args: str):
     #        print("%s" % e, file=sys.stderr)
     #        return errors.INTERNAL_ERROR
 
-        print("Signposting for", signposting.context_url or url)
+        print("Signposting for", signposting.context or url)
         if (signposting.citeAs):
             print("CiteAs:", _target(signposting.citeAs))
         if (signposting.types):

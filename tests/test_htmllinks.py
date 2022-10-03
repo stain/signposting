@@ -223,7 +223,7 @@ class TestParseHTML(unittest.TestCase):
             AbsoluteURI("https://w3id.org/a2a-fair-metrics/18-html-citeas-only/"),
             AbsoluteURI("https://example.org/a2a-fair-metrics/18-html-citeas-only/"))
         signposts = htmllinks._parse_html(html)
-        self.assertEqual("https://example.org/a2a-fair-metrics/18-html-citeas-only/", signposts.context_url)
+        self.assertEqual("https://example.org/a2a-fair-metrics/18-html-citeas-only/", signposts.context)
         self.assertEqual("https://w3id.org/a2a-fair-metrics/18-html-citeas-only/", signposts.citeAs.target)
         self.assertEqual("https://example.org/a2a-fair-metrics/18-html-citeas-only/", signposts.citeAs.context)
         self.assertEqual(1, len(signposts))
@@ -234,7 +234,7 @@ class TestParseHTML(unittest.TestCase):
             AbsoluteURI("https://example.com/TODO-no-head/index.html"))
         with warnings.catch_warnings(record=True) as w:
             signposts = htmllinks._parse_html(html)
-        self.assertEqual("https://example.com/TODO-no-head/index.html", signposts.context_url)
+        self.assertEqual("https://example.com/TODO-no-head/index.html", signposts.context)
         self.assertEqual(0, len(signposts))
 
         self.assertEqual(1, len(w))
@@ -248,7 +248,7 @@ class TestParseHTML(unittest.TestCase):
             AbsoluteURI("https://example.com/TODO-cite-as-only/index.html"))
         with warnings.catch_warnings(record=True):
             signposts = htmllinks._parse_html(html)
-        self.assertEqual("https://example.com/TODO-cite-as-only/index.html", signposts.context_url)
+        self.assertEqual("https://example.com/TODO-cite-as-only/index.html", signposts.context)
         self.assertEqual(1, len(signposts))
         self.assertEqual("https://example.com/TODO-cite-as-only/", signposts.citeAs.target)
 
@@ -258,7 +258,7 @@ class TestParseHTML(unittest.TestCase):
             AbsoluteURI("https://example.com/TODO-no-signposting/index.html"))
         with warnings.catch_warnings(record=True):
             signposts = htmllinks._parse_html(html)
-        self.assertEqual("https://example.com/TODO-no-signposting/index.html", signposts.context_url)
+        self.assertEqual("https://example.com/TODO-no-signposting/index.html", signposts.context)
         self.assertEqual(0, len(signposts))
 
     def test_parse_html_ignore_links_in_body(self):
@@ -267,7 +267,7 @@ class TestParseHTML(unittest.TestCase):
             AbsoluteURI("https://example.com/TODO-ignore-links-in-body/index.html"))
         with warnings.catch_warnings(record=True):
             signposts = htmllinks._parse_html(html)
-        self.assertEqual("https://example.com/TODO-ignore-links-in-body/index.html", signposts.context_url)
+        self.assertEqual("https://example.com/TODO-ignore-links-in-body/index.html", signposts.context)
         self.assertEqual(0, len(signposts))
 
     def test_parse_html_missing_href(self):
@@ -277,7 +277,7 @@ class TestParseHTML(unittest.TestCase):
             AbsoluteURI("https://example.com/TODO-ignore-missing-href/index.html"))
         with warnings.catch_warnings(record=True) as w:
             signposts = htmllinks._parse_html(html)
-        self.assertEqual("https://example.com/TODO-ignore-missing-href/index.html", signposts.context_url)
+        self.assertEqual("https://example.com/TODO-ignore-missing-href/index.html", signposts.context)
         self.assertEqual(1, len(signposts))
         # cite-as should be picked up even if the broken describedBy give warning.
         self.assertEqual("https://example.com/TODO-ignore-missing-href/", signposts.citeAs.target)
@@ -293,7 +293,7 @@ class TestParseHTML(unittest.TestCase):
             AbsoluteURI("https://example.com/TODO-ignore-broken-href/index.html"))
         with warnings.catch_warnings(record=True) as w:
             signposts = htmllinks._parse_html(html)
-        self.assertEqual("https://example.com/TODO-ignore-broken-href/index.html", signposts.context_url)
+        self.assertEqual("https://example.com/TODO-ignore-broken-href/index.html", signposts.context)
         self.assertEqual(1, len(signposts))
         # cite-as should be picked up even if the broken describedBy give warning.
         self.assertEqual("https://example.com/TODO-ignore-broken-href/", signposts.citeAs.target)

@@ -511,7 +511,7 @@ class TestSignpost(unittest.TestCase):
 class TestSignposting(unittest.TestCase):
     def testConstructorDefault(self):
         s = Signposting("http://example.com/page1")
-        self.assertEqual("http://example.com/page1", s.context_url)
+        self.assertEqual("http://example.com/page1", s.context)
         self.assertIsNone(s.citeAs)
         self.assertIsNone(s.license)
         self.assertIsNone(s.collection)
@@ -534,7 +534,7 @@ class TestSignposting(unittest.TestCase):
 
     def testConstructorEmpty(self):
         s = Signposting("http://example.com/page1", [])
-        self.assertEqual("http://example.com/page1", s.context_url)
+        self.assertEqual("http://example.com/page1", s.context)
         self.assertIsNone(s.citeAs)
         self.assertEqual(set(), s.types)
 
@@ -579,7 +579,7 @@ class TestSignposting(unittest.TestCase):
         s = Signposting("http://example.com/page1",
                         [Signpost(LinkRel.cite_as, "http://example.com/pid/1")]
                         )
-        self.assertEqual("http://example.com/page1", s.context_url)
+        self.assertEqual("http://example.com/page1", s.context)
         self.assertEqual(AbsoluteURI(
             "http://example.com/pid/1"), s.citeAs.target)
 
@@ -647,7 +647,7 @@ class TestSignposting(unittest.TestCase):
             Signpost(LinkRel.type, "http://example.org/type/B")
             ])
 
-        self.assertEqual("http://example.com/page1", s.context_url)
+        self.assertEqual("http://example.com/page1", s.context)
         self.assertEqual(AbsoluteURI(
             "http://example.com/pid/1"), s.citeAs.target)
         self.assertEqual(AbsoluteURI(
@@ -1037,7 +1037,7 @@ class TestSignposting(unittest.TestCase):
             Signpost(LinkRel.author, "http://example.com/author/2"),
         ])
         c = a|b
-        self.assertIsNone(c.context_url)
+        self.assertIsNone(c.context)
         self.assertEqual({"http://example.com/author/1", "http://example.com/author/2"},
             {a.target for a in c.authors})
         self.assertIn("http://example.com/pid/A", {s.target for s in c})
@@ -1051,16 +1051,16 @@ class TestSignposting(unittest.TestCase):
         self.assertEqual(a.authors | b.authors, c.authors)
 
     def testMergeSameContext(self):        
-        a = Signposting(context_url="http://example.com/doc1", signposts=[
+        a = Signposting(context="http://example.com/doc1", signposts=[
             Signpost(LinkRel.cite_as, "http://example.com/pid/A"),
             Signpost(LinkRel.author, "http://example.com/author/1"),
         ])
-        b = Signposting(context_url="http://example.com/doc1", signposts=[
+        b = Signposting(context="http://example.com/doc1", signposts=[
             Signpost(LinkRel.cite_as, "http://example.com/pid/B"),
             Signpost(LinkRel.author, "http://example.com/author/2"),
         ])
         c = a|b
-        self.assertEqual(a.context_url, c.context_url)
+        self.assertEqual(a.context, c.context)
         self.assertEqual({"http://example.com/author/1", "http://example.com/author/2"},
             {a.target for a in c.authors})
         self.assertIn("http://example.com/pid/A", {s.target for s in c})
@@ -1076,13 +1076,13 @@ class TestSignposting(unittest.TestCase):
             Signpost(LinkRel.cite_as, "http://example.com/pid/A"),
             Signpost(LinkRel.author, "http://example.com/author/1"),
         ])
-        b = Signposting(context_url="http://example.com/doc1", signposts=[
+        b = Signposting(context="http://example.com/doc1", signposts=[
             Signpost(LinkRel.cite_as, "http://example.com/pid/B"),
             Signpost(LinkRel.author, "http://example.com/author/2"),
         ])
         c = a|b
         # as A didn't have a context
-        self.assertEqual(b.context_url, c.context_url)
+        self.assertEqual(b.context, c.context)
         self.assertEqual({"http://example.com/author/2"},
             {a.target for a in c.authors})
                     
@@ -1102,17 +1102,17 @@ class TestSignposting(unittest.TestCase):
         self.assertEqual({None}, {s.context for s in c.signposts if s.target=="http://example.com/author/1"})
 
     def testMergeOtherContext(self):
-        a = Signposting(context_url="http://example.com/doc1", signposts=[
+        a = Signposting(context="http://example.com/doc1", signposts=[
             Signpost(LinkRel.cite_as, "http://example.com/pid/A"),
             Signpost(LinkRel.author, "http://example.com/author/1"),
         ])
-        b = Signposting(context_url="http://example.com/doc2", signposts=[
+        b = Signposting(context="http://example.com/doc2", signposts=[
             Signpost(LinkRel.cite_as, "http://example.com/pid/B"),
             Signpost(LinkRel.author, "http://example.com/author/2"),
         ])
         c = a|b
         # A's context is preferred if set
-        self.assertEqual(a.context_url, c.context_url)
+        self.assertEqual(a.context, c.context)
         self.assertEqual({"http://example.com/author/1"},
             {a.target for a in c.authors})                    
         # as that is the PID of the existing context
@@ -1136,7 +1136,7 @@ class TestSignposting(unittest.TestCase):
 
 
     def testMergeDefaultContext(self):        
-        a = Signposting(context_url="http://example.com/doc1", signposts=[
+        a = Signposting(context="http://example.com/doc1", signposts=[
             Signpost(LinkRel.cite_as, "http://example.com/pid/A"),
             Signpost(LinkRel.author, "http://example.com/author/1"),
         ])
@@ -1146,7 +1146,7 @@ class TestSignposting(unittest.TestCase):
         ])
         c = a|b
         # as B didn't have a context
-        self.assertEqual(a.context_url, c.context_url)
+        self.assertEqual(a.context, c.context)
         self.assertEqual({"http://example.com/author/1"},
             {a.target for a in c.authors})
 
@@ -1196,7 +1196,7 @@ class TestSignposting(unittest.TestCase):
         self.assertIn("http://example.com/pid/A", {s.target for s in c})
 
     def testAddOldContext(self):        
-        a = Signposting(context_url="http://example.com/doc1", signposts=[
+        a = Signposting(context="http://example.com/doc1", signposts=[
             Signpost(LinkRel.cite_as, "http://example.com/pid/A"),
             Signpost(LinkRel.author, "http://example.com/author/1"),
         ])
@@ -1205,7 +1205,7 @@ class TestSignposting(unittest.TestCase):
             Signpost(LinkRel.author, "http://example.com/author/2"),
         ])
         c = a+b
-        self.assertEqual(a.context_url, c.context_url)
+        self.assertEqual(a.context, c.context)
         self.assertEqual({"http://example.com/author/1", "http://example.com/author/2"},
             {a.target for a in c.authors})
         self.assertEqual("http://example.com/pid/B", c.citeAs.target)
@@ -1213,17 +1213,17 @@ class TestSignposting(unittest.TestCase):
         self.assertIn("http://example.com/pid/A", {s.target for s in c})
     
     def testAddSameContext(self):        
-        a = Signposting(context_url="http://example.com/doc1", signposts=[
+        a = Signposting(context="http://example.com/doc1", signposts=[
             Signpost(LinkRel.cite_as, "http://example.com/pid/A"),
             Signpost(LinkRel.author, "http://example.com/author/1"),
         ])
-        b = Signposting(context_url="http://example.com/doc1", signposts=[
+        b = Signposting(context="http://example.com/doc1", signposts=[
             Signpost(LinkRel.cite_as, "http://example.com/pid/B"),
             Signpost(LinkRel.author, "http://example.com/author/2"),
             Signpost(LinkRel.author, "http://example.com/author/3", context="http://example.com/doc3"),
         ])
         c = a+b
-        self.assertEqual(a.context_url, c.context_url)
+        self.assertEqual(a.context, c.context)
         self.assertEqual({"http://example.com/author/1", "http://example.com/author/2"},
             {a.target for a in c.authors})
         self.assertEqual("http://example.com/pid/B", c.citeAs.target)
@@ -1233,17 +1233,17 @@ class TestSignposting(unittest.TestCase):
         self.assertNotIn("http://example.com/author/3", {s.target for s in c.signposts})
 
     def testAddDifferentContext(self):        
-        a = Signposting(context_url="http://example.com/doc1", signposts=[
+        a = Signposting(context="http://example.com/doc1", signposts=[
             Signpost(LinkRel.cite_as, "http://example.com/pid/A"),
             Signpost(LinkRel.author, "http://example.com/author/1"),
         ])
-        b = Signposting(context_url="http://example.com/doc2", signposts=[
+        b = Signposting(context="http://example.com/doc2", signposts=[
             Signpost(LinkRel.cite_as, "http://example.com/pid/B"),
             Signpost(LinkRel.author, "http://example.com/author/2", context="http://example.com/doc1"),
             Signpost(LinkRel.author, "http://example.com/author/3")
         ])
         c = a+b
-        self.assertEqual(a.context_url, c.context_url)
+        self.assertEqual(a.context, c.context)
         self.assertEqual({"http://example.com/author/1", "http://example.com/author/2"},
             {a.target for a in c.authors})
         self.assertEqual("http://example.com/pid/A", c.citeAs.target)
@@ -1253,7 +1253,7 @@ class TestSignposting(unittest.TestCase):
         self.assertNotIn("http://example.com/author/3", {s.target for s in c.signposts})
 
     def test_signposts_with_explicit_context(self):
-        a = Signposting(context_url="http://example.com/doc1", signposts=[
+        a = Signposting(context="http://example.com/doc1", signposts=[
             Signpost(LinkRel.cite_as, "http://example.com/pid/A"),
             Signpost(LinkRel.author, "http://example.com/author/1", context="http://example.com/doc2"),
         ])
@@ -1275,7 +1275,7 @@ class TestSignposting(unittest.TestCase):
         self.assertEqual({None, "http://example.com/doc2"}, {s.context for s in explicitA})
 
     def test_signposts_with_explicit_context_warning(self):
-        b = Signposting(context_url="http://example.com/doc1", 
+        b = Signposting(context="http://example.com/doc1", 
             signposts=[
                 Signpost(LinkRel.cite_as, "http://example.com/pid/A", context="http://example.com/doc1"),
                 Signpost(LinkRel.author, "http://example.com/author/1"),

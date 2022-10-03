@@ -231,7 +231,7 @@ class Signpost:
 
     This attribute is optional (with ``None`` indicating unknown context),
     context may be implied from the resource, e.g. as indicated by 
-    :attr:`Signposting.context_url`
+    :attr:`Signposting.context`
     """
 
     link: Optional[Link]
@@ -382,13 +382,21 @@ class Signposting(Iterable[Signpost], Sized):
     .. _FAIR: https://signposting.org/FAIR/
     """
 
-    context_url: Optional[AbsoluteURI]
-    """Resource URI this is the signposting for, e.g. a HTML landing page, hereafter called "this resource".
+    context: Optional[AbsoluteURI]
+    """Resource URI this is the signposting for, e.g. a HTML landing page.
     
-    This attribute is optional, `None` indicate
-    no context filtering applies and that
-    individual signposts can have any context.
+    Documentation on other signposting attributes refer to the
+    context as "this resource".
+    
+    This attribute is optional, `None` indicate no context filtering applies
+    and that individual signposts can have any context.
     """
+
+    @property
+    def context_url(self) -> Optional[AbsoluteURI]:
+        """DEPRECATED: Use :attr:`context` instead"""
+        warn("Signposting.context_url deprecated, use Signposting.context instead")
+        return self.context
 
     other_contexts: Set[AbsoluteURI]
     """Other resource URLs which signposting has been provided for. 
@@ -438,13 +446,13 @@ class Signposting(Iterable[Signpost], Sized):
     """Optional collection resource that the selected resource is part of"""
     
     def __init__(self, 
-                 context_url: Union[AbsoluteURI, str] = None, 
+                 context: Union[AbsoluteURI, str] = None, 
                  signposts: Iterable[Signpost] = None,
                  include_no_context: bool = True,
                  warn_duplicate=True):
         """The constructor takes a an iterable of :class:`Signpost`.
 
-        Signposts are filtered by the matching `context_url` (if provided), 
+        Signposts are filtered by the matching `context` (if provided), 
         then assigned to attributes like :attr:`citeAs` or :attr:`describedBy`
         depending on their :attr:`Signpost.rel` link relation.
 
@@ -458,22 +466,22 @@ class Signposting(Iterable[Signpost], Sized):
         signposts will still be available from :attr:`signposts`, as
         indicated by :attr:`other_contexts` and retrievable with :meth:`for_context`.
         
-        :param context_url: the resource to select signposting for, or any signposts if ``None``.            
+        :param context: the resource to select signposting for, or any signposts if ``None``.            
         :param signposts: An iterable of :class:`Signpost` that should be considered for selecting signposting.
         :param include_no_context: If `True` (default), consider signposts without explicit context, 
-            assuming they are about ``context_url``. 
+            assuming they are about ``context``. 
             If `False`, such signposts are ignored for assignment, 
             but remain available from :attr:`signposts`.
         :param warn_duplicate: If `True` (default), warn of duplicate signposts that can't be assigned.
-        :raise ValueError: If ``include_no_context`` is false, but ``context_url`` was not provided or `None`.
+        :raise ValueError: If ``include_no_context`` is false, but ``context`` was not provided or `None`.
         """
-        if not include_no_context and not context_url:
-            raise ValueError("Can't exclude signposts without context when not providing context_url; try include_no_context=True")
+        if not include_no_context and not context:
+            raise ValueError("Can't exclude signposts without context when not providing context; try include_no_context=True")
 
-        if context_url:
-            self.context_url = AbsoluteURI(context_url)
+        if context:
+            self.context = AbsoluteURI(context)
         else:
-            self.context_url = None # No filtering
+            self.context = None # No filtering
 
         # Initialize attributes with empty defaults
         self.citeAs = None
@@ -494,12 +502,12 @@ class Signposting(Iterable[Signpost], Sized):
         for s in signposts:
             if include_no_context and not s.context:
                 # Pretend it's in our context
-                context = self.context_url
+                context = self.context
             else:
                 # Inspect signposts's context
                 context = s.context
 
-            if self.context_url and self.context_url != context:
+            if self.context and self.context != context:
                 self._others.add(s)
                 if context:
                     self.other_contexts.add(context)
@@ -551,49 +559,49 @@ class Signposting(Iterable[Signpost], Sized):
 
         Variant of ::attr:signposts, gives a generator.
 
-        If ::attr:`context_url` is set, then signposts without a context will be
+        If ::attr:`context` is set, then signposts without a context will be
         excluded (to avoid them leaking across contexts). 
         """
         for s in self:
-            if not s.context and self.context_url:
+            if not s.context and self.context:
                 # Clone to make implicit context explicit
-                yield s.with_context(self.context_url)
+                yield s.with_context(self.context)
             else:
                 yield s
         for o in self._others:
-            if not o.context and self.context_url: 
+            if not o.context and self.context: 
                 warn("Ignoring signpost with unknown context: %s" % o)
                 continue
             yield o
 
-    def for_context(self, context_url:Union[AbsoluteURI, str, None]) -> Signposting:
+    def for_context(self, context:Union[AbsoluteURI, str, None]) -> Signposting:
         """Return signposting for given context URI.
         
         This will select an alternative view of the :attr:`signposts`
-        filtered by the given ``context_url``.
+        filtered by the given ``context``.
 
         The remaining signposts and their contexts will be included under 
         :attr:`signposts` -- any signposts with implicit context will
-        be replaced with having an explicit context from :attr:`context_url`.
+        be replaced with having an explicit context from :attr:`context`.
 
         **Tip**: To ensure all signposts have explicit context, use 
-        ``s.for_context(s.context_url)``
+        ``s.for_context(s.context)``
 
-        :param context_url: The context to select signposts from. 
-            The URI should be a member of :attr:`other_contexts` or equal to :attr:`context_url`, 
+        :param context: The context to select signposts from. 
+            The URI should be a member of :attr:`other_contexts` or equal to :attr:`context`, 
             otherwise the returned Signposting will be empty.
 
             If this parameter is `None`, then the individual :attr:`Signpost.context` 
             values are ignored and any signposts will be considered.
         """
-        include_no_context = context_url is None
+        include_no_context = context is None
         if include_no_context:
             # include any implicit contexts as-is
             our_signposts: Iterable[Signpost] = self.signposts
         else:
             # ensure explicit contexts, so they don't get lost
             our_signposts = self._signposts_with_explicit_context()
-        return Signposting(context_url, 
+        return Signposting(context, 
                            our_signposts,
                            include_no_context=include_no_context)
 
@@ -634,13 +642,13 @@ class Signposting(Iterable[Signpost], Sized):
         if and only if it has the same `Signpost`s for their respective
         current contexts.
         
-        Note that their :attr:`Signposting.context_url` are _not_ compared for equality,
+        Note that their :attr:`Signposting.context` are _not_ compared for equality,
         although each :attr:`Signpost.context` are included when comparing list of signposts. 
         This distinction becomes significant when comparing signposts without explicit
         context, loaded from two different contexts.
 
         **Tip**: To compare two Signposting's using only explicit ``Signpost.context``s, use
-        ``a.for_context(a.context_url) == b.for_context(b.context_url)``
+        ``a.for_context(a.context) == b.for_context(b.context)``
         """
         if not isinstance(o, Signposting):
             return False
@@ -654,7 +662,7 @@ class Signposting(Iterable[Signpost], Sized):
         """
         h = hash(self.__class__.__qualname__)
         # NOTE context is NOT included in equality checks, see __eq__
-        ## h ^= self.context_url
+        ## h ^= self.context
         for e in self:
             # We use a naive XOR here as order should NOT matter
             h ^= hash(e)
@@ -670,8 +678,8 @@ class Signposting(Iterable[Signpost], Sized):
 
     def __repr__(self) -> str:
         repr = []
-        if self.context_url:
-            repr.append("context=%s" % self.context_url)
+        if self.context:
+            repr.append("context=%s" % self.context)
         if self.citeAs:
             repr.append("citeAs=%s" % self.citeAs.target)
         if self.license:
@@ -715,7 +723,7 @@ class Signposting(Iterable[Signpost], Sized):
         c) No context
         
         When merging Signpost, any implicit contexts are made explicit
-        from their original :attr:`Signposting.context_url` if specified. 
+        from their original :attr:`Signposting.context` if specified. 
         
         If neither Signposting has a context, then the new `Signposting`
         is constructed with ``include_no_context=True`` meaning that only
@@ -764,7 +772,7 @@ class Signposting(Iterable[Signpost], Sized):
             raise TypeError("Can only merge with Signposting instances, not: %s" % type(other))
         # Decide if the merged Signposting will have a context. 
         # Left hand has preference.
-        newContext = self.context_url or other.context_url or None
+        newContext = self.context or other.context or None
         if newContext:
             # Merge with explicit contexts so that Signposts can be compared
             merged: Iterable[Signpost] = itertools.chain(self._signposts_with_explicit_context(), 
@@ -785,7 +793,7 @@ class Signposting(Iterable[Signpost], Sized):
         this method will iterate over its direct signposts only if its context is ``None`` or matches
         the current context, otherwise it will select the current context using :meth:`Signposting.for_context`.
         
-        If the added Signpost's context is `None` or match the current :attr:`context_url`` 
+        If the added Signpost's context is `None` or match the current :attr:`context`` 
         they will __replace__ or append the existing signposts from this instance. 
         
         For instance, if the left-hand Signpost ``a`` had::
@@ -820,11 +828,11 @@ class Signposting(Iterable[Signpost], Sized):
         :raise TypeError: If `other` is not an instance of `Signposting` or an iterable of Signposts.
         """
         if (isinstance(other, Signposting) and 
-                self.context_url and other.context_url and 
-                other.context_url != self.context_url):
-            to_add: Iterable[Signpost] = other.for_context(self.context_url)
+                self.context and other.context and 
+                other.context != self.context):
+            to_add: Iterable[Signpost] = other.for_context(self.context)
         else:
-            to_add = (s for s in other if s.context == self.context_url or not s.context)
-        return Signposting(self.context_url, itertools.chain(to_add, self.signposts), 
+            to_add = (s for s in other if s.context == self.context or not s.context)
+        return Signposting(self.context, itertools.chain(to_add, self.signposts), 
             # NOTE: We chain the added ones first so they can override the singular properties like citeAs
                 include_no_context=True, warn_duplicate=False)

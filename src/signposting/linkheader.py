@@ -89,21 +89,21 @@ def linkToSignpost(link: Link, rel: LinkRel, context_url: str = None) -> Signpos
         _link_attr(link, "profile"),
         context, link)
 
-def linksToSignposting(links: List[Link], context_url: str = None) -> Signposting:
+def linksToSignposting(links: List[Link], context: str = None) -> Signposting:
         """Initialize Signposting object for a given `ParsedLinks`
-        as discovered from the (optional) `context_url` base URL.
+        as discovered from the (optional) `context` base URL.
 
         :param links: A list of :class:`Link` to convert
-        :param context_url: Optional, the context URL these link describe (unless specifying ``anchor``)
+        :param context: Optional, the context URL these link describe (unless specifying ``anchor``)
         :return: The :class:`Signposting` of the converted :class:`Signpost` objects
         """
         signposts: List[Signpost] = []
         for l in links:
-            # TODO: Check if context_url matches "anchor"
+            # TODO: Check if context matches "anchor"
             for rel in l.rel:
                 if rel in SIGNPOSTING:
-                    signposts.append(linkToSignpost(l, LinkRel(rel), context_url))
-        return Signposting(context_url, signposts)
+                    signposts.append(linkToSignpost(l, LinkRel(rel), context))
+        return Signposting(context, signposts)
 
 def _absolute_attribute(k: str, v: str, baseurl: str) -> Tuple[str, str]:
     """Ensure link attribute value uses absolute URI, resolving from the baseurl.

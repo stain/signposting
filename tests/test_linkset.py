@@ -42,7 +42,7 @@ class TestParseLinkset(unittest.TestCase):
             AbsoluteURI("https://s11.example.net/2022/a2a-fair-metrics/28-http-linkset-txt-only/linkset.txt"),
             AbsoluteURI("https://s11.example.net/2022/a2a-fair-metrics/28-http-linkset-txt-only/linkset.txt"))
         metasignposts = linkset._parse_linkset(ls)
-        self.assertEqual("https://s11.example.net/2022/a2a-fair-metrics/28-http-linkset-txt-only/linkset.txt", metasignposts.context_url)
+        self.assertEqual("https://s11.example.net/2022/a2a-fair-metrics/28-http-linkset-txt-only/linkset.txt", metasignposts.context)
 
         ## Linksets, as separate HTTP resources, may contain links for multiple context,         
         ## therefore we have to select the right one
@@ -72,7 +72,7 @@ class TestParseLinkset(unittest.TestCase):
             AbsoluteURI("https://s11.example.net/2022/a2a-fair-metrics/27-http-linkset-json-only/linkset.json"))
         metasignposts = linkset._parse_linkset_json(ls)
 
-        self.assertEqual("https://s11.example.net/2022/a2a-fair-metrics/27-http-linkset-json-only/linkset.json", metasignposts.context_url)
+        self.assertEqual("https://s11.example.net/2022/a2a-fair-metrics/27-http-linkset-json-only/linkset.json", metasignposts.context)
         self.assertEqual({"https://s11.no/2022/a2a-fair-metrics/27-http-linkset-json-only/"}, metasignposts.other_contexts)
         signposts = metasignposts.for_context("https://s11.no/2022/a2a-fair-metrics/27-http-linkset-json-only/")
 
@@ -107,7 +107,7 @@ class TestFindSignpostingLinkset(unittest.TestCase):
         PID = "https://w3id.org/a2a-fair-metrics/07-http-describedby-citeas-linkset-json/"
         for (uri,_) in self._linksets_for_pid(PID):
             metasignposts = linkset.find_signposting_linkset(uri)
-            self.assertEqual(uri, metasignposts.context_url)
+            self.assertEqual(uri, metasignposts.context)
             self.assertEqual({"https://s11.no/2022/a2a-fair-metrics/07-http-describedby-citeas-linkset-json/"}, metasignposts.other_contexts)
             signposts = metasignposts.for_context("https://s11.no/2022/a2a-fair-metrics/07-http-describedby-citeas-linkset-json/")
 
@@ -134,7 +134,7 @@ class TestFindSignpostingLinkset(unittest.TestCase):
         PID = "https://w3id.org/a2a-fair-metrics/08-http-describedby-citeas-linkset-txt/"
         for (uri,_) in self._linksets_for_pid(PID):
             metasignposts = linkset.find_signposting_linkset(uri)
-            self.assertEqual(uri, metasignposts.context_url)
+            self.assertEqual(uri, metasignposts.context)
             self.assertEqual({"https://s11.no/2022/a2a-fair-metrics/08-http-describedby-citeas-linkset-txt/"}, metasignposts.other_contexts)
             signposts = metasignposts.for_context("https://s11.no/2022/a2a-fair-metrics/08-http-describedby-citeas-linkset-txt/")
             
@@ -162,7 +162,7 @@ class TestFindSignpostingLinkset(unittest.TestCase):
         linksets = self._linksets_for_pid(PID)
         for (uri,mediatype) in linksets:
             metasignposts = linkset.find_signposting_linkset(uri, mediatype)
-            self.assertEqual(uri, metasignposts.context_url)
+            self.assertEqual(uri, metasignposts.context)
             self.assertEqual({"https://s11.no/2022/a2a-fair-metrics/09-http-describedby-citeas-linkset-json-txt/"}, metasignposts.other_contexts)
             signposts = metasignposts.for_context("https://s11.no/2022/a2a-fair-metrics/09-http-describedby-citeas-linkset-json-txt/")
             
@@ -191,7 +191,7 @@ class TestFindSignpostingLinkset(unittest.TestCase):
             metasignposts = linkset.find_signposting_linkset(uri, mediatype)
             # Ensure Content-Location was NOT picked up to linkset.json/linkset.txt
             self.assertEqual("https://s11.no/2022/a2a-fair-metrics/14-http-describedby-citeas-linkset-json-txt-conneg/linkset", 
-                metasignposts.context_url)
+                metasignposts.context)
             self.assertEqual({"https://s11.no/2022/a2a-fair-metrics/14-http-describedby-citeas-linkset-json-txt-conneg/"}, metasignposts.other_contexts)
             signposts = metasignposts.for_context("https://s11.no/2022/a2a-fair-metrics/14-http-describedby-citeas-linkset-json-txt-conneg/")
 
@@ -218,7 +218,7 @@ class TestFindSignpostingLinkset(unittest.TestCase):
         PID = "https://w3id.org/a2a-fair-metrics/27-http-linkset-json-only/"
         for (uri,_) in self._linksets_for_pid(PID):
             metasignposts = linkset.find_signposting_linkset(uri)
-            self.assertEqual("https://s11.no/2022/a2a-fair-metrics/27-http-linkset-json-only/linkset.json", metasignposts.context_url)
+            self.assertEqual("https://s11.no/2022/a2a-fair-metrics/27-http-linkset-json-only/linkset.json", metasignposts.context)
             self.assertEqual({"https://s11.no/2022/a2a-fair-metrics/27-http-linkset-json-only/"}, metasignposts.other_contexts)
             signposts = metasignposts.for_context("https://s11.no/2022/a2a-fair-metrics/27-http-linkset-json-only/")
 
@@ -243,7 +243,7 @@ class TestFindSignpostingLinkset(unittest.TestCase):
         PID = "https://w3id.org/a2a-fair-metrics/28-http-linkset-txt-only/"
         for (uri,_) in self._linksets_for_pid(PID):
             metasignposts = linkset.find_signposting_linkset(uri)
-            self.assertEqual("https://s11.no/2022/a2a-fair-metrics/28-http-linkset-txt-only/linkset.txt", metasignposts.context_url)
+            self.assertEqual("https://s11.no/2022/a2a-fair-metrics/28-http-linkset-txt-only/linkset.txt", metasignposts.context)
             self.assertEqual({"https://s11.no/2022/a2a-fair-metrics/28-http-linkset-txt-only/"}, metasignposts.other_contexts)
             signposts = metasignposts.for_context("https://s11.no/2022/a2a-fair-metrics/28-http-linkset-txt-only/")
 
