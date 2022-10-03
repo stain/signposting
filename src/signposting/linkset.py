@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: Apache-2.0
+# SPDX-FileCopyrightText: 2022 The University of Manchester, UK
+#
 #   Copyright 2022 The University of Manchester, UK
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");

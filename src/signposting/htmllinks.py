@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: Apache-2.0
+# SPDX-FileCopyrightText: 2022 The University of Manchester, UK
+#
 #   Copyright 2022 The University of Manchester, UK
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
@@ -11,7 +14,6 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-
 """
 Parse HTML to find <link> elements for signposting.
 """
