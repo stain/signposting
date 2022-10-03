@@ -2,7 +2,11 @@
 Changelog
 =========
 
-* Added `codemeta.json` and `CITATION.cff`
+* Added `CITATION.cff`
+
+v0.9.1 (2022-10-03)
+------------------------------------------------------------
+* Added `codemeta.json` and contributors
 
 v0.9.0 (2022-10-03)
 ------------------------------------------------------------
