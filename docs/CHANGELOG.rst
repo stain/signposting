@@ -2,6 +2,9 @@
 Changelog
 =========
 
+v0.9.0 (2022-10-03)
+------------------------------------------------------------
+
 * Deprecated ``Signposting.context_url``, use ``Signposting.context`` instead
 * Removed deprecated ``find_signposting`` method, use ``find_signposting_http_link``
 
