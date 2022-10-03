@@ -3,6 +3,8 @@ graft src
 
 include *.rst
 include LICENSE
+include CITATION.cff
+include codemeta.json
 
 exclude .appveyor.yml
 exclude .bumpversion.cfg
