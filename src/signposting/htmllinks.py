@@ -22,6 +22,8 @@ from typing import Union
 import warnings
 import requests
 from bs4 import BeautifulSoup,SoupStrainer
+# FIXME: Where can we import this from?
+##from html.parser import HTMLParseError
 from .signpost import SIGNPOSTING,AbsoluteURI,Signpost,Signposting
 
 def find_signposting_html(uri:Union[AbsoluteURI, str]) -> Signposting:
@@ -35,7 +37,7 @@ def find_signposting_html(uri:Union[AbsoluteURI, str]) -> Signposting:
     :throws IOError: If the network request failed, e.g. connection timeout
     :throws requests.HTTPError: If the HTTP request failed, e.g. 404 Not Found
     :throws UnrecognizedContentType: If the HTTP resource was not a recognized HTML/XHTML content type
-    :throws HTMLParser.HTMLParseError: If the HTML could not be parsed.
+    :throws HTMLParseError: If the HTML could not be parsed.
     :returns: A parsed :class:`Signposting` object (which may be empty)
     """
     html = _get_html(AbsoluteURI(uri))
