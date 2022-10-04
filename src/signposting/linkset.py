@@ -29,12 +29,18 @@ from .signpost import SIGNPOSTING,AbsoluteURI,Signpost,Signposting,MediaType
 from .htmllinks import DownloadedText,UnrecognizedContentType
 from .linkheader import find_signposting_http_link
 
+class LinksetParseError(Exception):
+    """Linkset could not be parsed"""
+    def __init__(self, cause:Exception):
+        super().__init__("Invalid linkset: %s" % cause)
+        self.__cause__ = cause
+
 def find_signposting_linkset(uri:Union[AbsoluteURI, str], acceptType:Union[MediaType, str]=None) -> Signposting:
     """Parse linkset to find <link> elements for signposting.
     
     HTTP redirects will be followed.
 
-    :param uri: An absolute http/https URI, which HTML will be inspected.
+    :param uri: An absolute http/https URI, which linkset will be inspected.
     :param acceptType: A `MediaType` to content-negotiate access for. 
         The default is to content-negotiate including ``application/linkset`` and 
         ``application/linkset+json`` with JSON having preference.
@@ -44,7 +50,7 @@ def find_signposting_linkset(uri:Union[AbsoluteURI, str], acceptType:Union[Media
     :throws UnrecognizedContentType: If the HTTP resource was not a recognized linkset content type. 
         This exception is also raised if ``acceptType`` was provided, 
         but didn't match returned ``Content-Type``.
-    :throws HTMLParser.HTMLParseError: If the HTML could not be parsed.
+    :throws LinksetParseError: If the linkset JSON/text could not be parsed
     :returns: A parsed `Signposting` object (which may be empty)
     """
     if acceptType:
@@ -52,10 +58,13 @@ def find_signposting_linkset(uri:Union[AbsoluteURI, str], acceptType:Union[Media
     else:
         linkset = _get_linkset(AbsoluteURI(uri))
 
-    if isinstance(linkset, LinksetJSON):
-        return _parse_linkset_json(linkset)
-    else:
-        return _parse_linkset(linkset)
+    try:
+        if isinstance(linkset, LinksetJSON):
+            return _parse_linkset_json(linkset)
+        else:
+            return _parse_linkset(linkset)
+    except ValueError as e:
+        raise LinksetParseError(e)
 
 class LinksetJSON(DownloadedText):
     """Downloaded application/linkset+json document as string"""
@@ -108,7 +117,6 @@ def _parse_linkset(linkset:Linkset) -> Signposting:
     # We'll lazily replace them with accepted whitespace:
     link = linkset.replace("\r", " ").replace("\n", " ").strip()
     return find_signposting_http_link([link], linkset.resolved_url)
-    # TODO: Filter away links that do not have the desired context?
 
 def _parse_linkset_json(linkset:LinksetJSON) -> Signposting:
     linksetJSON = json.loads(linkset)
