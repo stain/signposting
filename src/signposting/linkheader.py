@@ -131,6 +131,7 @@ def find_signposting_http_link(headers: List[str], baseurl: str = None) -> Signp
         excluding the ``"Link:"`` prefix.
     :param baseurl: Optional base URL to make relative link targets absolute from
     :return: A :class:`Signposting` of the collected signposts.
+    :raise ValueError: If the link headers could not be parsed.
 
     .. _signposting: https://signposting.org/conventions/
     .. _FAIR: https://signposting.org/FAIR/
