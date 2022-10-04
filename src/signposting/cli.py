@@ -71,20 +71,25 @@ def main(*args: str):
         action='store_true')
     parser.add_argument("--linkset", help="Find signposting in RFC9264 JSON or text linksets if media-type matches. When used with --recurse without specifying --http or --html, use those signposts to recurse, but only report from linksets",
         action='store_true')
-    parser.add_argument("--all-linkset", help="Like --linkset, but parse both JSON and text variant if listed with same URI",
-        action='store_true')
-    parser.add_argument("-r", "--recurse", help="Follow and resolve rel=linkset signposts", 
-        action='store_true'),
-    parser.add_argument("-d", "--max-depth", help="Maximum depth of --recurse (default: 1)", 
-        type=int, default=1)
-    parser.add_argument("-m", "--merge", help="Merge reporting of signposting from multiple URLs, skipping any duplicate signposts. Forces --contexts",
-        action='store_true'),
+## FIXME: implement --all-linkset
+#    parser.add_argument("--all-linkset", help="Like --linkset, but parse both JSON and text variant if listed with same URI",
+#        action='store_true')
+## FIXME: Implement --recurse --max-depth
+#    parser.add_argument("-r", "--recurse", help="Follow and resolve rel=linkset signposts", 
+#        action='store_true'),
+#    parser.add_argument("-d", "--max-depth", help="Maximum depth of --recurse (default: 1)", 
+#        type=int, default=1)
+## FIXME: Implement --merge
+#    parser.add_argument("-m", "--merge", help="Merge reporting of signposting from multiple URLs, skipping any duplicate signposts. Forces --contexts",
+#        action='store_true'),
     parser.add_argument("-D", "--distinct", help="Report each signposting method (--http, --html and --linkset) separately",
         action='store_true'),
-    parser.add_argument("-c", "--contexts", dest="contexts", help="Include signposts for other contexts/anchors than resolved URI", 
-        action='store_true'),
-    parser.add_argument("-f", "--format", help="Output format, plain text, HTTP link headers or RFC9264 JSON.", 
-        choices="text link json".split(), default="text")
+## FIXME: Implement --contexts
+#    parser.add_argument("-c", "--contexts", dest="contexts", help="Include signposts for other contexts/anchors than resolved URI", 
+#        action='store_true'),
+## FIXME: Implement --format
+#    parser.add_argument("-f", "--format", help="Output format, plain text, HTTP link headers or RFC9264 JSON.", 
+#        choices="text link json".split(), default="text")
 
     if args:
         parsed = parser.parse_args(args)
