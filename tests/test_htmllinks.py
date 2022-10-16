@@ -240,10 +240,6 @@ class TestParseHTML(unittest.TestCase):
         self.assertEqual("https://example.com/TODO-no-head/index.html", signposts.context)
         self.assertEqual(0, len(signposts))
 
-        self.assertEqual(1, len(w))
-        self.assertEqual(w[0].category, UserWarning)
-        self.assertIn("No signposting found", str(w[0].message))
-
     def test_parse_html_signposting(self):
         """A variant of test_parse_html_a2a_18, but HTML inline"""
         html = htmllinks.HTML('<html><head><link rel="cite-as" href="https://example.com/TODO-cite-as-only/"></head></html>', "text/html",
