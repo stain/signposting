@@ -87,8 +87,8 @@ def main(*args: str):
     parser.add_argument("-D", "--distinct", help="Report each signposting method (--http, --html and --linkset) separately",
         action='store_true'),
 ## FIXME: Implement --contexts
-#    parser.add_argument("-c", "--contexts", dest="contexts", help="Include signposts for other contexts/anchors than resolved URI", 
-#        action='store_true'),
+    parser.add_argument("-c", "--any-context", dest="any_context", help="Include signposts any contexts/anchors, not just resolved URI", 
+        action='store_true'),
 ## FIXME: Implement --format
 #    parser.add_argument("-f", "--format", help="Output format, plain text, HTTP link headers or RFC9264 JSON.", 
 #        choices="text link json".split(), default="text")
@@ -188,24 +188,29 @@ def main(*args: str):
         for (method,signposting) in signpostings:
             print("Signposting for", signposting.context or url, 
                     " (%s)" % method.name if method != method.merged else "")
-            if (signposting.citeAs):
-                print("CiteAs:", _target(signposting.citeAs))
-            if (signposting.types):
-                print(_multiline("Type", [_target(l) for l in signposting.types]))
-            if (signposting.collection):
-                print("Collection:", _target(signposting.collection))
-            if (signposting.license):
-                print("License:", _target(signposting.license))
-            if (signposting.authors):
-                print(_multiline("Author", [_target(l)
-                    for l in signposting.authors]))
-            if (signposting.describedBy):
-                print(_multiline("DescribedBy", [
-                    _target_and_type(l) for l in signposting.describedBy]))
-            if (signposting.items):
-                print(_multiline("Item", [_target_and_type(l)
-                    for l in signposting.items]))
-            if (signposting.linksets):
-                print(_multiline("Linkset", [_target_and_type(l)
-                    for l in signposting.linksets]))
+            if parsed.any_context or (parsed.linkset and not parsed.html and not parsed.http):
+                signposting = signposting.for_context(None)
+            print_signposting(signposting)
     return ERROR.OK
+
+def print_signposting(signposting: Signposting):
+    if (signposting.citeAs):
+        print("CiteAs:", _target(signposting.citeAs))
+    if (signposting.types):
+        print(_multiline("Type", [_target(l) for l in signposting.types]))
+    if (signposting.collection):
+        print("Collection:", _target(signposting.collection))
+    if (signposting.license):
+        print("License:", _target(signposting.license))
+    if (signposting.authors):
+        print(_multiline("Author", [_target(l)
+            for l in signposting.authors]))
+    if (signposting.describedBy):
+        print(_multiline("DescribedBy", [
+            _target_and_type(l) for l in signposting.describedBy]))
+    if (signposting.items):
+        print(_multiline("Item", [_target_and_type(l)
+            for l in signposting.items]))
+    if (signposting.linksets):
+        print(_multiline("Linkset", [_target_and_type(l)
+            for l in signposting.linksets]))
