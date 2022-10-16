@@ -26,13 +26,14 @@ from bs4 import BeautifulSoup,SoupStrainer
 ##from html.parser import HTMLParseError
 from .signpost import SIGNPOSTING,AbsoluteURI,Signpost,Signposting
 
-def find_signposting_html(uri:Union[AbsoluteURI, str]) -> Signposting:
+def find_signposting_html(uri:Union[AbsoluteURI, str], warn_empty:bool=True) -> Signposting:
     """Parse HTML to find ``<link>`` elements for signposting.
     
     HTTP redirects will be followed and any relative paths in links
     made absolute correspondingly.
 
     :param uri: An absolute http/https URI, which HTML will be inspected.
+    :param warn_empty: If true, raise warning if no direct signpostings were found
     :throws ValueError: If the `uri` is invalid
     :throws IOError: If the network request failed, e.g. connection timeout
     :throws requests.HTTPError: If the HTTP request failed, e.g. 404 Not Found
@@ -41,7 +42,10 @@ def find_signposting_html(uri:Union[AbsoluteURI, str]) -> Signposting:
     :returns: A parsed :class:`Signposting` object (which may be empty)
     """
     html = _get_html(AbsoluteURI(uri))
-    return _parse_html(html)
+    signposting = _parse_html(html)
+    if warn_empty and not signposting:
+        warnings.warn("No direct signposting found in HTML from <%s>" % html.requested_url)
+    return signposting
 
 class DownloadedText(str):
     """Text downloaded from HTTP"""
@@ -147,6 +151,4 @@ def _parse_html(html:Union[HTML,XHTML]) -> Signposting:
                     warnings.warn("Ignoring invalid signpost from %s: %s" % (html.requested_url, e))
                     continue
                 signposts.append(signpost)
-    if not signposts:
-        warnings.warn("No signposting found from <%s>" % html.requested_url)
     return Signposting(html.resolved_url, signposts)

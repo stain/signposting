@@ -24,7 +24,7 @@ USAGE:
 from functools import reduce
 # FIXME: Where can we import this from?
 ##from html.parser import HTMLParseError
-from typing import Collection, Tuple
+from typing import Collection, List, Tuple
 import argparse
 import sys
 import enum
@@ -52,12 +52,14 @@ def _target_and_type(s: Signpost):
     return "<%s> %s" % (s.target,
                         s.type or "")
 
-errors = enum.IntEnum("Error",
-                      "OK URL_ERROR HTTP_ERROR LINK_SYNTAX INTERNAL_ERROR HTML_PARSE_ERROR UNRECOGNIZED_CONTENT_TYPE",
+ERROR = enum.IntEnum("Error",
+                      "OK URL_ERROR HTTP_ERROR LINK_SYNTAX INTERNAL_ERROR HTML_PARSE_ERROR UNRECOGNIZED_CONTENT_METHOD",
                       start=0
                       )
 """Error codes returned by CLI"""
 
+METHOD = enum.Enum("METHOD", "http html linkset merged")
+"""Discovery methods for signposting"""
 
 def main(*args: str):
     """Discover signposting and print to STDOUT"""
@@ -102,7 +104,7 @@ def main(*args: str):
         parsed.html = True
     
     isFirst = True
-    signpostings: Tuple[str,Signposting] = []
+    signpostings: List[Tuple[METHOD,Signposting]] = []
     for url in parsed.url:
         if isFirst:
             isFirst = False
@@ -110,80 +112,82 @@ def main(*args: str):
             print()  # separator
 
         if parsed.http:
+            only_http = not parsed.html and not parsed.linkset
             try:
-                signposting = find_signposting_http(url)
-                signpostings.append(("http", signposting))
+                signposting = find_signposting_http(url, warn_empty=only_http)
+                signpostings.append((METHOD.http, signposting))
             except HTTPError as e:
                 print("HTTP error for %s" % url, file=sys.stderr)
                 print("%s" % e.reason, file=sys.stderr)
-                return errors.HTTP_ERROR
+                return ERROR.HTTP_ERROR
             except URLError as e:
                 print("Failed URL %s" % url, file=sys.stderr)
                 print("%s" % e.reason, file=sys.stderr)
-                return errors.URL_ERROR
+                return ERROR.URL_ERROR
             except ValueError as e:
                 print("Could not parse Link header for %s" % url, file=sys.stderr)
                 print("%s" % e, file=sys.stderr)
-                return errors.LINK_SYNTAX
+                return ERROR.LINK_SYNTAX
 
         if parsed.html:
+            only_html = not parsed.http and not parsed.linkset
             try:
-                signposting = find_signposting_html(url)
-                signpostings.append(("html", signposting))
+                signposting = find_signposting_html(url, warn_empty=only_html)
+                signpostings.append((METHOD.html, signposting))
             except HTTPError as e:
                 print("HTTP error for %s" % url, file=sys.stderr)
                 print("%s" % e.reason, file=sys.stderr)
-                return errors.HTTP_ERROR
+                return ERROR.HTTP_ERROR
             except IOError as e:
                 print("Network error for %s" % url, file=sys.stderr)
-                print("%s" % e.reason, file=sys.stderr)
-                return errors.HTTP_ERROR
+                print("%s" % e, file=sys.stderr)
+                return ERROR.HTTP_ERROR
             except ValueError as e:
                 print("Failed URL %s" % url, file=sys.stderr)
-                print("%s" % e.reason, file=sys.stderr)
-                return errors.URL_ERROR
+                print("%s" % e, file=sys.stderr)
+                return ERROR.URL_ERROR
 #            except HTMLParseError as e:
 #                print("Could not parse HTML for %s" % url, file=sys.stderr)
 #                print("%s" % e, file=sys.stderr)
-#                return errors.HTML_PARSE_ERROR
+#                return ERROR.HTML_PARSE_ERROR
             except UnrecognizedContentType as e:
                 if not parsed.http and not parsed.linkset:
                     # Silently ignore if other methods work
                     print("%s" % e, file=sys.stderr)
-                    return errors.UNRECOGNIZED_CONTENT_TYPE
+                    return ERROR.UNRECOGNIZED_CONTENT_METHOD
         
         if parsed.linkset:
             try:
                 signposting = find_signposting_linkset(url)
-                signpostings.append(("linkset", signposting))
+                signpostings.append((METHOD.linkset, signposting))
             except HTTPError as e:
                 print("HTTP error for %s" % url, file=sys.stderr)
                 print("%s" % e.reason, file=sys.stderr)
-                return errors.HTTP_ERROR
+                return ERROR.HTTP_ERROR
             except URLError as e:
                 print("Failed URL %s" % url, file=sys.stderr)
                 print("%s" % e.reason, file=sys.stderr)
-                return errors.URL_ERROR
+                return ERROR.URL_ERROR
             except IOError as e:
                 print("Network error for %s" % url, file=sys.stderr)
-                print("%s" % e.reason, file=sys.stderr)
-                return errors.HTTP_ERROR
+                print("%s" % e, file=sys.stderr)
+                return ERROR.HTTP_ERROR
             except LinksetParseError as e:
                 print("Could not parse linkset for %s" % url, file=sys.stderr)
                 print("%s" % e, file=sys.stderr)
-                return errors.HTML_PARSE_ERROR
+                return ERROR.HTML_PARSE_ERROR
             except UnrecognizedContentType as e:
                 print("%s" % e, file=sys.stderr)
-                return errors.UNRECOGNIZED_CONTENT_TYPE
+                return ERROR.UNRECOGNIZED_CONTENT_METHOD
 
         if not parsed.distinct:
-            signpostings = [("merged", 
+            signpostings = [(METHOD.merged, 
                             reduce(lambda a,b: a|b, 
                                    (s for _,s in signpostings), 
                                    Signposting()))]
         for (method,signposting) in signpostings:
             print("Signposting for", signposting.context or url, 
-                    " (%s)" % method if parsed.distinct else "")
+                    " (%s)" % method.name if method != method.merged else "")
             if (signposting.citeAs):
                 print("CiteAs:", _target(signposting.citeAs))
             if (signposting.types):
@@ -204,4 +208,4 @@ def main(*args: str):
             if (signposting.linksets):
                 print(_multiline("Linkset", [_target_and_type(l)
                     for l in signposting.linksets]))
-    return errors.OK
+    return ERROR.OK

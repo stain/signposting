@@ -38,10 +38,11 @@ _http_opener = urllib.request.build_opener(_HTTPErrorHandler)
 # urllib.request.install_opener(opener)
 
 
-def find_signposting_http(url: str) -> Signposting:
+def find_signposting_http(url: str, warn_empty:bool=True) -> Signposting:
     """Find signposting from HTTP headers.
 
     :param url: The URL to request HTTP ``Link`` headers from using HTTP ``HEAD``
+    :param warn_empty: If true, raise warning if no direct signpostings were found
     :return: A parsed :class:`Signposting` object of the discovered signposting
     """
     req = urllib.request.Request(url, method="HEAD")
@@ -56,6 +57,7 @@ def find_signposting_http(url: str) -> Signposting:
             # Note: Other 4xx error codes would throw exceptions by _HTTPErrorHandler defaults
         link_headers = res.headers.get_all("Link") or []
 
-    # TODO: Also check HTML for <link>
-    # TODO: Also check for linkset
-    return linkheader.find_signposting_http_link(link_headers, res.geturl())
+    signposting = linkheader.find_signposting_http_link(link_headers, res.geturl())
+    if warn_empty and not signposting:
+        warnings.warn("No direct signposting found in HTTP links from <%s>" % res.geturl())
+    return signposting
