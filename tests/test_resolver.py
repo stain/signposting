@@ -41,8 +41,13 @@ class TestResolverA2A(unittest.TestCase):
         self.assertEqual({d.type for d in s.describedBy}, {None})
 
     def test_02_html_only(self):
-        s = find_signposting_http(
-            "https://w3id.org/a2a-fair-metrics/02-html-full/")
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            s = find_signposting_http(
+                "https://w3id.org/a2a-fair-metrics/02-html-full/")
+            assert len(w) == 1
+            assert issubclass(w[0].category, UserWarning)
+            assert "No direct signposting" in str(w[0].message)
         self.assertIsNone(s.citeAs)  # only in HTML
 
     def test_03_citeas(self):
@@ -188,13 +193,24 @@ class TestResolverA2A(unittest.TestCase):
                          set(("canonical", "cite-as", "http://schema.org/identifier")))
 
     def test_18_html_only(self):
-        s = find_signposting_http(
-            "https://w3id.org/a2a-fair-metrics/18-html-citeas-only/")
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            s = find_signposting_http(
+                "https://w3id.org/a2a-fair-metrics/18-html-citeas-only/")
+            assert len(w) == 1
+            assert issubclass(w[0].category, UserWarning)
+            assert "No direct signposting" in str(w[0].message)
+
         self.assertIsNone(s.citeAs)  # only in HTML
 
     def test_19_html_only(self):
-        s = find_signposting_http(
-            "https://w3id.org/a2a-fair-metrics/19-html-citeas-multiple-rels/")
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            s = find_signposting_http(
+                "https://w3id.org/a2a-fair-metrics/19-html-citeas-multiple-rels/")
+            assert len(w) == 1
+            assert issubclass(w[0].category, UserWarning)
+            assert "No direct signposting" in str(w[0].message)
         self.assertIsNone(s.citeAs)  # only in HTML
 
     def test_20_citeas(self):
