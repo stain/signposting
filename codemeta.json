@@ -13,12 +13,12 @@
     "identifier": "10.5281/zenodo.6815412",
     "applicationCategory": "Web",
     "funding": [
-        {"@id": "https://cordis.europa.eu/project/id/101057344",
+        {"@id": "https://doi.org/10.3030/101057344",
          "@type": "Grant",
          "name": "FAIR-IMPACT",
          "url": "https://fair-impact.eu/"
         },
-        {"@id": "https://cordis.europa.eu/project/id/823830",
+        {"@id": "https://doi.org/10.3030/823830",
          "@type": "Grant",
          "name": "BioExcel-2", 
          "url": "https://bioexcel.eu/"}
