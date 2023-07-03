@@ -63,7 +63,7 @@ class AbsoluteURI(str):
         # Resolve potentially relative URI reference when base is given
         uri = urljoin(base or "", value)
         # will throw ValueError if resolved URI is not valid
-        rfc3987.parse(uri, rule="absolute_URI")
+        rfc3987.parse(uri, rule="URI")
         return super(AbsoluteURI, cls).__new__(cls, uri)
 
     # @staticmethod
@@ -665,7 +665,7 @@ class Signposting(Iterable[Signpost], Sized):
         """
         h = hash(self.__class__.__qualname__)
         # NOTE context is NOT included in equality checks, see __eq__
-        ## h ^= self.context
+        ## h ^= hash(self.context)
         for e in self:
             # We use a naive XOR here as order should NOT matter
             h ^= hash(e)
