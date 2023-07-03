@@ -337,6 +337,27 @@ class TestSignpost(unittest.TestCase):
                 profiles="https:/example.org/first-ok second-not-absolute"
                 )
 
+    def testConstructorHashProfile(self):
+        s = Signpost(
+            LinkRel.describedby,
+            "http://example.com/workflows/12/ro-crate-metadata.json",
+            "application/ld+json",
+            # Multiple JSON-LD profiles with #hashes as in 
+            # https://www.researchobject.org/ro-crate/1.1/appendix/jsonld.html#ro-crate-json-ld-media-type
+            "http://www.w3.org/ns/json-ld#flattened http://www.w3.org/ns/json-ld#compacted https://w3id.org/ro/crate")
+        self.assertEqual("describedby", s.rel.value)
+        self.assertEqual("http://example.com/pid/1", str(s.target))
+        self.assertEqual("application/ld+json", str(s.type))
+        self.assertTrue(AbsoluteURI(
+            "http://www.w3.org/ns/json-ld#flattened") in s.profiles)
+        self.assertTrue(AbsoluteURI(
+            "http://www.w3.org/ns/json-ld#compacted") in s.profiles)
+        self.assertTrue(AbsoluteURI(
+            "http://www.w3.org/ns/json-ld#compacted") in s.profiles)
+        self.assertTrue(AbsoluteURI(
+            "https://w3id.org/ro/crate") in s.profiles)
+        self.assertIsNone(s.context, "Unexpected context")
+
     def testRepr(self):
         s = Signpost(
             LinkRel.cite_as,

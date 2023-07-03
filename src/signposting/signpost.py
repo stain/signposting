@@ -63,7 +63,7 @@ class AbsoluteURI(str):
         # Resolve potentially relative URI reference when base is given
         uri = urljoin(base or "", value)
         # will throw ValueError if resolved URI is not valid
-        rfc3987.parse(uri, rule="absolute_URI")
+        rfc3987.parse(uri, rule="URI")
         return super(AbsoluteURI, cls).__new__(cls, uri)
 
     # @staticmethod
