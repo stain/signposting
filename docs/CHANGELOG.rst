@@ -3,6 +3,7 @@ Changelog
 =========
 
 * Added `CITATION.cff`
+* Allow `#fragments` in profile URIs (e.g. for JSON-LD)
 
 v0.9.1 (2022-10-03)
 ------------------------------------------------------------

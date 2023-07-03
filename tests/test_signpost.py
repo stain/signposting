@@ -353,9 +353,8 @@ class TestSignpost(unittest.TestCase):
         self.assertTrue(AbsoluteURI(
             "http://www.w3.org/ns/json-ld#compacted") in s.profiles)
         self.assertTrue(AbsoluteURI(
-            "http://www.w3.org/ns/json-ld#compacted") in s.profiles)
-        self.assertTrue(AbsoluteURI(
             "https://w3id.org/ro/crate") in s.profiles)
+        self.assertEqual(3, len(s.profiles))
         self.assertIsNone(s.context, "Unexpected context")
 
     def testRepr(self):
