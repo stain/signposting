@@ -665,7 +665,7 @@ class Signposting(Iterable[Signpost], Sized):
         """
         h = hash(self.__class__.__qualname__)
         # NOTE context is NOT included in equality checks, see __eq__
-        ## h ^= self.context
+        ## h ^= hash(self.context)
         for e in self:
             # We use a naive XOR here as order should NOT matter
             h ^= hash(e)
