@@ -9,7 +9,7 @@
     "downloadUrl": "https://github.com/stain/signposting/releases",
     "issueTracker": "https://github.com/stain/signposting/issues",
     "name": "Signposting link parser library",
-    "version": "0.9.2",
+    "version": "0.9.3",
     "identifier": "10.5281/zenodo.6815412",
     "applicationCategory": "Web",
     "funding": [
