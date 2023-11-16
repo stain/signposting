@@ -262,16 +262,23 @@ class Signpost:
 
         :raise ValueError: If a plain string value is invalid for the corresponding type-checked classes :class:`LinkRel`, :class:`AbsoluteURI` or :class:`MediaType`,
         """
+        if isinstance(context, AbsoluteURI):
+            self.context = context
+        elif context:
+            self.context = AbsoluteURI(context)  # may throw ValueError
+        else:
+            self.context = None
 
         if isinstance(rel, LinkRel):
             self.rel = rel
         else:
             self.rel = LinkRel(rel)  # May throw ValueError
 
+
         if isinstance(target, AbsoluteURI):
             self.target = target
         else:
-            self.target = AbsoluteURI(target)  # may throw ValueError
+            self.target = AbsoluteURI(target, base=self.context)  # may throw ValueError
 
         if isinstance(media_type, MediaType):
             self.type = media_type
@@ -285,17 +292,11 @@ class Signpost:
                 assert isinstance(p, AbsoluteURI)
             self.profiles = frozenset(profiles)
         elif profiles:
-            self.profiles = frozenset(AbsoluteURI(p)
+            self.profiles = frozenset(AbsoluteURI(p, base=self.context)
                                       for p in profiles.split(" "))
         else:
             self.profiles = frozenset()
 
-        if isinstance(context, AbsoluteURI):
-            self.context = context
-        elif context:
-            self.context = AbsoluteURI(context)  # may throw ValueError
-        else:
-            self.context = None
 
         self.link = link
 
