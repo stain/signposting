@@ -1,6 +1,6 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
-abstract: "This library helps client to discover links that follow the  FAIR Signposting conventions."
+abstract: "This library helps client to discover links that follow the FAIR Signposting conventions."
 authors:
   - family-names: Soiland-Reyes
     given-names: Stian
@@ -8,6 +8,9 @@ authors:
   - family-names: Kinoshita
     given-names: Bruno P. 
     orcid: https://orcid.org/0000-0001-8250-4074"
+  - family-names: Emonet
+    given-names: Vincent
+    orcid: https://orcid.org/0000-0002-1501-1082
 title: "Signposting link parser library"
 doi: 10.5281/zenodo.6815412
 version: 0.9.4
