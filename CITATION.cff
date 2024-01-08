@@ -13,7 +13,7 @@ authors:
     orcid: https://orcid.org/0000-0002-1501-1082
 title: "Signposting link parser library"
 doi: 10.5281/zenodo.6815412
-version: 0.9.5
+version: 0.9.6
 license: Apache-2.0
 repository-code: "https://github.com/stain/signposting/"
 keywords:
