@@ -63,7 +63,7 @@ class AbsoluteURI(str):
         # Resolve potentially relative URI reference when base is given
         uri = urljoin(base or "", value)
         # will throw ValueError if resolved URI is not valid
-        rfc3987.parse(uri, rule="absolute_URI")
+        rfc3987.parse(uri, rule="URI")
         return super(AbsoluteURI, cls).__new__(cls, uri)
 
     # @staticmethod
@@ -262,16 +262,23 @@ class Signpost:
 
         :raise ValueError: If a plain string value is invalid for the corresponding type-checked classes :class:`LinkRel`, :class:`AbsoluteURI` or :class:`MediaType`,
         """
+        if isinstance(context, AbsoluteURI):
+            self.context = context
+        elif context:
+            self.context = AbsoluteURI(context)  # may throw ValueError
+        else:
+            self.context = None
 
         if isinstance(rel, LinkRel):
             self.rel = rel
         else:
             self.rel = LinkRel(rel)  # May throw ValueError
 
+
         if isinstance(target, AbsoluteURI):
             self.target = target
         else:
-            self.target = AbsoluteURI(target)  # may throw ValueError
+            self.target = AbsoluteURI(target, base=self.context)  # may throw ValueError
 
         if isinstance(media_type, MediaType):
             self.type = media_type
@@ -285,17 +292,11 @@ class Signpost:
                 assert isinstance(p, AbsoluteURI)
             self.profiles = frozenset(profiles)
         elif profiles:
-            self.profiles = frozenset(AbsoluteURI(p)
+            self.profiles = frozenset(AbsoluteURI(p, base=self.context)
                                       for p in profiles.split(" "))
         else:
             self.profiles = frozenset()
 
-        if isinstance(context, AbsoluteURI):
-            self.context = context
-        elif context:
-            self.context = AbsoluteURI(context)  # may throw ValueError
-        else:
-            self.context = None
 
         self.link = link
 
@@ -665,7 +666,7 @@ class Signposting(Iterable[Signpost], Sized):
         """
         h = hash(self.__class__.__qualname__)
         # NOTE context is NOT included in equality checks, see __eq__
-        ## h ^= self.context
+        ## h ^= hash(self.context)
         for e in self:
             # We use a naive XOR here as order should NOT matter
             h ^= hash(e)
