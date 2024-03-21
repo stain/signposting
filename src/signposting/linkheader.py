@@ -104,7 +104,8 @@ def linksToSignposting(links: List[Link], context: str = None) -> Signposting:
         for l in links:
             # TODO: Check if context matches "anchor"
             for rel in l.rel:
-                if rel in SIGNPOSTING:
+                if rel in SIGNPOSTING \
+                    or ":" in rel: # Allow URI extensions https://datatracker.ietf.org/doc/html/rfc8288#section-2.1.2
                     signposts.append(linkToSignpost(l, LinkRel(rel), context))
         return Signposting(context, signposts)
 

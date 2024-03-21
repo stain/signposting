@@ -133,8 +133,8 @@ def _parse_linkset_json(linkset:LinksetJSON) -> Signposting:
             if rel == "anchor": 
                 # Not a link relation, handled above
                 continue
-            if not rel in SIGNPOSTING:
-                # Not a signposting relation, ignored
+            if not rel in SIGNPOSTING and not ":" in rel:
+                # Not a signposting relation or extension URI, ignored
                 continue
             # Proceed to find signposts
             if not isinstance(link_context[rel], list):

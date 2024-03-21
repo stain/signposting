@@ -39,7 +39,7 @@ from __future__ import annotations
 
 import itertools
 import re
-from typing import Iterable, Iterator, Optional, Set, Sized, Union, AbstractSet, FrozenSet
+from typing import Iterable, Iterator, Optional, Dict, Set, Sized, Union, AbstractSet, FrozenSet
 from enum import Enum, unique
 from warnings import warn
 
@@ -161,12 +161,13 @@ class LinkRel(str, Enum):
     enum *name* (``LinkRel.cite_as``).
 
     .. _signposting: https://signposting.org/conventions/
-    .. _FAIR: https://signposting.org/FAIR/
+    .. _FAIR: https://signposting.org/FAIR/#level1
     .. RFC8288: https://datatracker.ietf.org/doc/html/rfc8288
     """
     author = "author"
     collection = "collection"
     describedby = "describedby"
+    describes = "describes"
     item = "item"
     cite_as = "cite-as"  # NOTE: _ vs - because of Python syntax
     type = "type"
@@ -194,7 +195,7 @@ class Signpost:
     lift only the navigational attributes for FAIR Signposting.
     """
 
-    rel: LinkRel
+    rel: Union[LinkRel,AbsoluteURI]
     """The link relation of this signposting"""
 
     target: AbsoluteURI
@@ -246,7 +247,7 @@ class Signpost:
     """
 
     def __init__(self,
-                 rel: Union[LinkRel, str],
+                 rel: Union[LinkRel, AbsoluteURI, str],
                  target: Union[AbsoluteURI, str],
                  media_type: Union[MediaType, str] = None,
                  profiles: Union[AbstractSet[AbsoluteURI], str] = None,
@@ -271,6 +272,10 @@ class Signpost:
 
         if isinstance(rel, LinkRel):
             self.rel = rel
+        elif isinstance(rel, AbsoluteURI):
+            self.rel = rel
+        elif ":" in rel:
+            self.rel = AbsoluteURI(rel) # May throw ValueError
         else:
             self.rel = LinkRel(rel)  # May throw ValueError
 
@@ -448,7 +453,11 @@ class Signposting(Iterable[Signpost], Sized):
 
     collection: Optional[Signpost]
     """Optional collection resource that the selected resource is part of"""
-    
+
+    _extensions: Dict[AbsoluteURI,Set[Signpost]]
+    """Map of signpost for extensions"""
+
+
     def __init__(self, 
                  context: Union[AbsoluteURI, str] = None, 
                  signposts: Iterable[Signpost] = None,
@@ -499,6 +508,7 @@ class Signposting(Iterable[Signpost], Sized):
         self.other_contexts = set()
         self._extras = set() # Any extra signposts, ideally empty
         self._others = set() # Signposts with a different context
+        self._extensions = {}
 
         if signposts is None:
             return # We're empty
@@ -543,6 +553,9 @@ class Signposting(Iterable[Signpost], Sized):
                 self.linksets.add(s)
             elif s.rel is LinkRel.type:
                 self.types.add(s)
+            elif isinstance(s.rel, AbsoluteURI): 
+                self._extras.add(s)
+                self._extensions.setdefault(s.rel, set()).add(s)
             else:
                 warn("Unrecognized link relation: %s" % s.rel)
                 # NOTE: This means a new enum member in LinkRel that we should handle above
