@@ -142,7 +142,8 @@ def find_signposting_http_link(headers: List[str], baseurl: str = None) -> Signp
     parsed = parse_link_header(", ".join(headers))
     signposting: List[Link] = []
     # Ignore non-Signposting relations like "stylesheet"
-    for l in _filter_links_by_rel(parsed):
+    # but include URI extensions
+    for l in (_filter_links_by_rel(parsed) + list(p for p in parsed.links if ":" in p.rel)):
         if baseurl is not None:
             # Make URLs absolute by modifying Link object in-place
             target = urljoin(baseurl, l.target)

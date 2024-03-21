@@ -86,6 +86,9 @@ def main(*args: str):
 #        action='store_true'),
     parser.add_argument("-D", "--distinct", help="Report each signposting method (--http, --html and --linkset) separately",
         action='store_true'),
+    parser.add_argument("-e", "--extensions", help="Also report extension relation types",
+        action='store_true'),
+
 ## FIXME: Implement --contexts
     parser.add_argument("-c", "--any-context", dest="any_context", help="Include signposts any contexts/anchors, not just resolved URI", 
         action='store_true'),
@@ -190,10 +193,10 @@ def main(*args: str):
                     " (%s)" % method.name if method != method.merged else "")
             if parsed.any_context or (parsed.linkset and not parsed.html and not parsed.http):
                 signposting = signposting.for_context(None)
-            print_signposting(signposting)
+            print_signposting(signposting, parsed.extensions)
     return ERROR.OK
 
-def print_signposting(signposting: Signposting):
+def print_signposting(signposting: Signposting, extensions=False):
     if (signposting.citeAs):
         print("CiteAs:", _target(signposting.citeAs))
     if (signposting.types):
@@ -214,3 +217,7 @@ def print_signposting(signposting: Signposting):
     if (signposting.linksets):
         print(_multiline("Linkset", [_target_and_type(l)
             for l in signposting.linksets]))
+    if (extensions):
+        for k in signposting._extensions:
+            print(_multiline("<%s>" % k, [_target_and_type(l)
+                for l in signposting._extensions[k]]))
