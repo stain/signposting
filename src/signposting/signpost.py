@@ -423,6 +423,13 @@ class Signposting(Iterable[Signpost], Sized):
     (if present) for content type, e.g. ``text/turtle``.
     """
 
+    describes: Set[Signpost]
+    """Resources this metadata resource is about, e.g. landing pages.
+
+    Resources may require content negotiation, check :attr:`Signpost.type` attribute
+    (if present) for content type, e.g. ``text/html``.
+    """
+
     types: Set[Signpost]
     """Semantic types of this resource, e.g. from schema.org"""
 
@@ -502,6 +509,7 @@ class Signposting(Iterable[Signpost], Sized):
         self.collection = None
         self.authors = set()
         self.describedBy = set()
+        self.describes = set()
         self.items = set()
         self.linksets = set()
         self.types = set()
@@ -547,6 +555,8 @@ class Signposting(Iterable[Signpost], Sized):
                 self.authors.add(s)
             elif s.rel is LinkRel.describedby:
                 self.describedBy.add(s)
+            elif s.rel is LinkRel.describes:
+                self.describes.add(s)
             elif s.rel is LinkRel.item:
                 self.items.add(s)
             elif s.rel is LinkRel.linkset:
@@ -644,6 +654,8 @@ class Signposting(Iterable[Signpost], Sized):
             yield a
         for d in self.describedBy:
             yield d
+        for ds in self.describes:
+            yield ds
         for i in self.items:
             yield i
         for l in self.linksets:
@@ -707,6 +719,8 @@ class Signposting(Iterable[Signpost], Sized):
             repr.append("authors=%s" % self._repr_signposts(self.authors))
         if self.describedBy:
             repr.append("describedBy=%s" % self._repr_signposts(self.describedBy))
+        if self.describes:
+            repr.append("describes=%s" % self._repr_signposts(self.describes))
         if self.items:
             repr.append("items=%s" % self._repr_signposts(self.items))
         if self.linksets:
