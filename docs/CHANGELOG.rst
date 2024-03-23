@@ -2,6 +2,9 @@
 Changelog
 =========
 
+v0.9.8 (2024-03-23)
+------------------------------------------------------------
+
 * CLI by default now looks up all HTTP and HTML links combined 
 * Added CLI options --html --html --linkset --distinct to control above
 * Added CLI options --any-context to also report links from other contexts
