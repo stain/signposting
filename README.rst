@@ -61,9 +61,8 @@ It is up to the clients of this library to decide how to further
 navigate or retrieve the associated resources, e.g. using a 
 RDF library like `rdflib`_ or retrieving resources using `urllib`_.
 
-Future versions of this library may also provide ways to discover
-FAIR signposting in HTML ``<link>`` annotations and in 
-`linkset`_ documents.
+This library also provide ways to discover FAIR signposting in HTML ``<link>``
+annotations and in `linkset`_ documents.
 
 
 Motivation
@@ -87,7 +86,7 @@ structured metadata files.
 Copyright and license
 =====================
 
-© Copyright 2022 The University of Manchester, UK.
+© Copyright 2022–2024 The University of Manchester, UK.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
