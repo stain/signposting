@@ -143,7 +143,7 @@ def _parse_html(html:Union[HTML,XHTML]) -> Signposting:
             type = link.get("type")
             profiles = link.get("profile")
             rels = set(r.lower() for r in link.get("rel", [])
-                        if r.lower() in SIGNPOSTING)
+                        if r.lower() in SIGNPOSTING or ":" in r)
             for rel in rels:
                 try:
                     signpost = Signpost(rel, url, type, profiles, html.resolved_url)

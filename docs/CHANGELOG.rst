@@ -2,11 +2,20 @@
 Changelog
 =========
 
+* CLI by default now looks up all HTTP and HTML links combined 
+* Added CLI options --html --html --linkset --distinct to control above
+* Added CLI options --any-context to also report links from other contexts
+* Added experimental parsing of URI-based link relations  (--extensions)
+* Added link relation rel="describes"
+
 v0.9.7 (2024-02-25)
 ------------------------------------------------------------
+* Experimental CLI support for HTTP and HTML links added
 
 v0.9.6 (2024-01-08)
 ------------------------------------------------------------
+
+* Typo in CITATION.cff
 
 v0.9.5 (2024-01-08)
 ------------------------------------------------------------
@@ -15,10 +24,12 @@ v0.9.5 (2024-01-08)
 
 v0.9.4 (2023-11-16)
 ------------------------------------------------------------
+
 * permit relative URIs
 
 v0.9.3 (2023-09-21)
 ------------------------------------------------------------
+
 * Fix error in text (contributed by Vincent Emonet)
 
 v0.9.2 (2023-07-03)

@@ -18,10 +18,10 @@
 Parse HTTP headers to find Signposting links
 """
 
-from typing import List, Tuple, Optional
+from typing import List, Tuple, Optional, Union
 from httplink import ParsedLinks, Link, parse_link_header
 from urllib.parse import urljoin
-from .signpost import SIGNPOSTING, Signpost, Signposting, LinkRel
+from .signpost import SIGNPOSTING, Signpost, Signposting, LinkRel, AbsoluteURI
 
 
 def _filter_links_by_rel(parsedLinks: ParsedLinks, *rels: str) -> List[Link]:
@@ -45,6 +45,26 @@ def _filter_links_by_rel(parsedLinks: ParsedLinks, *rels: str) -> List[Link]:
         filterRels = SIGNPOSTING
     return [l for l in parsedLinks.links if l.rel & filterRels]
 
+
+def _filter_links_uris(parsedLinks: ParsedLinks) -> List[Link]:
+    """Filter links to select those that are extension URIs
+
+    :param parsedLinks: The :class:`ParsedLinks` to filter from
+    :return: A list of :class:`Link` which ``rel`` is an AbsoluteURI
+
+    """
+    extensions = []
+    for l in parsedLinks.links:
+        for rel in l.rel:
+            if ":" in rel:
+                try:
+                    AbsoluteURI(rel)
+                    extensions.append(l)
+                    break
+                except ValueError:
+                    continue
+                    
+    return extensions
 
 def _optional_link(parsedLinks: ParsedLinks, rel: str) -> Optional[Link]:
     """Look up a single link relation.
@@ -77,7 +97,7 @@ def _link_attr(link: Link, key: str) -> Optional[str]:
         return link[key]
     return None
 
-def linkToSignpost(link: Link, rel: LinkRel, context_url: str = None) -> Signpost:
+def linkToSignpost(link: Link, rel: Union[LinkRel,AbsoluteURI], context_url: str = None) -> Signpost:
     """Convert from a :class:`Link` to a :class:`Signpost` 
     object for a given link relation.
 
@@ -104,8 +124,10 @@ def linksToSignposting(links: List[Link], context: str = None) -> Signposting:
         for l in links:
             # TODO: Check if context matches "anchor"
             for rel in l.rel:
-                if rel in SIGNPOSTING:
+                if rel in SIGNPOSTING: # Allow URI extensions https://datatracker.ietf.org/doc/html/rfc8288#section-2.1.2
                     signposts.append(linkToSignpost(l, LinkRel(rel), context))
+                elif ":" in rel:
+                    signposts.append(linkToSignpost(l, AbsoluteURI(rel), context))
         return Signposting(context, signposts)
 
 def _absolute_attribute(k: str, v: str, baseurl: str) -> Tuple[str, str]:
@@ -141,7 +163,8 @@ def find_signposting_http_link(headers: List[str], baseurl: str = None) -> Signp
     parsed = parse_link_header(", ".join(headers))
     signposting: List[Link] = []
     # Ignore non-Signposting relations like "stylesheet"
-    for l in _filter_links_by_rel(parsed):
+    # but include URI extensions
+    for l in (_filter_links_by_rel(parsed) + _filter_links_uris(parsed)):
         if baseurl is not None:
             # Make URLs absolute by modifying Link object in-place
             target = urljoin(baseurl, l.target)

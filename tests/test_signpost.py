@@ -665,6 +665,8 @@ class TestSignposting(unittest.TestCase):
             Signpost(LinkRel.describedby, "http://example.com/metadata/1.ttl"),
             Signpost(LinkRel.describedby,
                      "http://example.com/metadata/2.jsonld"),
+            Signpost(LinkRel.describes,
+                     "http://example.com/other"),
             Signpost(LinkRel.linkset, "http://example.com/linkset/1.json"),
             Signpost(LinkRel.linkset, "http://example.com/linkset/2.txt"),
             Signpost(LinkRel.type, "http://example.org/type/A"),
@@ -690,6 +692,8 @@ class TestSignposting(unittest.TestCase):
             "http://example.com/metadata/1.ttl",
             "http://example.com/metadata/2.jsonld"},
             set(i.target for i in s.describedBy))
+        self.assertEqual({"http://example.com/other"},
+                         {i.target for i in s.describes})
         self.assertEqual({
             "http://example.com/linkset/1.json",
             "http://example.com/linkset/2.txt"},
@@ -712,12 +716,15 @@ class TestSignposting(unittest.TestCase):
             Signpost(LinkRel.describedby, "http://example.com/metadata/1.ttl"),
             Signpost(LinkRel.describedby,
                      "http://example.com/metadata/2.jsonld"),
+            Signpost(LinkRel.describes,
+                     "http://example.com/other"),
             Signpost(LinkRel.linkset, "http://example.com/linkset/1.json"),
             Signpost(LinkRel.linkset, "http://example.com/linkset/2.txt"),
             Signpost(LinkRel.type, "http://example.org/type/A"),
             Signpost(LinkRel.type, "http://example.org/type/B"),
             Signpost(LinkRel.item, "http://example.com/item/3.jpeg", context="http://example.com/page3"),
             Signpost(LinkRel.item, "http://example.com/item/4.jpeg", context="http://example.com/page4"),
+
             ])
         r = repr(s)
         self.assertIn("context=http://example.com/page1", r)
@@ -733,6 +740,8 @@ class TestSignposting(unittest.TestCase):
         self.assertIn("describedBy=http://example.com/metadata", r)
         self.assertIn("metadata/1.ttl",r)
         self.assertIn("metadata/2.jsonld", r)
+        self.assertIn("describes", r)
+        self.assertIn("http://example.com/other", r)
         self.assertIn("linksets=http://example.com/linkset", r)
         self.assertIn("linkset/1.json",r)
         self.assertIn("linkset/2.txt", r)
@@ -761,9 +770,11 @@ class TestSignposting(unittest.TestCase):
             Signpost(LinkRel.linkset, "http://example.com/linkset/2.txt"),
             Signpost(LinkRel.type, "http://example.org/type/A"),
             Signpost(LinkRel.type, "http://example.org/type/B"),
+            Signpost(LinkRel.describes, "http://example.com/other"),
+            Signpost(AbsoluteURI("https://schema.org/identifier"),  "urn:uuid:3d40f08b-0faa-4169-b329-3d6779bbffee")
         }
         # Ensure THIS test has tested every type of LinkRel!
-        self.assertEqual(set(LinkRel), {s.rel for s in signposts})
+        self.assertEqual(set(LinkRel), {s.rel for s in signposts if isinstance(s.rel, LinkRel)})
 
         others = {
             Signpost(LinkRel.item, "http://example.com/item/3.jpeg", context="http://example.com/page3"),

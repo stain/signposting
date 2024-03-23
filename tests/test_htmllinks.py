@@ -49,7 +49,9 @@ class TestHtmlLinks(unittest.TestCase):
                 headers={"Content-Type": "text/html;charset=UTF-8"})
             signposts = htmllinks.find_signposting_html(URL)            
             self.assertEqual("https://w3id.org/a2a-fair-metrics/19-html-citeas-multiple-rels/", signposts.citeAs.target)
-            self.assertEqual(1, len(signposts))
+            self.assertEqual(2, len(signposts))
+            # extension is also picked up, but not "canonical"
+            self.assertIn("http://schema.org/identifier", signposts._extensions)
 
     def test_find_signposting_html_a2a_02(self):
         with requests_mock.Mocker() as m:
