@@ -47,7 +47,7 @@ project = 'signposting link parser'
 year = '2022'
 author = 'Stian Soiland-Reyes'
 copyright = '{0}, {1}'.format(year, author)
-version = release = '0.9.8'
+version = release = '1.0.0'
 
 pygments_style = 'trac'
 templates_path = ['.']
