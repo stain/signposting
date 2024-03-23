@@ -71,7 +71,8 @@ def main(*args: str):
         action='store_true')
     parser.add_argument("--html", help="Find signposting in <link> HTML elements if media-type matches", 
         action='store_true')
-    parser.add_argument("--linkset", help="Find signposting in RFC9264 JSON or text linksets if media-type matches. When used with --recurse without specifying --http or --html, use those signposts to recurse, but only report from linksets",
+    parser.add_argument("--linkset", help="Find signposting in RFC9264 JSON or text linksets if media-type matches. ",
+                #"When used with --recurse without specifying --http or --html, use those signposts to recurse, but only report from linksets"
         action='store_true')
 ## FIXME: implement --all-linkset
 #    parser.add_argument("--all-linkset", help="Like --linkset, but parse both JSON and text variant if listed with same URI",
