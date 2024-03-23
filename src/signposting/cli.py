@@ -209,6 +209,9 @@ def print_signposting(signposting: Signposting, extensions=False):
     if (signposting.authors):
         print(_multiline("Author", [_target(l)
             for l in signposting.authors]))
+    if (signposting.describes):
+        print(_multiline("Describes", [
+            _target_and_type(l) for l in signposting.describes]))
     if (signposting.describedBy):
         print(_multiline("DescribedBy", [
             _target_and_type(l) for l in signposting.describedBy]))
